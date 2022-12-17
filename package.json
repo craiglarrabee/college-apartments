@@ -1,0 +1,28 @@
+{
+  "name": "college-apartments",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "bootstrap": "^5.2.3",
+    "classnames": "^2.3.2",
+    "eslint": "8.29.0",
+    "eslint-config-next": "13.0.6",
+    "next": "^12.3.4",
+    "react": "^17.0.2",
+    "react-bootstrap": "^2.7.0",
+    "react-bootstrap-icons": "^1.10.2",
+    "react-bootstrap-sidebar-menu": "^2.0.3",
+    "react-dom": "^17.0.2",
+    "suneditor": "^2.44.3",
+    "suneditor-react": "^2.16.5"
+  },
+  "devDependencies": {
+    "sass": "^1.56.2"
+  }
+}
