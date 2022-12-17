@@ -6,7 +6,7 @@ import React from "react";
 import Content from "../components/content";
 import Image from "next/image";
 
-export default function Home() {
+const Home = () => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com"
@@ -23,4 +23,6 @@ export default function Home() {
             </main>
         </Layout>
     )
-}
+};
+
+export default Home;

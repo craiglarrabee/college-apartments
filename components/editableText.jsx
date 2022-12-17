@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 
 const SunEditor = dynamic(() => import("suneditor-react"), {ssr: false});
 
-export default ({initialContent}) => {
+const EditableText = ({initialContent}) => {
     const [show, setShow] = useState(false);
     const [content, setContent] = useState(initialContent);
 
@@ -32,7 +32,7 @@ export default ({initialContent}) => {
             />
         </div>
     );
-}
+};
 
 function Editor({show, handleClose, title, initialContent, saveChanges}) {
     const [content, setContent] = useState(initialContent);
@@ -100,3 +100,4 @@ function Editor({show, handleClose, title, initialContent, saveChanges}) {
     );
 }
 
+export default EditableText;
