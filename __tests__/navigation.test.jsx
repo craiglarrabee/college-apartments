@@ -14,6 +14,7 @@ describe("Navigation", () => {
 
     it("renders return links", () => {
         const links = screen.getAllByRole("link", {name: "UtahCollegeApartments"});
+        expect(links.length).toEqual(2);
         links.forEach(link => expect(link).toHaveAttribute("href", "testurl"));
     });
 
