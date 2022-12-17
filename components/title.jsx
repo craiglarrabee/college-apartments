@@ -1,4 +1,4 @@
-import {Container, Navbar} from "react-bootstrap";
+import {Navbar} from "react-bootstrap";
 import classNames from "classnames";
 
 const Title = ({bg, variant}) => {
