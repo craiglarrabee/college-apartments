@@ -8,7 +8,7 @@ import classNames from "classnames";
 import EditableText from "../components/editableText";
 import Title from "../components/title";
 
-export default (props) => {
+const Home = (props) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com"
@@ -36,7 +36,7 @@ export default (props) => {
         </Layout>
 
     );
-}
+};
 
 export async function getStaticProps() {
     return {
@@ -44,4 +44,6 @@ export async function getStaticProps() {
             managerOneText: "This is a test"
         }
     }
-}
+};
+
+export default Home;
