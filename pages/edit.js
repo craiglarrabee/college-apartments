@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import Image from "next/image";
 import Layout from "../components/layout";
 import Menu from "../components/navigation";
@@ -12,10 +12,11 @@ const Home = (props) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com"
-    const [managerOne, setManagerOne] = useState(props.managerOneText);
-    const [managerTwo, setManagerTwo] = useState("");
-    const [availabilityContent, setAvailabilityContent] = useState("");
-    const [descriptionContent, setDescriptionContent] = useState("");
+    const managerOne = props.managerOne;
+    const managerTwo = props.managerTwo;
+    const availability = props.availability;
+    const description = props.description;
+    const location = "suu";
 
     return (
         <Layout>
@@ -24,12 +25,12 @@ const Home = (props) => {
             <main>
                 <Content>
                     <div className={classNames("d-flex", "justify-content-evenly")}>
-                        <EditableText initialContent={managerOne} />
-                        <EditableText initialContent={managerTwo} />
+                        <EditableText initialContent={managerOne} location={location} />
+                        <EditableText initialContent={managerTwo} location={location} />
                     </div>
-                    <EditableText initialContent={availabilityContent} />
+                    <EditableText initialContent={availability} location={location} />
                     <Image src="/images/students.jpg" alt="students" width={650} height={350} priority={true} />
-                    <EditableText initialContent={descriptionContent} />
+                    <EditableText initialContent={description} location={location} />
                 </Content>
                 <Footer bg={bg}/>
             </main>
@@ -41,9 +42,12 @@ const Home = (props) => {
 export async function getStaticProps() {
     return {
         props: {
-            managerOneText: "This is a test"
+            managerOne: "This is a test",
+            managerTwo: "",
+            availability: "",
+            description: ""
         }
     }
-};
+}
 
 export default Home;
