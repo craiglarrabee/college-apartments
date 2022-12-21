@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 
 const SunEditor = dynamic(() => import("suneditor-react"), {ssr: false});
 
-const EditableText = ({initialContent}) => {
+const EditableText = ({initialContent, location}) => {
     const [show, setShow] = useState(false);
     const [content, setContent] = useState(initialContent);
 
@@ -28,16 +28,26 @@ const EditableText = ({initialContent}) => {
                     handleClose={handleClose}
                     title="Description Text"
                     initialContent={content}
-                    saveChanges={setContent}
+                    setEditableText={setContent}
+                    location={location}
             />
         </div>
     );
 };
 
-function Editor({show, handleClose, title, initialContent, saveChanges}) {
+function Editor({show, handleClose, title, location, initialContent, setEditableText}) {
     const [content, setContent] = useState(initialContent);
     const saveContent = () => {
-        saveChanges(content);
+        fetch("/api/home-page-content", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                location: location
+            })
+        }).then(r => console.log(r.status));
+        setEditableText(content);
         console.log(content);
         handleClose();
     };
