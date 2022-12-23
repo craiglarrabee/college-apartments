@@ -14,11 +14,12 @@ const EditableText = ({initialContent, location}) => {
     const handleShow = () => setShow(true);
 
     return (
-        <div>
+        <div className={classNames("custom-content")}>
             <div className={classNames("d-inline-flex")}>
                 <Button variant="primary-outline"
                         size="sm"
                         onClick={handleShow}
+
                 >
                     <Pencil/>
                 </Button>
@@ -38,7 +39,7 @@ const EditableText = ({initialContent, location}) => {
 function Editor({show, handleClose, title, location, initialContent, setEditableText}) {
     const [content, setContent] = useState(initialContent);
     const saveContent = () => {
-        fetch("/api/home-page-content", {
+        fetch("/api/main-content", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

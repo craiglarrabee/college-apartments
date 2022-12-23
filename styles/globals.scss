@@ -20,6 +20,10 @@ body {
   background-image: url("../public/images/collage.jpg");
 }
 
+.custom-content, .custom-content table, .custom-content div {
+  width: 100%
+}
+
 .main-content {
   background-color: $body-bg;
   min-height: 650px;
@@ -142,7 +146,7 @@ table.api {
   padding-top: 0;
   flex-direction: column;
   grid-area: sidebar;
-  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar-menu-dark {

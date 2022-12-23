@@ -20,7 +20,7 @@ const Navigation = ({bg, variant, brandUrl}) => {
         >
             <SidebarMenuCollapse>
                 <SidebarMenu.Header>
-                    <SidebarMenuNavIcon>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</SidebarMenuNavIcon>
+                    <SidebarMenuNavIcon>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</SidebarMenuNavIcon>
                     <SidebarMenu.Brand className={classNames("navbar-dark")} href={brandUrl}>UtahCollegeApartments</SidebarMenu.Brand>
                 </SidebarMenu.Header>
                 <SidebarMenu.Body>

@@ -2,6 +2,7 @@
 
 export default async function handler(req, res) {
     console.log(req);
+    console.log(process.env);
     if (req.method === "POST") {
         // await DataStore.save(
         //     new HomePageContent({
