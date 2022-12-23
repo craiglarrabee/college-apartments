@@ -69,7 +69,8 @@ function Editor({show, handleClose, title, location, initialContent, setEditable
             "paragraphStyle",
             "link",
             "template",
-            "textStyle"
+            "textStyle",
+            "table"
         ],
         buttonList: [['undo', 'redo'],
             ['font', 'fontSize', 'formatBlock'],
@@ -80,7 +81,7 @@ function Editor({show, handleClose, title, location, initialContent, setEditable
             '/', // Line break
             ['outdent', 'indent'],
             ['align', 'horizontalRule', 'list', 'lineHeight'],
-            ['link',],
+            ['table','link',],
             ['showBlocks', 'codeView'],
         ],
         resizingBar: true,

@@ -12,8 +12,6 @@ const Home = (props) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com"
-    const managerOne = props.managerOne;
-    const managerTwo = props.managerTwo;
     const availability = props.availability;
     const description = props.description;
     const location = "suu";
@@ -25,12 +23,12 @@ const Home = (props) => {
             <main>
                 <Content>
                     <div className={classNames("d-flex", "justify-content-evenly")}>
-                        <EditableText initialContent={managerOne} location={location} />
-                        <EditableText initialContent={managerTwo} location={location} />
+                        <EditableText initialContent={availability} location={location}/>
                     </div>
-                    <EditableText initialContent={availability} location={location} />
-                    <Image src="/images/students.jpg" alt="students" width={650} height={350} priority={true} />
-                    <EditableText initialContent={description} location={location} />
+                    <Image src="/images/students.jpg" alt="students" width={650} height={350} priority={true}/>
+                    <div className={classNames("d-flex", "justify-content-evenly")}>
+                        <EditableText initialContent={description} location={location}/>
+                    </div>
                 </Content>
                 <Footer bg={bg}/>
             </main>
@@ -40,10 +38,9 @@ const Home = (props) => {
 };
 
 export async function getStaticProps() {
+    console.log(process.env);
     return {
         props: {
-            managerOne: "This is a test",
-            managerTwo: "",
             availability: "",
             description: ""
         }
