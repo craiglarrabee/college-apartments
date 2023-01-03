@@ -20,7 +20,7 @@ body {
   background-image: url("../public/images/collage.jpg");
 }
 
-.custom-content, .custom-content table, .custom-content div {
+.custom-content, .custom-content table, .custom-content > div {
   width: 100%
 }
 
