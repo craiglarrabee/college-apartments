@@ -5,8 +5,6 @@ import SidebarMenu, {
 } from "react-bootstrap-sidebar-menu";
 import Image from "next/image";
 import classNames from "classnames";
-import ConnectionPool from "../lib/db/connection";
-import {forEach} from "react-bootstrap/ElementChildren";
 
 const Navigation = ({bg, variant, brandUrl, links}) => {
     const navLinks = buildNavLinks(links, "");
@@ -18,8 +16,7 @@ const Navigation = ({bg, variant, brandUrl, links}) => {
             defaultExpanded={true}
             hide="sm"
             exclusiveExpand={true}
-            collapseOnSelect={true}
-            activeKey={"index"}
+            collapseOnSelect={false}
         >
             <SidebarMenuCollapse>
                 <SidebarMenu.Header>

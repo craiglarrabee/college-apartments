@@ -24,14 +24,14 @@ const Home = ({top, bottom, links}) => {
                     <PageContent
                         initialContent={top}
                         site={SITE}
-                        page="index"
+                        page="apartments"
                         name="top"
                         canEdit={true}/>
-                    <Image src="/images/students.jpg" alt="students" width="650" height="400" priority={true}/>
+                    <Image src="/images/collage.jpg" alt="students" width="650" height="400" priority={true}/>
                     <PageContent
                         initialContent={bottom}
                         site={SITE}
-                        page="index"
+                        page="apartments"
                         name="bottom"
                         canEdit={true}/>
                 </Content>
