@@ -1,10 +1,10 @@
 import {Button, Modal} from "react-bootstrap";
-import React, {useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import {Pencil} from "react-bootstrap-icons";
 import classNames from "classnames";
 import dynamic from "next/dynamic";
 
-const SunEditor = dynamic(() => import("suneditor-react"), {ssr: false});
+const JoditEditor = dynamic(() => import("jodit-react"), {ssr: false});
 
 const PageContent = ({site, page, name, canEdit, initialContent}) => {
     const [show, setShow] = useState(false);
@@ -15,13 +15,9 @@ const PageContent = ({site, page, name, canEdit, initialContent}) => {
 
     if (canEdit) {
         return (
-            <div className={classNames("custom-content")}>
+            <div className={classNames("custom-content")} style={{border: "3px dashed rgba(0, 0, 0, 0.5)"}}>
                 <div className={classNames("d-inline-flex", "custom-content")}>
-                    <Button variant="primary-outline"
-                            size="sm"
-                            onClick={handleShow}
-
-                    >
+                    <Button variant="primary-outline" size="sm" onClick={handleShow}>
                         <Pencil/>
                     </Button>
                     <div dangerouslySetInnerHTML={{__html: content}}/>
@@ -57,7 +53,8 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
     };
     const saveContent = async () => {
         json.content = content;
-        let resp = await fetch("/api/site-content", {
+        console.log(content);
+        let resp = await fetch(`/api/${site}/content/${page}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -70,42 +67,26 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
         handleClose();
     };
 
-    const editorOptions = {
-        height: "250px",
-        minHeight: "100px",
-        maxHeight: "400px",
-        plugins: [
-            "align",
-            "font",
-            "fontColor",
-            "fontSize",
-            "formatBlock",
-            "hiliteColor",
-            "horizontalRule",
-            "lineHeight",
-            "list",
-            "paragraphStyle",
-            "link",
-            "template",
-            "textStyle",
-            "table",
-            "image"
-        ],
-        buttonList: [["undo", "redo"],
-            ["font", "fontSize", "formatBlock"],
-            ["paragraphStyle"],
-            ["bold", "underline", "italic", "strike", "subscript", "superscript"],
-            ["fontColor", "hiliteColor", "textStyle"],
-            ["removeFormat"],
-            "/", // Line break
-            ["outdent", "indent"],
-            ["align", "horizontalRule", "list", "lineHeight"],
-            ["table","link","image"],
-            ["showBlocks", "codeView"],
-        ],
-        resizingBar: true,
-        resizeEnable: true,
-    };
+    const editorOptions = useMemo(() => (
+        {
+            readOnly: false,
+            height: "250px",
+            minHeight: "100px",
+            maxHeight: "400px",
+            toolbarAdaptive: false,
+            buttons: ["undo", "redo",
+                "font", "fontSize", "paragraph",
+                "bold", "underline", "italic", "strikethrough", "subscript", "superscript",
+                "outdent", "indent",
+                "align", "ul", "ol", "lineHeight",
+                "table","link","image",
+                "source"],
+            resizingBar: true,
+            resizeEnable: true,
+            placeholder: "Start typing..."
+        }),
+        []
+    );
 
     return (
         <Modal show={show}
@@ -113,13 +94,20 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
                size="lg"
                aria-labelledby="contained-modal-title-vcenter"
                centered
+               enforceFocus={false}
         >
             <Modal.Header closeButton>
                 <Modal.Title>{title}</Modal.Title>
             </Modal.Header>
 
             <Modal.Body>
-                <SunEditor setOptions={editorOptions} autoFocus={true} defaultValue={content} onChange={setContent}/>
+                <JoditEditor
+                    config={editorOptions}
+                    tabIndex={1}
+                    value={content}
+                    onBlur={newContent => setContent(newContent)} // preferred to use only this option to update the content for performance reasons
+                    onChange={newContent => {}}
+                />
             </Modal.Body>
 
             <Modal.Footer>

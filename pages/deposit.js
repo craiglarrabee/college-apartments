@@ -4,13 +4,17 @@ import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
 import Content from "../components/content";
-import {GetDynamicContent} from "../lib/db/content/dynamicContent";
+import DynamicContent, {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import NavLinks from "../lib/db/content/navLinks";
+import bodyParser from "body-parser";
+import util from "util";
+import Connection from "../lib/db/connection";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 
 const SITE = process.env.SITE;
+const getBody = util.promisify(bodyParser.urlencoded());
 
 const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
     const bg = "black";
@@ -22,7 +26,7 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
             <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
             <main>
-                <Content top={top} site={site} page={page} bottom={bottom} images={images} canEdit={canEdit}/>
+                <Content top={top} site={site} page={page} bottom={bottom} images={images} canEdit={canEdit} />
                 <Footer bg={bg}/>
             </main>
         </Layout>
@@ -31,8 +35,8 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
+    const page = context.resolvedUrl.replace(/\//, "");
     const site = "suu";
-    const page = "index";
     const content = {};
     const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), NavLinks(site)]);
     contentRows.forEach(row => content[row.name] = row.content);

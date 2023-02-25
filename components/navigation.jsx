@@ -1,13 +1,16 @@
 import SidebarMenu, {
     SidebarMenuBrand,
     SidebarMenuCollapse,
-    SidebarMenuFooter, SidebarMenuNavIcon
+    SidebarMenuFooter, SidebarMenuNavIcon, SidebarMenuNavItem
 } from "react-bootstrap-sidebar-menu";
 import Image from "next/image";
 import classNames from "classnames";
+import {useState} from "react";
+import Link from "next/link";
 
-const Navigation = ({bg, variant, brandUrl, links}) => {
+const Navigation = ({bg, variant, brandUrl, links, page}) => {
     const navLinks = buildNavLinks(links, "");
+
     return (
         <SidebarMenu
             bg={bg}
@@ -17,11 +20,12 @@ const Navigation = ({bg, variant, brandUrl, links}) => {
             hide="sm"
             exclusiveExpand={true}
             collapseOnSelect={false}
+            activeKey={page}
         >
             <SidebarMenuCollapse>
                 <SidebarMenu.Header>
-                    <SidebarMenuNavIcon>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</SidebarMenuNavIcon>
-                    <SidebarMenu.Brand className={classNames("navbar-dark")}
+                    <SidebarMenuNavIcon>&nbsp;&nbsp;&nbsp;&nbsp;</SidebarMenuNavIcon>
+                    <SidebarMenu.Brand className={classNames("navbar-dark", "h4")}
                                        href={brandUrl}>UtahCollegeApartments</SidebarMenu.Brand>
                 </SidebarMenu.Header>
                 <SidebarMenu.Body>
@@ -51,7 +55,7 @@ function buildNavLink(item, links) {
     if (item.sub_menu) {
         const sub_items = buildNavLinks(links, item.page);
         return (
-            <SidebarMenu.Sub eventKey={item.page}>
+            <SidebarMenu.Sub key={item.position} eventKey={item.page}>
                 <SidebarMenu.Sub.Toggle>
                     <SidebarMenu.Nav.Icon/>
                     <SidebarMenu.Nav.Title>{item.label}</SidebarMenu.Nav.Title>
@@ -60,11 +64,10 @@ function buildNavLink(item, links) {
                     {sub_items}
                 </SidebarMenu.Sub.Collapse>
             </SidebarMenu.Sub>
-
         );
     } else {
         return (
-            <SidebarMenu.Nav.Link href={item.page} eventKey={item.page}>
+            <SidebarMenu.Nav.Link href={item.page} key={item.position} eventKey={item.page} target={item.target}>
                 <SidebarMenu.Nav.Item>
                     <SidebarMenu.Nav.Title>{item.label}</SidebarMenu.Nav.Title>
                 </SidebarMenu.Nav.Item>
