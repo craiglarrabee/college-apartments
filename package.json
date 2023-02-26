@@ -25,9 +25,11 @@
     "react-bootstrap-icons": "^1.10.2",
     "react-bootstrap-sidebar-menu": "^2.0.3",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.43.2",
     "run": "^1.4.0",
     "sharp": "^0.31.3",
-    "tls": "^0.0.1"
+    "tls": "^0.0.1",
+    "yup": "^1.0.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",

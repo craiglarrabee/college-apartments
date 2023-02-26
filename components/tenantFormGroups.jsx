@@ -1,7 +1,7 @@
 import {Col, Form, Row} from "react-bootstrap";
 import React, {useState} from "react";
 
-const TenantFormGroups = ({readOnly, tenantData}) => {
+const TenantFormGroups = ({tenantData}) => {
     let [convictedCrime, setConvictedCrime] = useState(tenantData.hasOwnProperty("convicted_crime") ? tenantData.convicted_crime : false);
     let [chargedCrime, setChargedCrime] = useState(tenantData.hasOwnProperty("charged_crime") ? tenantData.charged_crime : false);
 
