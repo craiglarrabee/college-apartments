@@ -115,7 +115,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), NavLinks(site)]);
     contentRows.forEach(row => content[row.name] = row.content);
     if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
-    return {props: {site: site, page: page, navPage: newApplication ? "start-application" : "", ...content, images: imageContent, links: nav, canEdit: !!user.editSite, user: {...user}, tenant: {...tenant}, isNewApplication: newApplication}};
+    return {props: {site: site, page: page, navPage: newApplication ? "start-application" : "", ...content, images: imageContent, links: nav, canEdit: !!user && !!user.editSite, user: {...user}, tenant: {...tenant}, isNewApplication: newApplication}};
 }, ironOptions);
 
 export default Home;

@@ -36,7 +36,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const content = {};
     const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), NavLinks(site)]);
     contentRows.forEach(row => content[row.name] = row.content);
-    return {props: {site: site, page: page, ...content, images: imageContent, links: nav, canEdit: !!user.editSite, user: {...user}}};
+    return {props: {site: site, page: page, ...content, images: imageContent, links: nav, canEdit: !!user && !!user.editSite, user: {...user}}};
 }, ironOptions);
 
 export default Home;
