@@ -21,8 +21,8 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
     const brandUrl = "http://www.utahcollegeapartments.com";
     const {register, reset, formState: {isValid, isDirty}, handleSubmit} = useForm({ defaultValues: tenant });
 
-    let [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? !!tenant.convicted_crime : false);
-    let [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? !!tenant.charged_crime : false);
+    let [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? tenant.convicted_crime : false);
+    let [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? tenant.charged_crime : false);
 
     const handleConvicted = () => setConvictedCrime(true);
     const handleNotConvicted = () => setConvictedCrime(false);
@@ -67,7 +67,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                                               placeholder="First Name"/>
                             </Form.Group>
                             <Form.Group as={Col} className="mb-3" controlId="middle_name">
-                                <Form.Label>Last Name</Form.Label>
+                                <Form.Label>Middle Name</Form.Label>
                                 <Form.Control {...register("middle_name", {maxLength: 25})} type="text"
                                               placeholder="Middle Name"/>
                             </Form.Group>
@@ -128,11 +128,11 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                             <div>Have you ever been convicted of a crime?&nbsp;</div>
                             <Form.Check className="mb-3" onClick={handleConvicted} {...register("convicted_crime", {
                                 required: true,
-                                setValueAs: value => value.toString()
+                                setValueAs: value => value ? value.toString() : ""
                             })} type="radio" inline value="1" label="Yes"/>
                             <Form.Check className="mb-3" onClick={handleNotConvicted} {...register("convicted_crime", {
                                 required: true,
-                                setValueAs: value => value.toString()
+                                setValueAs: value => value ? value.toString() : ""
                             })} type="radio" inline value="0" label="No"/>
                         </div>
                         <Row>
@@ -145,12 +145,14 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                         </Row>
                         <div className="d-inline-flex">
                             <div>Have you ever been charged with a crime?&nbsp;</div>
-                            <Form.Check className="mb-3" name="charged_crime" type="radio" id="charged_crime_true"
-                                        required inline label="Yes"
-                                        onClick={handleCharged} defaultChecked={chargedCrime}/>
-                            <Form.Check className="mb-3" name="charged_crime" type="radio" id="charged_crime_false"
-                                        required inline label="No"
-                                        onClick={handleNotCharged} defaultChecked={!chargedCrime}/>
+                            <Form.Check className="mb-3" onClick={handleCharged} {...register("charged_crime", {
+                                required: true,
+                                setValueAs: value => value ? value.toString() : ""
+                            })} type="radio" inline value="1" label="Yes"/>
+                            <Form.Check className="mb-3" onClick={handleNotCharged} {...register("charged_crime", {
+                                required: true,
+                                setValueAs: value => value ? value.toString() : ""
+                            })} type="radio" inline value="0" label="No"/>
                         </div>
                         <Row>
                             <Form.Group as={Col} className="mb-3" controlId="charged_explain" hidden={!chargedCrime}>
@@ -226,7 +228,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                         <div style={{width: "100%"}}
                              className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                             <Button variant="primary" type="submit"
-                                    disabled={!isDirty || !isValid}>{isNewApplication ? "Next" : "Save"}</Button>
+                                    disabled={!isNewApplication && ( !isDirty || !isValid)}>{isNewApplication ? "Next" : "Save"}</Button>
                         </div>
                     </Form>
                 </div>

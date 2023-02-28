@@ -18,6 +18,7 @@ const login = withIronSessionApiRoute(async (req, res) => {
         } else {
             const user = {
                 id: rows[0].id,
+                username: req.body.username,
                 firstName: rows[0].first_name,
                 isLoggedIn: true,
                 admin: rows[0].site,

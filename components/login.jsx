@@ -1,6 +1,5 @@
 import {Button, Form, Modal} from "react-bootstrap";
 import React from "react";
-import UserFormGroups from "./userFormGroups";
 import classNames from "classnames";
 
 

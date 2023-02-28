@@ -14,6 +14,7 @@ import Link from "next/link";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
+import {useForm} from "react-hook-form";
 
 const SITE = process.env.SITE;
 
@@ -21,15 +22,39 @@ const Home = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit,
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
+    const {register, formState: {isValid, isDirty}, handleSubmit} = useForm();
+
+    const onSubmit = async (data, event) => {
+        event.preventDefault();
+
+        try {
+            const options = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            }
+
+            const resp = await fetch(`/api/users/${user.id}`, options)
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 204:
+                    location = "/deposit";
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
             <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <div className={classNames("main-content")}>
-                    <Form action="deposit" method="post">
-                        {site === "suu" ? <WorkFormGroups readOnly={canEdit}/> : null}
-                        <ApplicationFormGroups readOnly={canEdit}/>
+                    <Form onSubmit={handleSubmit(onSubmit)} method="post">
+                        {site === "suu" ? <WorkFormGroups register={register} /> : null}
+                        <ApplicationFormGroups register={register}/>
                         <PageContent
                             initialContent={rules}
                             site={site}
@@ -57,7 +82,7 @@ const Home = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit,
                             </span>
                         </div>
                         <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit" disabled={canEdit}>Submit</Button>
+                            <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Submit</Button>
                         </div>
                     </Form>
                 </div>

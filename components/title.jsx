@@ -86,7 +86,7 @@ const Title = ({bg, variant, initialUser, site}) => {
         <Navbar className={classNames("d-inline-flex", "flex-row")}  expand={true} bg={bg} variant={variant}>
             <Navbar.Brand>presents: <span className={classNames("h3", "sub-brand")}>Park Place Apartments</span></Navbar.Brand>
             <Navbar.Brand style={{width: "100%"}} ><span className={classNames("d-inline-flex", "justify-content-end", "navbar-brand")} style={{width: "100%"}}>
-            <Navbar.Text>{user.isLoggedIn ? `Welcome ${user.firstName}` : ""}</Navbar.Text>
+            <Navbar.Text>{user.isLoggedIn ? `Welcome ${user.firstName ? user.firstName : user.username}` : ""}</Navbar.Text>
             <Nav style={{paddingRight: "1.5rem"}} className={classNames("justify-content-end")}>
                 <NavDropdown align="end" style={{fontSize: "1rem"}} title={<Person className={classNames("h3")}/>}>
                     {user.admin ? <NavDropdown.Item onClick={handleEditSite} >{editSite ? "View Site" : "Maintain Site"}</NavDropdown.Item> : <></>}
