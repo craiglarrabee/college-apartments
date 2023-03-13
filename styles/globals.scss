@@ -37,6 +37,7 @@ form div {
   min-height: 650px;
   align-self: flex-start;
   border-right: black solid 50px;
+  width: 100%;
 }
 
 main {
@@ -156,6 +157,7 @@ table.api {
   flex-direction: column;
   grid-area: sidebar;
   overflow-x: hidden;
+  width: $sidebar-menu-width-expanded
 }
 
 .sidebar-menu-dark {

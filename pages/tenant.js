@@ -128,11 +128,11 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                             <div>Have you ever been convicted of a crime?&nbsp;</div>
                             <Form.Check className="mb-3" onClick={handleConvicted} {...register("convicted_crime", {
                                 required: true,
-                                setValueAs: value => value ? value.toString() : ""
+                                setValueAs: value => value !== null ? value.toString() : ""
                             })} type="radio" inline value="1" label="Yes"/>
                             <Form.Check className="mb-3" onClick={handleNotConvicted} {...register("convicted_crime", {
                                 required: true,
-                                setValueAs: value => value ? value.toString() : ""
+                                setValueAs: value => value !== null ? value.toString() : ""
                             })} type="radio" inline value="0" label="No"/>
                         </div>
                         <Row>
@@ -147,11 +147,11 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                             <div>Have you ever been charged with a crime?&nbsp;</div>
                             <Form.Check className="mb-3" onClick={handleCharged} {...register("charged_crime", {
                                 required: true,
-                                setValueAs: value => value ? value.toString() : ""
+                                setValueAs: value => value !== null ? value.toString() : ""
                             })} type="radio" inline value="1" label="Yes"/>
                             <Form.Check className="mb-3" onClick={handleNotCharged} {...register("charged_crime", {
                                 required: true,
-                                setValueAs: value => value ? value.toString() : ""
+                                setValueAs: value => value !== null ? value.toString() : ""
                             })} type="radio" inline value="0" label="No"/>
                         </div>
                         <Row>
