@@ -5,7 +5,7 @@ import Footer from "../components/footer";
 import React from "react";
 import Content from "../components/content";
 import DynamicContent, {GetDynamicContent} from "../lib/db/content/dynamicContent";
-import NavLinks from "../lib/db/content/navLinks";
+import {GetNavLinks} from "../lib/db/content/navLinks";
 import bodyParser from "body-parser";
 import util from "util";
 import Connection from "../lib/db/connection";
@@ -14,7 +14,6 @@ import {ironOptions} from "../lib/session/options";
 import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 
 const SITE = process.env.SITE;
-const getBody = util.promisify(bodyParser.urlencoded());
 
 const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
     const bg = "black";
@@ -38,9 +37,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = context.resolvedUrl.replace(/\//, "");
     const site = "suu";
     const content = {};
-    const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), NavLinks(site)]);
+    const editing = !!user && !!user.editSite;
+    const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), GetNavLinks(site, editing)]);
     contentRows.forEach(row => content[row.name] = row.content);
-    return {props: {site: site, page: page, ...content, images: imageContent, links: nav, canEdit: !!user && !!user.editSite, user: {...user}}};
+    return {props: {site: site, page: page, ...content, images: imageContent, links: nav, canEdit: editing, user: {...user}}};
 }, ironOptions);
 
 export default Home;

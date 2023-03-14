@@ -67,7 +67,7 @@ function buildNavLink(item, links) {
         );
     } else {
         return (
-            <SidebarMenu.Nav.Link href={item.page} key={item.position} eventKey={item.page} target={item.target}>
+            <SidebarMenu.Nav.Link href={`/${item.page}`} key={item.position} eventKey={item.page} target={item.target}>
                 <SidebarMenu.Nav.Item>
                     <SidebarMenu.Nav.Title>{item.label}</SidebarMenu.Nav.Title>
                 </SidebarMenu.Nav.Item>

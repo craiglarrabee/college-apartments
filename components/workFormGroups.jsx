@@ -13,8 +13,8 @@ const WorkFormGroups = ({register}) => {
             <div className="h4">Work Opportunities:</div>
             <div className={classNames("d-inline-flex", "mb-3")}>
                 <div>Are you interested in doing maintenance work on the apartment this summer and during the school year for wages?&nbsp;</div>
-                <Form.Check className="mb-3" {...register("maint_work")} type="radio" id="maint_work_true" inline label="Yes" value="1" onClick={handleShowExperience} />
-                <Form.Check className="mb-3" {...register("maint_work")} type="radio" id="maint_work_false" inline label="No" value="0" onClick={handleHideExperience} />
+                <Form.Check className="mb-3" {...register("maint_work", {setValueAs: value => value !== null ? value.toString() : ""})} type="radio" id="maint_work_true" inline label="Yes" value="1" onClick={handleShowExperience} />
+                <Form.Check className="mb-3" {...register("maint_work", {setValueAs: value => value !== null ? value.toString() : ""})} type="radio" id="maint_work_false" inline label="No" value="0" onClick={handleHideExperience} />
             </div>
             <Row>
                 <Form.Group className="mb-3" controlId="maint_experience" hidden={hideExperience}>
@@ -24,8 +24,8 @@ const WorkFormGroups = ({register}) => {
             </Row>
             <div className={classNames("d-inline-flex", "mb-3")}>
                 <div>Are you interested in cleaning apartments during semester breaks for wages?&nbsp;</div>
-                <Form.Check className="mb-3" {...register("clean_work")} value="1" type="radio" id="clean_work_true" inline label="Yes" />
-                <Form.Check className="mb-3" {...register("clean_work")} value="0" type="radio" id="clean_work_false" inline label="No" />
+                <Form.Check className="mb-3" {...register("clean_work", {setValueAs: value => value !== null ? value.toString() : ""})} value="1" type="radio" id="clean_work_true" inline label="Yes" />
+                <Form.Check className="mb-3" {...register("clean_work", {setValueAs: value => value !== null ? value.toString() : ""})} value="0" type="radio" id="clean_work_false" inline label="No" />
             </div>
         </>
     );

@@ -5,7 +5,7 @@ import Footer from "../components/footer";
 import React, {useState} from "react";
 import classNames from "classnames";
 import {Button, Col, Form, Row} from "react-bootstrap";
-import NavLinks from "../lib/db/content/navLinks";
+import {GetNavLinks} from "../lib/db/content/navLinks";
 import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
@@ -39,7 +39,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}`, options)
+            const resp = await fetch(`/api/users/${user.id}/tenant`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -250,13 +250,14 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = "suu";
     const page = "tenant";
     const content = {};
-    const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), NavLinks(site)]);
+    const editing = !!user && !!user.editSite;
+    const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), GetNavLinks(site, editing)]);
     contentRows.forEach(row => content[row.name] = row.content);
     if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
     return {
         props: {
             site: site,
-            navPage: newApplication ? "start-application" : "", ...content,
+            navPage: newApplication ? "user" : "", ...content,
             images: imageContent,
             links: nav,
             user: {...user},

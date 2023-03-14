@@ -5,7 +5,7 @@ import Footer from "../components/footer";
 import React from "react";
 import classNames from "classnames";
 import {Button, Form} from "react-bootstrap";
-import NavLinks from "../lib/db/content/navLinks";
+import {GetNavLinks} from "../lib/db/content/navLinks";
 import ApplicationFormGroups from "../components/applicationFormGroups";
 import WorkFormGroups from "../components/workFormGroups";
 import DynamicContent, {GetDynamicContent} from "../lib/db/content/dynamicContent";
@@ -18,7 +18,7 @@ import {useForm} from "react-hook-form";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user}) => {
+const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -34,7 +34,7 @@ const Home = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit,
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}`, options)
+            const resp = await fetch(`/api/users/${user.id}/application`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -97,9 +97,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = context.resolvedUrl.replace(/\//, "");
     const site = "suu";
     const content = {};
-    const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), NavLinks(site)]);
+    const editing = !!user && !!user.editSite;
+    const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), GetNavLinks(site, editing)]);
     contentRows.forEach(row => content[row.name] = row.content);
-    return {props: {site: site, page: page, navPage: "start-application", ...content, images: imageContent, links: nav, canEdit: !!user && !!user.editSite, user: {...user}}};
+    return {props: {site: site, page: page, navPage: "user", ...content, images: imageContent, links: nav, canEdit: editing, user: {...user}}};
 }, ironOptions);
 
-export default Home;
+export default Application;
