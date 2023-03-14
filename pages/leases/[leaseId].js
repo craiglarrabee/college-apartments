@@ -12,14 +12,16 @@ import {Form} from "react-bootstrap";
 import PageContent from "../../components/pageContent";
 import {useForm} from "react-hook-form";
 import LeaseDefinitionGroup from "../../components/leaseDefinitionGroup";
-import {GetLeaseDefinition} from "../../lib/db/content/leaseDefinition";
+import {GetLease} from "../../lib/db/content/lease";
+import {GetLeaseRooms} from "../../lib/db/content/roomType";
+import LeaseRoom from "../../components/leaseRoom";
 
 const SITE = process.env.SITE;
 
 const Lease = ({
                    site, page, lease_header, accommodations_header, accommodations_body, rent_header,
                    rent_body, vehicle_header, vehicle_body, leaseDefinition,
-                   lease_body, lease_acceptance, rules, cleaning, repairs, links, canEdit, user,
+                   lease_body, lease_acceptance, rules, cleaning, repairs, links, canEdit, user, rooms
                }) => {
     const bg = "black";
     const variant = "dark";
@@ -104,6 +106,7 @@ const Lease = ({
                             page={page}
                             name="rent_header"
                             canEdit={canEdit}/>
+                        {rooms.map((room, index) => <LeaseRoom {...room} canEdit={canEdit}/>)}
                         <div style={{fontWeight: "bold"}}>I pick room type #__ ABOVE FOR THE RENT PER SEMESTER SET FORTH less a discount per semester of
                             $0 .
                         </div>
@@ -170,12 +173,17 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = "suu";
     const content = {};
     const editing = !!user && !!user.editSite;
-    const [leaseDefinition, contentRows, nav] = await Promise.all([GetLeaseDefinition(context.query.lease), GetDynamicContent(site, page), GetNavLinks(site, editing)]);
+    const [leaseDefinition, contentRows, nav, rooms] = await Promise.all([
+        GetLease(context.query.leaseId),
+        GetDynamicContent(site, page),
+        GetNavLinks(site, editing),
+        GetLeaseRooms(context.query.leaseId)
+    ]);
     contentRows.forEach(row => content[row.name] = row.content);
     if (leaseDefinition && leaseDefinition.start_date) leaseDefinition.start_date = leaseDefinition.start_date.toISOString().split("T")[0];
     if (leaseDefinition && leaseDefinition.end_date) leaseDefinition.end_date = leaseDefinition.end_date.toISOString().split("T")[0];
 
-    return {props: {leaseDefinition: {...leaseDefinition}, site: site, page: page, ...content, links: nav, canEdit: editing, user: {...user}}};
+    return {props: {leaseDefinition: {...leaseDefinition}, site: site, page: page, ...content, links: nav, canEdit: editing, user: {...user}, rooms: rooms}};
 }, ironOptions);
 
 export default Lease;

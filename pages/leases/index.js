@@ -9,18 +9,17 @@ import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {Button, Col, Form, Row} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import classNames from "classnames";
-import {GetSiteLeaseDefinitions} from "../../lib/db/content/leaseDefinition";
-import Content from "../../components/content";
+import {GetLeases} from "../../lib/db/content/lease";
 
 const SITE = process.env.SITE;
 
-const Leases = ({site, links, page, user, leaseDefinitions}) => {
+const Leases = ({site, links, page, user, leases}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
     const {register, formState: {isValid, isDirty}, handleSubmit} = useForm();
 
-    const createLeaseDefinition = async (data, event) => {
+    const createLease = async (data, event) => {
         event.preventDefault();
         data.site = site;
 
@@ -51,25 +50,25 @@ const Leases = ({site, links, page, user, leaseDefinitions}) => {
             <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
-                    <Form onSubmit={handleSubmit(createLeaseDefinition)} method="post">
-                        <div className="h4">Lease Information:</div>
+                    <Form onSubmit={handleSubmit(createLease)} method="post">
+                        <div className="h4">LeaseId Information:</div>
                         <Row>
                             <Form.Group as={Col} xs={3} className="mb-3" controlId="leasename">
-                                <Form.Label visuallyHidden={true}>Lease Name</Form.Label>
+                                <Form.Label visuallyHidden={true}>LeaseId Name</Form.Label>
                                 <Form.Control {...register("leasename", {required: true, minLength: 5, maxLength: 15})} type="text"
-                                              placeholder="Lease Name"/>
+                                              placeholder="LeaseId Name"/>
                             </Form.Group>
                             <Form.Group as={Col} xs={9} className="mb-3" controlId="description">
-                                <Form.Label visuallyHidden={true}>Lease Description</Form.Label>
+                                <Form.Label visuallyHidden={true}>LeaseId Description</Form.Label>
                                 <Form.Control {...register("description", {required: true, minLength: 5, maxLength: 50})} type="text"
-                                              placeholder="Lease Description"/>
+                                              placeholder="LeaseId Description"/>
                             </Form.Group>
                         </Row>
                         <Form.Group className="mb-3" controlId="template">
-                            <Form.Label visuallyHidden={true}>Lease Template</Form.Label>
+                            <Form.Label visuallyHidden={true}>LeaseId Template</Form.Label>
                             <Form.Select {...register("template", {required: true})} type="select">
-                                <option>Choose Lease to copy</option>
-                                {leaseDefinitions.map((def, index) => (<option key={index} value={def.page}>{def.label}</option>))}
+                                <option>Choose LeaseId to copy</option>
+                                {leases.map((def, index) => (<option key={index} value={def.page}>{def.label}</option>))}
                             </Form.Select>
                         </Form.Group>
                         <div style={{width: "100%"}}
@@ -90,8 +89,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = "suu";
     const editing = !!user && !!user.editSite;
     if (!editing) return {};
-    const [nav, leaseDefinitions] = await Promise.all([GetNavLinks(site, editing), GetSiteLeaseDefinitions(site)]);
-    return {props: {site: site, user: {...user}, links: nav, leaseDefinitions: leaseDefinitions}};
+    const [nav, leases] = await Promise.all([GetNavLinks(site, editing), GetLeases(site)]);
+    return {props: {site: site, user: {...user}, links: nav, leases: leases}};
 }, ironOptions);
 
 export default Leases;

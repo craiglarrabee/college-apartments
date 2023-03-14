@@ -1,17 +1,15 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import {withIronSessionApiRoute} from "iron-session/next";
-import {ironOptions} from "../../../../lib/session/options";
-import {AddApplicationInfo, GetApplicationInfo} from "../../../../lib/db/users/applicationInfo";
+import {GetLeaseRooms, UpdateLeaseRoom} from "../../../../../lib/db/content/roomType";
 
-const handler = withIronSessionApiRoute(async (req, res) => {
+export default async function handler(req, res) {
     try {
         switch (req.method) {
             case "GET":
-                res.body = await GetApplicationInfo(req.query.id);
+                res.body = await GetLeaseRooms(req.query.leaseId);
                 res.status(200).send();
-            case "POST":
-                await AddApplicationInfo(req.query.id, req.body);
+            case "PUT":
+                await UpdateLeaseRoom(req.query.leaseId, req.query.roomTypeId, req.body);
                 res.status(204).send();
                 return;
             default:
@@ -23,6 +21,4 @@ const handler = withIronSessionApiRoute(async (req, res) => {
         res.status(400).send();
         console.log(e);
     }
-}, ironOptions);
-
-export default handler;
+}

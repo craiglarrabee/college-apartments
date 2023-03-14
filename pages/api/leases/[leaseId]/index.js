@@ -1,15 +1,15 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import {GetLeaseDefinition, UpdateLeaseDefinition} from "../../../lib/db/content/leaseDefinition";
+import {GetLease, UpdateLease} from "../../../../lib/db/content/lease";
 
 export default async function handler(req, res) {
     try {
         switch (req.method) {
             case "GET":
-                res.body = await GetLeaseDefinition(req.query.id);
+                res.body = await GetLease(req.query.leaseId);
                 res.status(200).send();
             case "PUT":
-                await UpdateLeaseDefinition(req.query.id, req.body);
+                await UpdateLease(req.query.leaseId, req.body);
                 res.status(204).send();
                 return;
             default:
