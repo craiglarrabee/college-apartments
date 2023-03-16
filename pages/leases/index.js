@@ -9,7 +9,7 @@ import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {Button, Col, Form, Row} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import classNames from "classnames";
-import {GetLeases} from "../../lib/db/content/lease";
+import {GetLeases} from "../../lib/db/users/lease";
 
 const SITE = process.env.SITE;
 

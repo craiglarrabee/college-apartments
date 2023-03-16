@@ -1,7 +1,7 @@
 import {Col, Form, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
-import {UpdateLeaseRoom, UpdateRoomType} from "../lib/db/content/roomType";
+import {UpdateLeaseRoom, UpdateRoomType} from "../lib/db/users/roomType";
 
 const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, canEdit}) => {
     const [timer, setTimer] = useState(null);

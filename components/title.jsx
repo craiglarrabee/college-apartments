@@ -90,7 +90,8 @@ const Title = ({bg, variant, initialUser, site}) => {
             <Nav style={{paddingRight: "1.5rem"}} className={classNames("justify-content-end")}>
                 <NavDropdown align="end" style={{fontSize: "1rem"}} title={<Person className={classNames("h3")}/>}>
                     {user.admin ? <NavDropdown.Item onClick={handleEditSite} >{editSite ? "View Site" : "Maintain Site"}</NavDropdown.Item> : <></>}
-                    <NavDropdown.Item href={"/tenant"} hidden={!user.isLoggedIn}>Manage Profile</NavDropdown.Item>
+                    {!editSite ? <NavDropdown.Item href={"/tenant"} hidden={!user.isLoggedIn}>Manage Profile</NavDropdown.Item> : <></>}
+                    {!editSite ? <NavDropdown.Item href={"/password"} hidden={!user.isLoggedIn}>Change Password</NavDropdown.Item> : <></>}
                     <NavDropdown.Item onClick={handleUserAction}>{actionText}</NavDropdown.Item>
                 </NavDropdown>
             </Nav>

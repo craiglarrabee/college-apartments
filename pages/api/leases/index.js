@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import {AddLease} from "../../../lib/db/content/lease";
+import {AddLease} from "../../../lib/db/users/lease";
 import {AddNavLink} from "../../../lib/db/content/navLinks";
 import {CopyDynamicContent} from "../../../lib/db/content/dynamicContent";
 

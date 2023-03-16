@@ -6,15 +6,13 @@ import React from "react";
 import classNames from "classnames";
 import {Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
-import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 import {useForm} from "react-hook-form";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, page, links, canEdit, user}) => {
+const Home = ({site, page, links, user}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -26,6 +24,7 @@ const Home = ({site, page, links, canEdit, user}) => {
 
         try {
             data.site = site;
+            data.username = user.username;
 
             const options = {
                 method: "POST",
@@ -35,14 +34,13 @@ const Home = ({site, page, links, canEdit, user}) => {
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch("api/users", options)
+            const resp = await fetch(`api/users/${user.id}/password`, options)
             switch (resp.status) {
                 case 400:
                     break;
                 case 200:
                 case 204:
-                    await fetch("/api/login", options);
-                    location = "/tenant";
+                    location = "/index";
             }
 
         } catch (e) {
@@ -58,20 +56,20 @@ const Home = ({site, page, links, canEdit, user}) => {
                 <div className={classNames("main-content")} style={{width: "100%"}}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
                         <div className="h4">User Information:</div>
-                        <Form.Group className="mb-3" controlId="username">
+                        <Form.Group className="mb-3" controlId="current_password">
                             <Form.Label visuallyHidden={true}>First Name</Form.Label>
-                            <Form.Control {...register("username", { required: true, minLength: 5, maxLength: 25 })} type="text" placeholder="username" />
+                            <Form.Control {...register("current_password", { required: true, minLength: 8, maxLength: 100 })} type="password" placeholder="current password" />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="password">
                             <Form.Label visuallyHidden={true}>Last Name</Form.Label>
-                            <Form.Control {...register("password", {required: true, minLength: 8, maxLength: 100})} type="password" placeholder="password" />
+                            <Form.Control {...register("password", {required: true, minLength: 8, maxLength: 100})} type="password" placeholder="new password" />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="confirm_password">
                             <Form.Label visuallyHidden={true}>Last Name</Form.Label>
-                            <Form.Control  {...register("confirm_password", {required: true, minLength: 8, maxLength: 100})} type="password" placeholder="confirm password" />
+                            <Form.Control  {...register("confirm_password", {required: true, minLength: 8, maxLength: 100})} type="password" placeholder="confirm new password" />
                         </Form.Group>
                         <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Next</Button>
+                            <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Submit</Button>
                         </div>
                     </Form>
                 </div>
@@ -83,16 +81,15 @@ const Home = ({site, page, links, canEdit, user}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    if (user && user.isLoggedIn) {
-        context.res.writeHead(302, {Location: "/tenant?newApplication"});
+    if (!user || !user.isLoggedIn) {
+        context.res.writeHead(302, {Location: "/index.js"});
         context.res.end();
         return {};
     }
     const page = context.resolvedUrl.replace(/\//, "");
     const site = "suu";
-    const editing = !!user && !!user.editSite;
-    const [nav] = await Promise.all([GetNavLinks(site, editing)]);
-    return {props: {site: site, page: page, links: nav, canEdit: editing, user: {...user}}};
+    const [nav] = await Promise.all([GetNavLinks(site, false)]);
+    return {props: {site: site, page: page, links: nav, user: {...user}}};
 }, ironOptions);
 
 export default Home;

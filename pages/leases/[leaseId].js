@@ -12,8 +12,8 @@ import {Form} from "react-bootstrap";
 import PageContent from "../../components/pageContent";
 import {useForm} from "react-hook-form";
 import LeaseDefinitionGroup from "../../components/leaseDefinitionGroup";
-import {GetLease} from "../../lib/db/content/lease";
-import {GetLeaseRooms} from "../../lib/db/content/roomType";
+import {GetLease} from "../../lib/db/users/lease";
+import {GetLeaseRooms} from "../../lib/db/users/roomType";
 import LeaseRoom from "../../components/leaseRoom";
 
 const SITE = process.env.SITE;
@@ -51,26 +51,6 @@ const Lease = ({
         }
     }
 
-    const onSaveLeaseDefinition = async (data) => {
-        try {
-            const options = {
-                method: "PUT",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data),
-            }
-
-            const resp = await fetch(`/api/leases/${leaseDefinition.id}`, options)
-            switch (resp.status) {
-                case 400:
-                    break;
-                case 204:
-                    break;
-            }
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
@@ -78,7 +58,7 @@ const Lease = ({
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        {canEdit ? <LeaseDefinitionGroup saveLeaseDefinition={onSaveLeaseDefinition} start_date={leaseDefinition.start_date} end_date={leaseDefinition.end_date} description={leaseDefinition.description} /> : null}
+                        {canEdit ? <LeaseDefinitionGroup {...leaseDefinition} /> : null}
                         <PageContent
                             initialContent={lease_header}
                             site={site}
@@ -86,7 +66,7 @@ const Lease = ({
                             name="lease_header"
                             canEdit={canEdit}/>
                         <div>This Contract is entered into on <strong>{today}</strong>, between Stadium Way/College Way Apartments, LLC, L.L.C.
-                            (hereinafter "Landlord"), and __________________________________ (hereinafter "Resident").
+                            (hereinafter &quot;Landlord&quot;), and __________________________________ (hereinafter &quot;Resident&quot;).
                         </div>
                         <PageContent
                             initialContent={accommodations_header}
@@ -106,7 +86,7 @@ const Lease = ({
                             page={page}
                             name="rent_header"
                             canEdit={canEdit}/>
-                        {rooms.map((room, index) => <LeaseRoom {...room} canEdit={canEdit}/>)}
+                        {rooms.map(room => <LeaseRoom {...room} canEdit={canEdit}/>)}
                         <div style={{fontWeight: "bold"}}>I pick room type #__ ABOVE FOR THE RENT PER SEMESTER SET FORTH less a discount per semester of
                             $0 .
                         </div>
@@ -122,7 +102,7 @@ const Lease = ({
                             page={page}
                             name="vehicle_header"
                             canEdit={canEdit}/>
-                        <div style={{fontWeight: "bold"}}>Resident's vehicle is: Color</div>
+                        <div style={{fontWeight: "bold"}}>Resident&apos;s vehicle is: Color</div>
                         <PageContent
                             initialContent={vehicle_body}
                             site={site}

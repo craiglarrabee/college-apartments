@@ -248,17 +248,14 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
     const site = "suu";
-    const page = "tenant";
     const content = {};
     const editing = !!user && !!user.editSite;
-    const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), GetNavLinks(site, editing)]);
-    contentRows.forEach(row => content[row.name] = row.content);
+    const [nav] = await Promise.all([GetNavLinks(site, editing)]);
     if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
     return {
         props: {
             site: site,
             navPage: newApplication ? "user" : "", ...content,
-            images: imageContent,
             links: nav,
             user: {...user},
             tenant: {...tenant},

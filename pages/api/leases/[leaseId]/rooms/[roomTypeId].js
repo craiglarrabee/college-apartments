@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import {GetLeaseRooms, UpdateLeaseRoom} from "../../../../../lib/db/content/roomType";
+import {GetLeaseRooms, UpdateLeaseRoom} from "../../../../../lib/db/users/roomType";
 
 export default async function handler(req, res) {
     try {

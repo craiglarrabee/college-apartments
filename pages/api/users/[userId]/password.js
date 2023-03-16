@@ -1,15 +1,12 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import {GetLease, UpdateLease} from "../../../../lib/db/users/lease";
+import {ChangeUserPassword} from "../../../../lib/db/users/user";
 
 export default async function handler(req, res) {
     try {
         switch (req.method) {
-            case "GET":
-                res.body = await GetLease(req.query.leaseId);
-                res.status(200).send();
-            case "PUT":
-                await UpdateLease(req.query.leaseId, req.body);
+            case "POST":
+                await ChangeUserPassword(req.body.site, req.body.username, req.body.current_password, req.body.password);
                 res.status(204).send();
                 return;
             default:
@@ -17,8 +14,7 @@ export default async function handler(req, res) {
                 return;
         }
     } catch (e) {
-        res.body = {error: e.code, description: e.message};
-        res.status(400).send();
+        res.status(401).send();
         console.log(e);
     }
 }

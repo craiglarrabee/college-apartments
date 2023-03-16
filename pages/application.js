@@ -2,30 +2,37 @@ import Layout from "../components/layout";
 import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
-import React from "react";
+import React, {useState} from "react";
 import classNames from "classnames";
 import {Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import ApplicationFormGroups from "../components/applicationFormGroups";
 import WorkFormGroups from "../components/workFormGroups";
-import DynamicContent, {GetDynamicContent} from "../lib/db/content/dynamicContent";
+import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import PageContent from "../components/pageContent";
-import Link from "next/link";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 import {useForm} from "react-hook-form";
+import {GetActiveSiteLeaseRooms} from "../lib/db/users/roomType";
+import CurrentLeases from "../components/currentLeases";
 
 const SITE = process.env.SITE;
 
-const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user}) => {
+const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user, currentLeases}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
     const {register, formState: {isValid, isDirty}, handleSubmit} = useForm();
+    const [leaseId, setLeaseId] = useState();
+
+    const updateLeaseId = (id) => {
+        setLeaseId(id)
+    }
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
+        data.site = site;
 
         try {
             const options = {
@@ -34,7 +41,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/application`, options)
+            const resp = await fetch(`/api/users/${user.id}/leases/${leaseId}/application`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -54,6 +61,8 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
                         {site === "suu" ? <WorkFormGroups register={register} /> : null}
+                        <div className="h4">Room Type:</div><br/>
+                        {currentLeases.map(lease => <CurrentLeases {...lease} register={register} updateLeaseId={updateLeaseId} />)}
                         <ApplicationFormGroups register={register}/>
                         <PageContent
                             initialContent={rules}
@@ -82,7 +91,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                             </span>
                         </div>
                         <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Submit</Button>
+                            <Button variant="primary" type="submit" disabled={canEdit || !isDirty || !isValid}>Submit</Button>
                         </div>
                     </Form>
                 </div>
@@ -98,9 +107,18 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = "suu";
     const content = {};
     const editing = !!user && !!user.editSite;
-    const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), GetNavLinks(site, editing)]);
+    const [contentRows, nav, currentRooms] = await Promise.all([
+        GetDynamicContent(site, page),
+        GetNavLinks(site, editing),
+        GetActiveSiteLeaseRooms(site)
+    ]);
     contentRows.forEach(row => content[row.name] = row.content);
-    return {props: {site: site, page: page, navPage: "user", ...content, images: imageContent, links: nav, canEdit: editing, user: {...user}}};
+    let currentLeases = [... new Set(currentRooms.map(room => room.lease_id))];
+    currentLeases = currentLeases.map(lease => {
+        let rooms = currentRooms.filter(room => room.lease_id === lease);
+        return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};
+    });
+    return {props: {site: site, page: page, navPage: "user", ...content, links: nav, canEdit: editing, user: {...user}, currentLeases: currentLeases}};
 }, ironOptions);
 
 export default Application;

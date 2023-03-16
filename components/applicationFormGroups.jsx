@@ -17,29 +17,25 @@ const ApplicationFormGroups = ({register}) => {
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="roomate2">
                     <Form.Label visuallyHidden={true}>Preferred Roommate2</Form.Label>
-                    <Form.Control{...register("roomate2" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 1"
-                                  />
+                    <Form.Control{...register("roomate2" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 1"/>
                 </Form.Group>
             </Row>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="roomate3">
                     <Form.Label visuallyHidden={true}>Preferred Roommate3</Form.Label>
-                    <Form.Control {...register("roomate3" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 2"
-                                  />
+                    <Form.Control {...register("roomate3" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 2"/>
                 </Form.Group>
             </Row>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="roomate4">
                     <Form.Label visuallyHidden={true}>Preferred Roommate4</Form.Label>
-                    <Form.Control {...register("roomate4" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 3"
-                                  />
+                    <Form.Control {...register("roomate4" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 3"/>
                 </Form.Group>
             </Row>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="roomate5">
                     <Form.Label visuallyHidden={true}>Preferred Roommate5</Form.Label>
-                    <Form.Control {...register("roomate5" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 4"
-                                  />
+                    <Form.Control {...register("roomate5" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 4"/>
                 </Form.Group>
             </Row>
             <div className="mb-3">(Roomate and apartment assignments are at discretion of Landlord.)</div>
