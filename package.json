@@ -9,6 +9,11 @@
     "lint": "next lint",
     "test": "jest --watch"
   },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },
   "dependencies": {
     "argon2": "^0.30.3",
     "body-parser": "^1.20.1",
