@@ -16,32 +16,32 @@ import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 import {useForm} from "react-hook-form";
 import {GetActiveSiteLeaseRooms} from "../lib/db/users/roomType";
 import CurrentLeases from "../components/currentLeases";
+import {GetPendingApplicationInfo} from "../lib/db/users/applicationInfo";
 
 const SITE = process.env.SITE;
 
-const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user, currentLeases}) => {
+const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user, currentLeases, pendingApplication}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, formState: {isValid, isDirty}, handleSubmit} = useForm();
-    const [leaseId, setLeaseId] = useState();
-
-    const updateLeaseId = (id) => {
-        setLeaseId(id)
-    }
+    const {register, formState: {isValid, isDirty}, handleSubmit} = useForm({defaultValues: pendingApplication});
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
         data.site = site;
+        let ids = data.lease_room_type_id.split("_");
+        data.lease_id = ids[0];
+        data.room_type_id = ids[1];
+        data.share_info = data.do_not_share_info === "1" ? "0" : "1";
 
         try {
             const options = {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/leases/${leaseId}/application`, options)
+            const resp = await fetch(`/api/users/${user.id}/leases/${data.lease_id}/application`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -55,14 +55,15 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
 
     return (
         <Layout>
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
+            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
                         {site === "suu" ? <WorkFormGroups register={register} /> : null}
-                        <div className="h4">Room Type:</div><br/>
-                        {currentLeases.map(lease => <CurrentLeases {...lease} register={register} updateLeaseId={updateLeaseId} />)}
+                        <div className="h4">Room Type:</div>
+                        <br/>
+                        {currentLeases.map(lease => <CurrentLeases {...lease} register={register} enabled={pendingApplication === undefined || pendingApplication.lease_id === lease.leaseId} />)}
                         <ApplicationFormGroups register={register}/>
                         <PageContent
                             initialContent={rules}
@@ -77,7 +78,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                             name="disclaimer"
                             canEdit={canEdit}/>
                         <div className={classNames("mb-3", "d-inline-flex")}>
-                            <Form.Check className="mb-3" name="installments" type="checkbox" id="installments" />
+                            <Form.Check className="mb-3" {...register("installments", {setValueAs: value => value !== null ? value.toString() : ""})} type="checkbox" id="installments" value="1" />
                             <span>
                                 <div>
                                     Check here if you want to pay in installments. <br/>
@@ -86,7 +87,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                                         site={site}
                                         page={page}
                                         name="guaranty"
-                                        canEdit={canEdit} />
+                                        canEdit={canEdit}/>
                                 </div>
                             </span>
                         </div>
@@ -107,18 +108,37 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = "suu";
     const content = {};
     const editing = !!user && !!user.editSite;
-    const [contentRows, nav, currentRooms] = await Promise.all([
+    const [contentRows, nav, currentRooms, pendingApplication] = await Promise.all([
         GetDynamicContent(site, page),
         GetNavLinks(site, editing),
-        GetActiveSiteLeaseRooms(site)
+        GetActiveSiteLeaseRooms(site),
+        GetPendingApplicationInfo(user.id)
     ]);
     contentRows.forEach(row => content[row.name] = row.content);
-    let currentLeases = [... new Set(currentRooms.map(room => room.lease_id))];
+    let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
     currentLeases = currentLeases.map(lease => {
         let rooms = currentRooms.filter(room => room.lease_id === lease);
         return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};
     });
-    return {props: {site: site, page: page, navPage: "user", ...content, links: nav, canEdit: editing, user: {...user}, currentLeases: currentLeases}};
+    if (pendingApplication) {
+        pendingApplication.submit_date = pendingApplication.submit_date.toISOString().split("T")[0];
+        pendingApplication.lease_room_type_id = `${pendingApplication.lease_id}_${pendingApplication.room_type_id}`;
+        pendingApplication.do_not_share_info = !pendingApplication.share_info;
+    }
+
+    return {
+        props: {
+            site: site,
+            page: page,
+            navPage: "user",
+            ...content,
+            links: nav,
+            canEdit: editing,
+            user: {...user},
+            currentLeases: currentLeases,
+            pendingApplication: pendingApplication
+        }
+    };
 }, ironOptions);
 
 export default Application;

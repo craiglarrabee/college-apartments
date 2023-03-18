@@ -242,7 +242,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const tenant = await GetTenantInfo(user.id);
     const newApplication = context.query && context.query.hasOwnProperty("newApplication");
-    if (user.isLoggedIn && user.editSite) {
+    if ((user.isLoggedIn && user.editSite) || (tenant && tenant.pending_application)) {
         context.res.writeHead(302, {Location: "/application"});
         context.res.end();
         return {};

@@ -3,13 +3,17 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
 import {AddApplicationInfo, GetApplicationInfo} from "../../../../../../lib/db/users/applicationInfo";
+import {GetPendingApplicationInfo} from "../../../../lib/db/users/applicationInfo";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
-            case "POST":
-                await AddApplicationInfo(req.body.site, req.query.userId, req.query.leaseId, req.body);
-                res.status(204).send();
+            case "GET":
+                res.body = await GetPendingApplicationInfo(req.query.userId);
+                if (!res.body) {
+                    res.status(404).send();
+                }
+                res.status(200).send();
                 return;
             default:
                 res.status(405).send();

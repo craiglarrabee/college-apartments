@@ -51,7 +51,7 @@ const ApplicationFormGroups = ({register}) => {
                 with phone numbers and email addresses
                 for your roommates. If you do not want us to share this information with your roommates please click
                 this box:&nbsp;</div>
-            <Form.Check className="mb-3" name="share_info" type="checkbox" id="share_info_false" label="Please do not share my information." inline/>
+            <Form.Check className="mb-3" {...register("do_not_share_info", {setValueAs: value => value !== null ? value.toString() : ""})} type="checkbox" value="1" id="share_info_false" label="Please do not share my information." inline/>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="roomate_desc">
                     <Form.Label visuallyHidden={true}>Roommate Description</Form.Label>
