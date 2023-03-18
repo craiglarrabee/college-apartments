@@ -6,6 +6,7 @@ import {AddTenantInfo, GetTenantInfo} from "../../../../../../lib/db/users/tenan
 import {AddLeaseInfo, GetLeaseInfo} from "../../../../../../lib/db/users/leaseInfo";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
+    if (!req.session.user.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "GET":

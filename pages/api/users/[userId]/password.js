@@ -1,8 +1,11 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import {ChangeUserPassword} from "../../../../lib/db/users/user";
+import {withIronSessionApiRoute} from "iron-session/next/index";
+import {ironOptions} from "../../../../lib/session/options";
 
-export default async function handler(req, res) {
+const Password = withIronSessionApiRoute(async (req, res) => {
+    if (!req.session.user.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "POST":
@@ -17,4 +20,6 @@ export default async function handler(req, res) {
         res.status(401).send();
         console.log(e);
     }
-}
+}, ironOptions);
+
+export default Password;

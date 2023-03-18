@@ -1,12 +1,19 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import {GetDynamicContent, UpdateDynamicContent} from "../../../../../lib/db/content/dynamicContent";
+import {withIronSessionApiRoute} from "iron-session/next/index";
+import {ironOptions} from "../../../../../lib/session/options";
 
-export default async function handler(req, res) {
+const handler = withIronSessionApiRoute(async (req, res) => {
+    if (!req.session.user.isLoggedIn) res.status(403).send();
     const dbPage = `leases/${req.query.page}`;
     try {
         switch (req.method) {
             case "PUT":
+                if (req.session.user.admin !== req.query.site) {
+                    res.status(403).send();
+                    return;
+                }
                 await UpdateDynamicContent(req.query.site, dbPage, req.body);
                 res.status(204).send();
                 return;
@@ -22,4 +29,6 @@ export default async function handler(req, res) {
     } catch (e) {
         console.log(e);
     }
-}
+}, ironOptions);
+
+export default handler;

@@ -3,8 +3,14 @@
 import {AddLease} from "../../../lib/db/users/lease";
 import {AddNavLink} from "../../../lib/db/content/navLinks";
 import {CopyDynamicContent} from "../../../lib/db/content/dynamicContent";
+import {withIronSessionApiRoute} from "iron-session/next/index";
+import {ironOptions} from "../../../lib/session/options";
 
-export default async function handler(req, res) {
+const handler = withIronSessionApiRoute(async (req, res) => {
+    if (req.session.user.admin !== req.query.site) {
+        res.status(403).send();
+        return;
+    }
     try {
         switch (req.method) {
             case "POST":
@@ -24,4 +30,6 @@ export default async function handler(req, res) {
         res.status(400).send();
         console.log(e);
     }
-}
+}, ironOptions);
+
+export default handler;

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 18, 2023 at 04:15 AM
+-- Generation Time: Mar 18, 2023 at 03:26 PM
 -- Server version: 8.0.21
 -- PHP Version: 7.4.9
 
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `application` (
 --
 
 INSERT INTO `application` (`site`, `user_id`, `lease_id`, `room_type_id`, `roomate`, `roomate2`, `roomate3`, `roomate4`, `roomate5`, `roomate_desc`, `likes_dislikes`, `referred_by`, `installments`, `submit_date`, `processed`, `share_info`, `maint_work`, `maint_experience`, `clean_work`, `accepted`) VALUES
-('suu', 12, 1, 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2023-03-18 02:34:09', 0, 1, 0, NULL, 1, NULL);
+('suu', 12, 1, 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2023-03-18 04:43:16', 0, 1, 0, NULL, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -266,6 +266,7 @@ CREATE TABLE IF NOT EXISTS `site_nav` (
   `sub_menu` tinyint(1) NOT NULL DEFAULT '0',
   `target` varchar(10) DEFAULT NULL,
   `restricted` tinyint NOT NULL DEFAULT '0',
+  `maintainable` tinyint NOT NULL DEFAULT '1',
   PRIMARY KEY (`site`,`page`,`parent_page`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -273,24 +274,24 @@ CREATE TABLE IF NOT EXISTS `site_nav` (
 -- Dumping data for table `site_nav`
 --
 
-INSERT INTO `site_nav` (`site`, `page`, `parent_page`, `position`, `label`, `sub_menu`, `target`, `restricted`) VALUES
-('suu', 'index', '', '000.000', 'Home', 0, NULL, 0),
-('suu', 'apartments', '', '001.000', 'Apartments', 0, NULL, 0),
-('suu', 'clubhouse', '', '002.000', 'Clubhouse', 0, NULL, 0),
-('suu', 'grounds', '', '003.000', 'Park & Grounds', 0, NULL, 0),
-('suu', 'local', '', '004.000', 'Local Area', 0, NULL, 0),
-('suu', 'user', '', '006.000', 'Application', 0, NULL, 0),
-('suu', 'pdfs/suu/parent.pdf', '', '007.000', 'Parent Guaranty', 0, '_blank', 0),
-('suu', 'maintenance', '', '008.000', 'Maintenance', 1, NULL, 0),
-('suu', 'faq', '', '011.000', 'F.A.Q.', 0, NULL, 0),
-('suu', 'contact', '', '013.000', 'Contact Us', 0, NULL, 0),
-('suu', 'https://forms.gle/SgRdjpHtKrE7cbfT9', 'maintenance', '008.001', 'Stadium Way', 0, '_blank', 0),
-('suu', 'https://docs.google.com/forms/d/e/1FAIpQLSfvrs1BFkrQWPBylPUrrpoJHoyz59sR2fipVa42wpwpQl7BbA/viewform', 'maintenance', '008.002', 'College Way', 0, '_blank', 0),
-('suu', 'leases_', '', '014.0000', 'Leases', 1, NULL, 1),
-('suu', 'leases/1', 'leases_', '014.0001', 'Spring 2023', 0, NULL, 1),
-('suu', 'leases', 'leases_', '014.9999', 'New Lease', 0, NULL, 1),
-('suu', 'leases/2', 'leases_', '014.0002', 'Summer 2023', 0, NULL, 1),
-('suu', 'leases/4', 'leases_', '014.0004', 'Fall 2023', 0, NULL, 1);
+INSERT INTO `site_nav` (`site`, `page`, `parent_page`, `position`, `label`, `sub_menu`, `target`, `restricted`, `maintainable`) VALUES
+('suu', 'index', '', '000.000', 'Home', 0, NULL, 0, 1),
+('suu', 'apartments', '', '001.000', 'Apartments', 0, NULL, 0, 1),
+('suu', 'clubhouse', '', '002.000', 'Clubhouse', 0, NULL, 0, 1),
+('suu', 'grounds', '', '003.000', 'Park & Grounds', 0, NULL, 0, 1),
+('suu', 'local', '', '004.000', 'Local Area', 0, NULL, 0, 1),
+('suu', 'user', '', '006.000', 'Application', 0, NULL, 0, 1),
+('suu', 'pdfs/suu/parent.pdf', '', '007.000', 'Parent Guaranty', 0, '_blank', 0, 0),
+('suu', 'maintenance', '', '008.000', 'Maintenance', 1, NULL, 0, 0),
+('suu', 'faq', '', '011.000', 'F.A.Q.', 0, NULL, 0, 1),
+('suu', 'contact', '', '013.000', 'Contact Us', 0, NULL, 0, 1),
+('suu', 'https://forms.gle/SgRdjpHtKrE7cbfT9', 'maintenance', '008.001', 'Stadium Way', 0, '_blank', 0, 0),
+('suu', 'https://docs.google.com/forms/d/e/1FAIpQLSfvrs1BFkrQWPBylPUrrpoJHoyz59sR2fipVa42wpwpQl7BbA/viewform', 'maintenance', '008.002', 'College Way', 0, '_blank', 0, 0),
+('suu', 'leases_', '', '014.0000', 'Leases', 1, NULL, 1, 1),
+('suu', 'leases/1', 'leases_', '014.0001', 'Spring 2023', 0, NULL, 1, 1),
+('suu', 'leases', 'leases_', '014.9999', 'New Lease', 0, NULL, 1, 1),
+('suu', 'leases/2', 'leases_', '014.0002', 'Summer 2023', 0, NULL, 1, 1),
+('suu', 'leases/4', 'leases_', '014.0004', 'Fall 2023', 0, NULL, 1, 1);
 
 -- --------------------------------------------------------
 

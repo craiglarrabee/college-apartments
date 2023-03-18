@@ -45,7 +45,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                     break;
                 case 204:
                     reset(data);
-                    if (isNewApplication) location = "/application";
+                    if (isNewApplication || tenant?.pending_application) location = "/application";
             }
         } catch (e) {
             console.log(e);
@@ -228,7 +228,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                         <div style={{width: "100%"}}
                              className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                             <Button variant="primary" type="submit"
-                                    disabled={!isNewApplication && ( !isDirty || !isValid)}>{isNewApplication ? "Next" : "Save"}</Button>
+                                    disabled={!isNewApplication && ( !isDirty || !isValid)}>{isNewApplication || tenant.pending_application ? "Next" : "Save"}</Button>
                         </div>
                     </Form>
                 </div>
@@ -242,7 +242,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const tenant = await GetTenantInfo(user.id);
     const newApplication = context.query && context.query.hasOwnProperty("newApplication");
-    if ((user.isLoggedIn && user.editSite) || (tenant && tenant.pending_application)) {
+    if (user.isLoggedIn && user.editSite) {
         context.res.writeHead(302, {Location: "/application"});
         context.res.end();
         return {};
@@ -255,7 +255,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     return {
         props: {
             site: site,
-            navPage: newApplication ? "user" : "", ...content,
+            navPage: newApplication || tenant?.pending_application ? "user" : "",
+            ...content,
             links: nav,
             user: {...user},
             tenant: {...tenant},

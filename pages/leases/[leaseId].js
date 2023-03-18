@@ -151,6 +151,9 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.replace(/\//, "");
     const site = "suu";
+    if (user.admin !== site) {
+        return {notFound: true};
+    }
     const content = {};
     const editing = !!user && !!user.editSite;
     const [leaseDefinition, contentRows, nav, rooms] = await Promise.all([
