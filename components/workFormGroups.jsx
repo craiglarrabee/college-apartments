@@ -2,8 +2,8 @@ import {Col, Form, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 
-const WorkFormGroups = ({register}) => {
-    let [hideExperience, sethideExperience] = useState(true);
+const WorkFormGroups = ({register, application}) => {
+    let [hideExperience, sethideExperience] = useState(application && application.hasOwnProperty("maint_work") ? !application.maint_work : true);
 
     const handleShowExperience = () => sethideExperience(false);
     const handleHideExperience = () => sethideExperience(true);

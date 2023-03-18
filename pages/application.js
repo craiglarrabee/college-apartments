@@ -60,7 +60,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        {site === "suu" ? <WorkFormGroups register={register} /> : null}
+                        {site === "suu" ? <WorkFormGroups register={register} application={pendingApplication} /> : null}
                         <div className="h4">Room Type:</div>
                         <br/>
                         {currentLeases.map(lease => <CurrentLeases {...lease} register={register} enabled={pendingApplication === undefined || pendingApplication.lease_id === lease.leaseId} />)}
