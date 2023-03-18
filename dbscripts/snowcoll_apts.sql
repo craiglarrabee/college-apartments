@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 16, 2023 at 08:57 AM
+-- Generation Time: Mar 18, 2023 at 04:15 AM
 -- Server version: 8.0.21
 -- PHP Version: 7.4.9
 
@@ -41,16 +41,24 @@ CREATE TABLE IF NOT EXISTS `application` (
   `roomate_desc` varchar(1024) DEFAULT NULL,
   `likes_dislikes` varchar(1024) DEFAULT NULL,
   `referred_by` varchar(50) DEFAULT NULL,
-  `installments` char(1) DEFAULT 'N',
+  `installments` tinyint DEFAULT '0',
   `submit_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `processed` char(1) NOT NULL DEFAULT 'N',
-  `share_info` char(1) DEFAULT 'Y',
+  `processed` tinyint NOT NULL DEFAULT '0',
+  `share_info` tinyint DEFAULT '1',
   `maint_work` tinyint(1) DEFAULT NULL,
   `maint_experience` varchar(512) DEFAULT NULL,
   `clean_work` tinyint(1) DEFAULT NULL,
+  `accepted` tinyint DEFAULT NULL,
   PRIMARY KEY (`site`,`user_id`,`lease_id`),
   UNIQUE KEY `sid` (`user_id`,`room_type_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `application`
+--
+
+INSERT INTO `application` (`site`, `user_id`, `lease_id`, `room_type_id`, `roomate`, `roomate2`, `roomate3`, `roomate4`, `roomate5`, `roomate_desc`, `likes_dislikes`, `referred_by`, `installments`, `submit_date`, `processed`, `share_info`, `maint_work`, `maint_experience`, `clean_work`, `accepted`) VALUES
+('suu', 12, 1, 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2023-03-18 02:34:09', 0, 1, 0, NULL, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -317,15 +325,15 @@ CREATE TABLE IF NOT EXISTS `tenant` (
   `parent_state` varchar(2) DEFAULT NULL,
   `parent_zip` varchar(10) DEFAULT NULL,
   `parent_phone` varchar(16) DEFAULT NULL,
-  `student_id` int NOT NULL DEFAULT '0',
-  PRIMARY KEY (`student_id`)
+  `user_id` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `tenant`
 --
 
-INSERT INTO `tenant` (`last_name`, `first_name`, `middle_name`, `gender`, `date_of_birth`, `last_4_social`, `cell_phone`, `cell_phone2`, `home_phone`, `email`, `email2`, `convicted_crime`, `convicted_explain`, `charged_crime`, `charged_explain`, `street`, `city`, `state`, `zip`, `parent_name`, `parent_street`, `parent_city`, `parent_state`, `parent_zip`, `parent_phone`, `student_id`) VALUES
+INSERT INTO `tenant` (`last_name`, `first_name`, `middle_name`, `gender`, `date_of_birth`, `last_4_social`, `cell_phone`, `cell_phone2`, `home_phone`, `email`, `email2`, `convicted_crime`, `convicted_explain`, `charged_crime`, `charged_explain`, `street`, `city`, `state`, `zip`, `parent_name`, `parent_street`, `parent_city`, `parent_state`, `parent_zip`, `parent_phone`, `user_id`) VALUES
 ('Larrabee', 'Craig', '', 'G', '2023-01-21', '1234', '8016366248', NULL, '8016366248', 'h2oskier1968@gmail.com', NULL, 0, NULL, 0, NULL, 'PO Box 72', 'PRICE', 'UT', '84501', 'ricky the bobby', 'PO Box 72', 'PRICE', 'UT', '84501', '8016366248', 3),
 ('Larrabee', 'Craig', 'E', 'M', '2023-02-10', '1234', '8016366248', NULL, '8016366248', 'h2oskier1968@gmail.com', NULL, 0, NULL, 1, 'bob', 'PO Box 72', 'PRICE', 'UT', '84501', 'ricky the bobby', '711 W 1800 S', 'Price', 'UT', '84501', '8016366248', 12);
 
