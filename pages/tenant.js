@@ -240,6 +240,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
+    if (!user.isLoggedIn) return {notFound: true};
     const tenant = await GetTenantInfo(user.id);
     const newApplication = context.query && context.query.hasOwnProperty("newApplication");
     if (user.isLoggedIn && user.editSite) {

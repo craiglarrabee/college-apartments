@@ -104,6 +104,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
+    if (!user.isLoggedIn) return {notFound: true};
     const page = context.resolvedUrl.replace(/\//, "");
     const site = "suu";
     const content = {};
