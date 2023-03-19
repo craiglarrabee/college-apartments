@@ -32,7 +32,7 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.replace(/\//, "");
-    const site = "suu";
+    const site = SITE;
     const content = {};
     const editing = !!user && !!user.editSite;
     const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), GetNavLinks(site, editing)]);

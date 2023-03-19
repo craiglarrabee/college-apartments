@@ -86,7 +86,7 @@ const Leases = ({site, links, page, user, leases}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    const site = "suu";
+    const site = SITE;
     const editing = !!user && !!user.editSite;
     if (!editing) return {notFound: true};
     const [nav, leases] = await Promise.all([GetNavLinks(site, editing), GetLeases(site)]);

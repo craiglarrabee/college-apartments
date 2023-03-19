@@ -150,7 +150,7 @@ const Lease = ({
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.replace(/\//, "");
-    const site = "suu";
+    const site = SITE;
     if (user.admin !== site) {
         return {notFound: true};
     }

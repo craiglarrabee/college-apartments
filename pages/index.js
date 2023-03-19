@@ -31,7 +31,7 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    const site = "suu";
+    const site = SITE;
     const page = "index";
     const content = {};
     const editing = !!user && !!user.editSite;

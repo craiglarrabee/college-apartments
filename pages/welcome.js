@@ -55,7 +55,7 @@ const Home = ({site, page, header, body, links, canEdit, user, company}) => {
 export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = context.resolvedUrl.replace(/\//, "");
-        const site = "suu";
+        const site = SITE;
         const company = "Stadium Way/College Way Apartments, LLC";
         if (user.admin !== site) return {notFound: true};
         const content = {};
