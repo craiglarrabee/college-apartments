@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import {ChangeUserPassword} from "../../../../lib/db/users/user";
-import {withIronSessionApiRoute} from "iron-session/next/index";
+import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 
 const Password = withIronSessionApiRoute(async (req, res) => {

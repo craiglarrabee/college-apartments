@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import {GetDynamicContent, UpdateDynamicContent} from "../../../../../lib/db/content/dynamicContent";
-import {withIronSessionApiRoute} from "iron-session/next/index";
+import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../lib/session/options";
 
 const handler = withIronSessionApiRoute(async (req, res) => {

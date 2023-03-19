@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import {GetLease, UpdateLease} from "../../../../lib/db/users/lease";
-import {withIronSessionApiRoute} from "iron-session/next/index";
+import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 
 const handler = withIronSessionApiRoute(async (req, res) => {

@@ -3,7 +3,7 @@
 import {AddLease} from "../../../lib/db/users/lease";
 import {AddNavLink} from "../../../lib/db/content/navLinks";
 import {CopyDynamicContent} from "../../../lib/db/content/dynamicContent";
-import {withIronSessionApiRoute} from "iron-session/next/index";
+import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../lib/session/options";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
