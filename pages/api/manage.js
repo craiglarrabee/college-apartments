@@ -1,17 +1,17 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
 
-const maintain = withIronSessionApiRoute(async (req, res) => {
+const manage = withIronSessionApiRoute(async (req, res) => {
     // get user from database
     try {
         switch (req.method) {
             case "POST":
-                if (req.session.user.admin && req.body.editSite) {
-                    req.session.user.editSite = true;
-                    req.session.user.manageApartment = false;
-                } else {
+                if (req.session.user.admin) {
+                    req.session.user.manageApartment = true;
                     req.session.user.editSite = false;
+                } else {
                     req.session.user.manageApartment = false;
+                    req.session.user.editSite = false;
                 }
                 await req.session.save();
                 res.status(204).send();
@@ -25,4 +25,4 @@ const maintain = withIronSessionApiRoute(async (req, res) => {
     }
 }, ironOptions);
 
-export default maintain;
+export default manage;

@@ -3,12 +3,10 @@ import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
-import Content from "../components/content";
-import DynamicContent, {GetDynamicContent} from "../lib/db/content/dynamicContent";
+import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 import PageContent from "../components/pageContent";
 
 const SITE = process.env.SITE;
@@ -60,7 +58,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         if (user.admin !== site) return {notFound: true};
         const content = {};
         const editing = !!user && !!user.editSite;
-        const [contentRows, nav] = await Promise.all([GetDynamicContent(site, page), GetNavLinks(site, editing)]);
+        const [contentRows, nav] = await Promise.all([GetDynamicContent(site, page), GetNavLinks(user, site)]);
         contentRows.forEach(row => content[row.name] = row.content);
         return {props: {site: site, company: company, page: page, ...content, links: nav, canEdit: editing, user: {...user}}};
     }

@@ -251,7 +251,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = SITE;
     const content = {};
     const editing = !!user && !!user.editSite;
-    const [nav] = await Promise.all([GetNavLinks(site, editing)]);
+    const [nav] = await Promise.all([GetNavLinks(user, site)]);
     if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
     return {
         props: {

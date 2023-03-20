@@ -159,7 +159,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const [leaseDefinition, contentRows, nav, rooms] = await Promise.all([
         GetLease(context.query.leaseId),
         GetDynamicContent(site, page),
-        GetNavLinks(site, editing),
+        GetNavLinks(user, site),
         GetLeaseRooms(context.query.leaseId)
     ]);
     contentRows.forEach(row => content[row.name] = row.content);

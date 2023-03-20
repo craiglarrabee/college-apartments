@@ -89,7 +89,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = SITE;
     const editing = !!user && !!user.editSite;
     if (!editing) return {notFound: true};
-    const [nav, leases] = await Promise.all([GetNavLinks(site, editing), GetLeases(site)]);
+    const [nav, leases] = await Promise.all([GetNavLinks(user, site), GetLeases(site)]);
     return {props: {site: site, user: {...user}, links: nav, leases: leases}};
 }, ironOptions);
 

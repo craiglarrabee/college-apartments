@@ -111,7 +111,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const editing = !!user && !!user.editSite;
     const [contentRows, nav, currentRooms, pendingApplication] = await Promise.all([
         GetDynamicContent(site, page),
-        GetNavLinks(site, editing),
+        GetNavLinks(user, site),
         GetActiveSiteLeaseRooms(site),
         GetPendingApplicationInfo(user.id)
     ]);

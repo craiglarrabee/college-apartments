@@ -91,7 +91,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = context.resolvedUrl.replace(/\//, "");
     const site = SITE;
     const editing = !!user && !!user.editSite;
-    const [nav] = await Promise.all([GetNavLinks(site, editing)]);
+    const [nav] = await Promise.all([GetNavLinks(user, site)]);
     return {props: {site: site, page: page, links: nav, canEdit: editing, user: {...user}}};
 }, ironOptions);
 

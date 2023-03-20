@@ -4,7 +4,6 @@ import Connection from "../../../lib/db/connection";
 import {AddUser} from "../../../lib/db/users/user";
 
 export default async function handler(req, res) {
-    const conn = await Connection();
     try {
         switch (req.method) {
             case "POST":
