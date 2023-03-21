@@ -10,7 +10,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "PUT":
-                if (req.session.user.admin !== req.query.site) {
+                if (!req.session.user.admin) {
                     res.status(403).send();
                     return;
                 }

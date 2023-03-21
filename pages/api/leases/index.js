@@ -7,7 +7,7 @@ import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../lib/session/options";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (req.session.user.admin !== req.query.site) {
+    if (!req.session.user.admin) {
         res.status(403).send();
         return;
     }

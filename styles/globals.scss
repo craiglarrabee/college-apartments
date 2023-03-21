@@ -186,3 +186,28 @@ table.api {
 span.sub-brand {
   color: $sidebar-menu-dark-color
 }
+
+
+@media print {
+  td {
+    visibility:hidden;
+  }
+  .sidebar-menu, .main-footer, .navbar {
+    display:none !important;
+  }
+  .main-content {
+
+    border-right: 0px;
+  }
+  div {
+    break-after: avoid !important;
+    break-before: avoid !important;
+  }
+  td form {
+    background-color:#FFFFFF;
+    visibility:visible;
+  }
+  input[type=submit] {
+    display:none;
+  }
+}

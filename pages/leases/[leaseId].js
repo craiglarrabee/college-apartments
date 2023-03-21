@@ -58,7 +58,7 @@ const Lease = ({
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        {canEdit ? <LeaseDefinitionGroup {...leaseDefinition} /> : null}
+                        {canEdit ? <LeaseDefinitionGroup {...leaseDefinition} className={classNames("custom-content")} /> : null}
                         <PageContent
                             initialContent={lease_header}
                             site={site}
@@ -163,8 +163,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetLeaseRooms(context.query.leaseId)
     ]);
     contentRows.forEach(row => content[row.name] = row.content);
-    if (leaseDefinition && leaseDefinition.start_date) leaseDefinition.start_date = leaseDefinition.start_date.toISOString().split("T")[0];
-    if (leaseDefinition && leaseDefinition.end_date) leaseDefinition.end_date = leaseDefinition.end_date.toISOString().split("T")[0];
 
     return {props: {leaseDefinition: {...leaseDefinition}, site: site, page: page, ...content, links: nav, canEdit: editing, user: {...user}, rooms: rooms}};
 }, ironOptions);
