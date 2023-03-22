@@ -127,7 +127,7 @@ const Title = ({bg, variant, initialUser, site}) => {
                 <NavDropdown align="end" style={{fontSize: "1rem"}} title={<Person className={classNames("h3")}/>}>
                     {user && (user.editSite || user.manageApartment) ? <NavDropdown.Item onClick={handleViewSite} >View Site</NavDropdown.Item> : <></>}
                     {user.admin  && !user.editSite ? <NavDropdown.Item onClick={handleEditSite} >Manage Site</NavDropdown.Item> : <></>}
-                    {user.admin && !user.manageApartment ? <NavDropdown.Item onClick={handleManageApartment} >Manage Apartment</NavDropdown.Item> : <></>}
+                    {user.admin && !user.manageApartment ? <NavDropdown.Item onClick={handleManageApartment} >Manage Apartments</NavDropdown.Item> : <></>}
                     {!editSite ? <NavDropdown.Item href={"/tenant"} hidden={!user.isLoggedIn}>Manage Profile</NavDropdown.Item> : <></>}
                     {!editSite ? <NavDropdown.Item href={"/password"} hidden={!user.isLoggedIn}>Change Password</NavDropdown.Item> : <></>}
                     <NavDropdown.Item onClick={handleUserAction}>{actionText}</NavDropdown.Item>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="snow" exclude=".svn;.cvs;.idea;.DS_Store;.git;.hg;*.hprof;*.pyc;*.iml;package-lock.json" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" showNewOnTargetInSync="false">
+  <component name="PublishConfigData" serverName="snow" exclude=".svn;.cvs;.idea;.DS_Store;.git;.hg;*.hprof;*.pyc;*.iml;package-lock.json" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" showDifferentInSync="false" showNewOnTargetInSync="false">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
       <paths name="snow">
