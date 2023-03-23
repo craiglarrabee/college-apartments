@@ -6,11 +6,9 @@ import React, {useState} from "react";
 import classNames from "classnames";
 import {Button, Col, Form, Row} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
-import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {GetTenantInfo} from "../lib/db/users/tenantInfo";
-import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 import {useForm} from "react-hook-form";
 
 const SITE = process.env.SITE;
@@ -19,7 +17,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, reset, formState: {isValid, isDirty}, handleSubmit} = useForm({ defaultValues: tenant });
+    const {register, reset, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: tenant});
 
     let [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? tenant.convicted_crime : false);
     let [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? tenant.charged_crime : false);
@@ -35,11 +33,11 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
         try {
             const options = {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/tenant`, options)
+            const resp = await fetch(`/api/users/${user.id}/tenant`, options);
             switch (resp.status) {
                 case 400:
                     break;
@@ -115,12 +113,20 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                         <Row>
                             <Form.Group as={Col} xs={6} className="mb-3" controlId="email">
                                 <Form.Label>Email</Form.Label>
-                                <Form.Control {...register("email", {required: true, maxLength: 255})} type="email"
+                                <Form.Control {...register("email", {
+                                    required: true,
+                                    maxLength: 255,
+                                    pattern: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                                })} type="email"
                                               placeholder="Email"/>
                             </Form.Group>
+                            {errors.email && <p>Please check the email</p>}
                             <Form.Group as={Col} xs={6} className="mb-3" controlId="email2">
                                 <Form.Label>Alternate Email</Form.Label>
-                                <Form.Control {...register("email2", {maxLength: 255})} type="email"
+                                <Form.Control {...register("email2", {
+                                    maxLength: 255,
+                                    pattern: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                                })} type="email"
                                               placeholder="Alternate Email"/>
                             </Form.Group>
                         </Row>
@@ -228,7 +234,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                         <div style={{width: "100%"}}
                              className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                             <Button variant="primary" type="submit"
-                                    disabled={!isNewApplication && ( !isDirty || !isValid)}>{isNewApplication || tenant.pending_application ? "Next" : "Save"}</Button>
+                                    disabled={!isNewApplication && (!isDirty || !isValid)}>{isNewApplication || tenant.pending_application ? "Next" : "Save"}</Button>
                         </div>
                     </Form>
                 </div>

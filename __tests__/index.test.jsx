@@ -11,4 +11,5 @@ describe("Home", () => {
         const el = document.getElementsByClassName("sidebar-menu")[0];
         expect(el).toHaveAttribute("role", "navigation");
     });
+
 });
