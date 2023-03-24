@@ -19,6 +19,27 @@ const Home = ({site, page, links, canEdit, user}) => {
 
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
+    const checkUsername = async (value) => {
+        try {
+            const options = {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+            const resp = await fetch(`api/users/${value}`, options)
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 200:
+                    let json = await resp.json();
+                    return json.id === undefined;
+            }
+        } catch (e) {
+
+        }
+    };
+
     const onSubmit = async (data, event) => {
         event.preventDefault();
 
@@ -48,31 +69,6 @@ const Home = ({site, page, links, canEdit, user}) => {
         }
     };
 
-    const checkUsername = async (username) => {
-        event.preventDefault();
-
-        try {
-
-            const options = {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-
-            const resp = await fetch(`api/users/${username}`, options)
-            switch (resp.status) {
-                case 400:
-                    break;
-                case 200:
-                    return resp.json() === {};
-            }
-
-        } catch (e) {
-
-        }
-    };
-
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
@@ -82,16 +78,17 @@ const Home = ({site, page, links, canEdit, user}) => {
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
                         <div className="h4">User Information:</div>
                         <Form.Group className="mb-3" controlId="username">
-                            <Form.Label visuallyHidden={true}>First Name</Form.Label>
+                            <Form.Label visuallyHidden={true}>Username</Form.Label>
                             <Form.Control className={errors.username && classNames("border-danger")} {...register("username", {
                                 required: {value: true, message: "Username is required."},
-                                validate: (value) => {return await checkUsername(value) ? "" : "Username is not available.";}
+                                validate: checkUsername
                             })} type="text" placeholder="username"/>
                             {errors.username && <Form.Text className={classNames("text-danger")}>{errors.username.message}</Form.Text>}
+                            {errors.username && errors.username.type === "validate" && <Form.Text className={classNames("text-danger")}>Username is not available.</Form.Text>}
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="password">
-                            <Form.Label visuallyHidden={true}>Last Name</Form.Label>
-                            <Form.Control {...register("password", {
+                            <Form.Label visuallyHidden={true}>Password</Form.Label>
+                            <Form.Control className={errors.password && classNames("border-danger")} {...register("password", {
                                 required: {value: true, message: "Password is required."},
                                 pattern: {
                                     value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
@@ -100,15 +97,15 @@ const Home = ({site, page, links, canEdit, user}) => {
                             {errors.password && <Form.Text className={classNames("text-danger")}>{errors.password.message}</Form.Text>}
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="confirm_password">
-                            <Form.Label visuallyHidden={true}>Last Name</Form.Label>
-                            <Form.Control  {...register("confirm_password", {
-                                required: {value: true, message: "Must match Password."},
-                                validate: (value, formValues) => {return value === formValues.password ? "" : "Must match Password.";}
+                            <Form.Label visuallyHidden={true}>Confirm Password</Form.Label>
+                            <Form.Control className={errors.confirm_password && errors.confirm_password.message !=="" && classNames("border-danger")} {...register("confirm_password", {
+                                required: true,
+                                validate: (value, formValues) => {return value === formValues.password;}
                             })} type="password" placeholder="confirm password"/>
-                            {errors.confirm_password && <Form.Text className={classNames("text-danger")}>{errors.confirm_password.message}</Form.Text>}
+                            {errors.confirm_password && <Form.Text className={classNames("text-danger")}>Must match Password.</Form.Text>}
                         </Form.Group>
                         <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit" disabled={!isDirty }>Next</Button>
+                            <Button variant="primary" type="submit" disabled={!isDirty}>Next</Button>
                         </div>
                     </Form>
                 </div>

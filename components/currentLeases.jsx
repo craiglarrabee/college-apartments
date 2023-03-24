@@ -11,9 +11,13 @@ const CurrentLeases = ({register, leaseId, leaseDescription, rooms, enabled}) =>
                 <div style={{color: "indianred", textAlign: "center"}} className="h5">RATES INCLUDE ALL UTILITIES</div>
             </div>
             {rooms.map(room => (
-                <FormCheck className="mb-3" {...register("lease_room_type_id", {setValueAs: value => value !== null ? value.toString() : ""})} type="radio"
-                           label={`$${room.room_rent}/sem - ${room.room_desc}`} id={`${leaseId}_${room.room_type_id}`} value={`${room.lease_id}_${room.room_type_id}`}
-                           required={true} disabled={!enabled} ></FormCheck>))}
+                <FormCheck className="mb-3" {...register("lease_room_type_id", {
+                    required: "Please select a Room Type above.",
+                    setValueAs: value => value !== null ? value.toString() : ""
+                })} type="radio"
+                           label={`$${room.room_rent}/sem - ${room.room_desc}`} id={`${leaseId}_${room.room_type_id}`}
+                           value={`${room.lease_id}_${room.room_type_id}`}
+                           disabled={!enabled}></FormCheck>))}
             <br/>
         </>
 

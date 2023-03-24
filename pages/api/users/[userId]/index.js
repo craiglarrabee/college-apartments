@@ -1,13 +1,12 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import Pool from "../../../lib/db/pool";
-import {GetUser} from "../../../lib/db/users/user";
+import {GetUser} from "../../../../lib/db/users/user";
 
 export default async function handler(req, res) {
     try {
         switch (req.method) {
             case "GET":
-                res.body = await GetUser(req.body.userId);
+                res.json(await GetUser(req.query.userId));
                 res.status(200).send();
                 return;
             default:

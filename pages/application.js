@@ -2,7 +2,7 @@ import Layout from "../components/layout";
 import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
-import React, {useState} from "react";
+import React from "react";
 import classNames from "classnames";
 import {Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
@@ -12,7 +12,6 @@ import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import PageContent from "../components/pageContent";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 import {useForm} from "react-hook-form";
 import {GetActiveSiteLeaseRooms} from "../lib/db/users/roomType";
 import CurrentLeases from "../components/currentLeases";
@@ -24,7 +23,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, formState: {isValid, isDirty}, handleSubmit} = useForm({defaultValues: pendingApplication});
+    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: pendingApplication});
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
@@ -60,10 +59,11 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        {site === "suu" ? <WorkFormGroups register={register} application={pendingApplication} /> : null}
+                        {site === "suu" ? <WorkFormGroups register={register} application={pendingApplication} errors={errors} /> : null}
                         <div className="h4">Room Type:</div>
                         <br/>
-                        {currentLeases.map(lease => <CurrentLeases {...lease} register={register} enabled={pendingApplication === undefined || pendingApplication.lease_id === lease.leaseId} />)}
+                        {currentLeases.map(lease => <CurrentLeases {...lease} register={register} enabled={pendingApplication === undefined || pendingApplication === null || pendingApplication.lease_id === lease.leaseId} />)}
+                        {errors.lease_room_type_id && <Form.Text className={classNames("text-danger")}>{errors.lease_room_type_id.message}</Form.Text>}
                         <ApplicationFormGroups register={register}/>
                         <PageContent
                             initialContent={rules}
@@ -92,7 +92,8 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                             </span>
                         </div>
                         <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit" disabled={canEdit || !isDirty || !isValid}>Submit</Button>
+                            {/*<Button variant="primary" type="submit" disabled={canEdit || !isDirty || !isValid}>Submit</Button>*/}
+                            <Button variant="primary" type="submit" >Submit</Button>
                         </div>
                     </Form>
                 </div>

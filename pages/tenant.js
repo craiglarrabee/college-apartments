@@ -27,6 +27,12 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
     const handleCharged = () => setChargedCrime(true);
     const handleNotCharged = () => setChargedCrime(false);
 
+    const isValidBirthdate = (date) => {
+      const sixteenYearsAgo = new Date();
+      sixteenYearsAgo.setFullYear(sixteenYearsAgo.getFullYear() - 16);
+      return new Date(date) <= sixteenYearsAgo;
+    };
+
     const onSubmit = async (data, event) => {
         event.preventDefault();
 
@@ -96,13 +102,12 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                             </Form.Group>
                             <Form.Group as={Col} className="mb-3" controlId="date_of_birth">
                                 <Form.Label>Birthdate</Form.Label>
-                                <Form.Control className={errors.gender && classNames("border-danger")} {...register("date_of_birth", {
-                                    required: {
-                                        value: true,
-                                        message: "Last Name is required."
-                                    }
+                                <Form.Control className={errors.date_of_birth && classNames("border-danger")} {...register("date_of_birth", {
+                                    required: {value: true, message: "Birthdate is required."},
+                                    validate: isValidBirthdate
                                 })} type="date"/>
                                 {errors.date_of_birth && <Form.Text className={classNames("text-danger")}>{errors.date_of_birth.message}</Form.Text>}
+                                {errors.date_of_birth && errors.date_of_birth.type === "validate" && <Form.Text className={classNames("text-danger")}>Please enter a valid birthdate.</Form.Text>}
                             </Form.Group>
                             <Form.Group as={Col} className="mb-3" controlId="last_4_social">
                                 <Form.Label>Last 4 Social Security #</Form.Label>
