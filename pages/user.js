@@ -46,7 +46,32 @@ const Home = ({site, page, links, canEdit, user}) => {
         } catch (e) {
 
         }
-    }
+    };
+
+    const checkUsername = async (username) => {
+        event.preventDefault();
+
+        try {
+
+            const options = {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+
+            const resp = await fetch(`api/users/${username}`, options)
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 200:
+                    return resp.json() === {};
+            }
+
+        } catch (e) {
+
+        }
+    };
 
     return (
         <Layout>
@@ -60,8 +85,7 @@ const Home = ({site, page, links, canEdit, user}) => {
                             <Form.Label visuallyHidden={true}>First Name</Form.Label>
                             <Form.Control className={errors.username && classNames("border-danger")} {...register("username", {
                                 required: {value: true, message: "Username is required."},
-                                minLength: {value: 5, message: "Username must be between 5 and 25 characters."},
-                                maxLength: 25
+                                validate: (value) => {return await checkUsername(value) ? "" : "Username is not available.";}
                             })} type="text" placeholder="username"/>
                             {errors.username && <Form.Text className={classNames("text-danger")}>{errors.username.message}</Form.Text>}
                         </Form.Group>
@@ -79,9 +103,7 @@ const Home = ({site, page, links, canEdit, user}) => {
                             <Form.Label visuallyHidden={true}>Last Name</Form.Label>
                             <Form.Control  {...register("confirm_password", {
                                 required: {value: true, message: "Must match Password."},
-                                minLength: {value: 8, message: "Must match Password."},
-                                maxLength: {value: 100, message: "Must match Password."},
-                                validate: (value, formValues) => {return (value === formValues.password);}
+                                validate: (value, formValues) => {return value === formValues.password ? "" : "Must match Password.";}
                             })} type="password" placeholder="confirm password"/>
                             {errors.confirm_password && <Form.Text className={classNames("text-danger")}>{errors.confirm_password.message}</Form.Text>}
                         </Form.Group>
