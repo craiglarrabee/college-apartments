@@ -59,7 +59,7 @@ const Login = ({show, handleClose, setNewUser, site}) => {
                 <Form onSubmit={handleLogin} method="post">
                     <Form.Group className="mb-3" controlId="username">
                         <Form.Label visuallyHidden={true}>First Name</Form.Label>
-                        <Form.Control name="username" required type="text" placeholder="username" maxLength={25} />
+                        <Form.Control name="username" type="text" placeholder="username" maxLength={25} />
                     </Form.Group>
                     <Form.Group controlId="site">
                         <Form.Control name="site" type="hidden" value={site} />
