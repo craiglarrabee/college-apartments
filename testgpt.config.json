@@ -1,0 +1,21 @@
+{
+  ".js": {
+    "techs": ["jest"],
+    "tips": [
+      "use 3 spaces for indentation",
+      "wrap each group of tests in a describe block",
+      "Don't forget to import the things you need."
+    ]
+  },
+  ".jsx": {
+    "techs": ["jest", "react-testing-library", "userEvent"],
+    "tips": [
+      "use 3 spaces for indentation",
+      "use screen",
+      "wrap each group of tests in a describe block",
+      "when using user event, use an async function and await the user event",
+      "prefer not to use getByTestId",
+      "Don't forget to import the things you need."
+    ]
+  }
+}

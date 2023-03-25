@@ -1,12 +1,6 @@
-import SidebarMenu, {
-    SidebarMenuBrand,
-    SidebarMenuCollapse,
-    SidebarMenuFooter, SidebarMenuNavIcon, SidebarMenuNavItem
-} from "react-bootstrap-sidebar-menu";
+import SidebarMenu, {SidebarMenuBrand, SidebarMenuCollapse, SidebarMenuFooter, SidebarMenuNavIcon} from "react-bootstrap-sidebar-menu";
 import Image from "next/image";
 import classNames from "classnames";
-import {useState} from "react";
-import Link from "next/link";
 
 const Navigation = ({bg, variant, brandUrl, links, page}) => {
     const navLinks = buildNavLinks(links, "");

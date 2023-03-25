@@ -64,7 +64,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                         <br/>
                         {currentLeases.map(lease => <CurrentLeases {...lease} register={register} enabled={pendingApplication === undefined || pendingApplication === null || pendingApplication.lease_id === lease.leaseId} />)}
                         {errors.lease_room_type_id && <Form.Text className={classNames("text-danger")}>{errors.lease_room_type_id.message}</Form.Text>}
-                        <ApplicationFormGroups register={register}/>
+                        <ApplicationFormGroups register={register} errors={errors} />
                         <PageContent
                             initialContent={rules}
                             site={site}
@@ -92,8 +92,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                             </span>
                         </div>
                         <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            {/*<Button variant="primary" type="submit" disabled={canEdit || !isDirty || !isValid}>Submit</Button>*/}
-                            <Button variant="primary" type="submit" >Submit</Button>
+                            <Button variant="primary" type="submit" disabled={canEdit || !isDirty || !isValid}>Submit</Button>
                         </div>
                     </Form>
                 </div>
