@@ -135,7 +135,7 @@ const Title = ({bg, variant, initialUser, site}) => {
             </Nav>
             </span>
             </Navbar.Brand>
-            <Login handleClose={handleCloseLogin} setNewUser={setNewUser} show={showLogin} site={site} />
+            <Login close={handleCloseLogin} setNewUser={setNewUser} show={showLogin} site={site} />
         </Navbar>
     );
 };

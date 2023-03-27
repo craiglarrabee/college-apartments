@@ -79,30 +79,30 @@ const Home = ({site, page, links, canEdit, user}) => {
                         <div className="h4">User Information:</div>
                         <Form.Group className="mb-3" controlId="username">
                             <Form.Label visuallyHidden={true}>Username</Form.Label>
-                            <Form.Control className={errors.username && classNames("border-danger")} {...register("username", {
+                            <Form.Control className={errors && errors.username && classNames("border-danger")} {...register("username", {
                                 required: {value: true, message: "Username is required."},
                                 validate: checkUsername
                             })} type="text" placeholder="username"/>
-                            {errors.username && <Form.Text className={classNames("text-danger")}>{errors.username.message}</Form.Text>}
-                            {errors.username && errors.username.type === "validate" && <Form.Text className={classNames("text-danger")}>Username is not available.</Form.Text>}
+                            {errors && errors.username && <Form.Text className={classNames("text-danger")}>{errors && errors.username.message}</Form.Text>}
+                            {errors && errors.username && errors && errors.username.type === "validate" && <Form.Text className={classNames("text-danger")}>Username is not available.</Form.Text>}
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="password">
                             <Form.Label visuallyHidden={true}>Password</Form.Label>
-                            <Form.Control className={errors.password && classNames("border-danger")} {...register("password", {
+                            <Form.Control className={errors && errors.password && classNames("border-danger")} {...register("password", {
                                 required: {value: true, message: "Password is required."},
                                 pattern: {
                                     value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
                                     message: "Password must be between 8 and 100 chars, and contain: a number, a lower-case character, an upper-case character, a special character"}
                             })} type="password" placeholder="password" />
-                            {errors.password && <Form.Text className={classNames("text-danger")}>{errors.password.message}</Form.Text>}
+                            {errors && errors.password && <Form.Text className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="confirm_password">
                             <Form.Label visuallyHidden={true}>Confirm Password</Form.Label>
-                            <Form.Control className={errors.confirm_password && errors.confirm_password.message !=="" && classNames("border-danger")} {...register("confirm_password", {
+                            <Form.Control className={errors && errors.confirm_password && errors && errors.confirm_password.message !=="" && classNames("border-danger")} {...register("confirm_password", {
                                 required: true,
                                 validate: (value, formValues) => {return value === formValues.password;}
                             })} type="password" placeholder="confirm password"/>
-                            {errors.confirm_password && <Form.Text className={classNames("text-danger")}>Must match Password.</Form.Text>}
+                            {errors && errors.confirm_password && <Form.Text className={classNames("text-danger")}>Must match Password.</Form.Text>}
                         </Form.Group>
                         <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                             <Button variant="primary" type="submit" disabled={!isDirty}>Next</Button>

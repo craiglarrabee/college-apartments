@@ -2,40 +2,40 @@ import {Col, Form, Row} from "react-bootstrap";
 import React from "react";
 import classNames from "classnames";
 
-const ApplicationFormGroups = ({register, errors}) => {
+const ApplicationFormGroups = ({register = () => {}, errors}) => {
     return (
         <>
             <div className="h4">Preferences:</div>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="roomate">
                     <Form.Label visuallyHidden={true}>Preferred Roommate</Form.Label>
-                    <Form.Control className={errors.roomate && classNames("border-danger")} {...register("roomate" , {maxLength: {value: 256, message: "Too long."}})} type="text" placeholder="Preferred Roommate Name"  />
+                    <Form.Control className={errors && errors.roomate && classNames("border-danger")} {...register("roomate" , {maxLength: {value: 256, message: "Too long."}})} type="text" placeholder="Preferred Roommate Name"  />
                     <Form.Text>(If you have requested a private room, this will be the person you share a connected bathroom with.)</Form.Text>
-                    {errors.roomate && <Form.Text className={classNames("text-danger")}>{errors.roomate.message}</Form.Text>}
+                    {errors && errors.roomate && <Form.Text className={classNames("text-danger")}>{errors && errors.roomate.message}</Form.Text>}
                 </Form.Group>
             </Row>
             <div>I prefer the following individuals (other than roomate) to live in my apartment:</div>
             <Row>
                 <Form.Group as={Col} controlId="roomate2">
-                    <Form.Label visuallyHidden={true}>Preferred Roommate2</Form.Label>
+                    <Form.Label visuallyHidden={true}>Preferred Roommate 2</Form.Label>
                     <Form.Control{...register("roomate2" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 1"/>
                 </Form.Group>
             </Row>
             <Row>
                 <Form.Group as={Col} controlId="roomate3">
-                    <Form.Label visuallyHidden={true}>Preferred Roommate3</Form.Label>
+                    <Form.Label visuallyHidden={true}>Preferred Roommate 3</Form.Label>
                     <Form.Control {...register("roomate3" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 2"/>
                 </Form.Group>
             </Row>
             <Row>
                 <Form.Group as={Col} controlId="roomate4">
-                    <Form.Label visuallyHidden={true}>Preferred Roommate4</Form.Label>
+                    <Form.Label visuallyHidden={true}>Preferred Roommate 4</Form.Label>
                     <Form.Control {...register("roomate4" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 3"/>
                 </Form.Group>
             </Row>
             <Row>
                 <Form.Group as={Col} controlId="roomate5">
-                    <Form.Label visuallyHidden={true}>Preferred Roommate5</Form.Label>
+                    <Form.Label visuallyHidden={true}>Preferred Roommate 5</Form.Label>
                     <Form.Control {...register("roomate5" , {maxLength: 256})} type="text" placeholder="Preferred Apartment Mate 4"/>
                 </Form.Group>
             </Row>

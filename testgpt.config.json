@@ -4,7 +4,8 @@
     "tips": [
       "use 3 spaces for indentation",
       "wrap each group of tests in a describe block",
-      "Don't forget to import the things you need."
+      "Don't forget to import the things you need.",
+      "use mocks"
     ]
   },
   ".jsx": {

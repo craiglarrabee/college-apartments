@@ -63,7 +63,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                         <div className="h4">Room Type:</div>
                         <br/>
                         {currentLeases.map(lease => <CurrentLeases {...lease} register={register} enabled={pendingApplication === undefined || pendingApplication === null || pendingApplication.lease_id === lease.leaseId} />)}
-                        {errors.lease_room_type_id && <Form.Text className={classNames("text-danger")}>{errors.lease_room_type_id.message}</Form.Text>}
+                        {errors && errors.lease_room_type_id && <Form.Text className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
                         <ApplicationFormGroups register={register} errors={errors} />
                         <PageContent
                             initialContent={rules}

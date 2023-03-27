@@ -1,9 +1,14 @@
-import {Button, Form, Modal} from "react-bootstrap";
-import React from "react";
+import {Alert, Button, Form, Modal} from "react-bootstrap";
+import React, {useState} from "react";
 import classNames from "classnames";
 
+const Login = ({show, close, setNewUser, site}) => {
+    const [loginError, setLoginError] = useState(false);
 
-const Login = ({show, handleClose, setNewUser, site}) => {
+    const handleClose = () => {
+        setLoginError(false);
+        close();
+    };
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -33,10 +38,14 @@ const Login = ({show, handleClose, setNewUser, site}) => {
 
             const resp = await fetch("/api/login", options)
             switch (resp.status) {
-                case 400:
-                    break;
                 case 200:
+                    setLoginError(false);
                     setNewUser(await resp.json());
+                    return;
+                case 400:
+                default:
+                    setLoginError(true);
+                    break;
             }
 
         } catch (e) {
@@ -56,16 +65,17 @@ const Login = ({show, handleClose, setNewUser, site}) => {
             </Modal.Header>
 
             <Modal.Body>
+                {loginError && <Alert variant="danger" >Incorrect username or password.</Alert>}
                 <Form onSubmit={handleLogin} method="post">
                     <Form.Group className="mb-3" controlId="username">
-                        <Form.Label visuallyHidden={true}>First Name</Form.Label>
+                        <Form.Label visuallyHidden={false}>Username</Form.Label>
                         <Form.Control name="username" type="text" placeholder="username" maxLength={25} />
                     </Form.Group>
                     <Form.Group controlId="site">
                         <Form.Control name="site" type="hidden" value={site} />
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="password">
-                        <Form.Label visuallyHidden={true}>Last Name</Form.Label>
+                        <Form.Label visuallyHidden={false}>Password</Form.Label>
                         <Form.Control name="password" type="password" placeholder="password" maxLength={100} />
                     </Form.Group>
                     <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
