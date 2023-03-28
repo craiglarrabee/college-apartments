@@ -13,12 +13,11 @@ const Content = ({site, page, top, bottom, images, canEdit}) => {
                 page={page}
                 name="top"
                 canEdit={canEdit}/>
-            {images && images.length ? <Carousel variant="dark" wrap={true} interval={3000}>
+            {images && images.length ? <Carousel role="carousel" variant="dark" wrap={true} interval={3000}>
                 {images.map((image, i) => {
                         return (
-                            <Carousel.Item key={i}>
-                                <Image src={`/images/${site}/${page}/${image}`} alt={image} width="650" height="425"
-                                       priority={true}/>
+                            <Carousel.Item role="carousel-item" key={i}>
+                                <Image role="carousel-image" src={`/images/${site}/${page}/${image}`} alt={image} width="650" height="425" priority={true}/>
                             </Carousel.Item>
                         );
                     }

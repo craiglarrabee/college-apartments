@@ -17,7 +17,7 @@ const PageContent = ({site, page, name, canEdit, initialContent}) => {
         return (
             <div className={classNames("custom-content")} style={{border: "3px dashed rgba(0, 0, 0, 0.5)"}}>
                 <div className={classNames("d-inline-flex", "custom-content")}>
-                    <Button variant="primary-outline" size="sm" onClick={handleShow}>
+                    <Button role="edit" variant="primary-outline" size="sm" onClick={handleShow}>
                         <Pencil/>
                     </Button>
                     <div dangerouslySetInnerHTML={{__html: content}}/>
@@ -112,7 +112,7 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
 
             <Modal.Footer>
                 <Button size="sm" variant="secondary" onClick={handleClose}>Close</Button>
-                <Button size="sm" variant="primary" onClick={saveContent}>Save changes</Button>
+                <Button role="save" size="sm" variant="primary" onClick={saveContent}>Save changes</Button>
             </Modal.Footer>
         </Modal>
     );
