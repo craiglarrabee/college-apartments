@@ -1,6 +1,5 @@
-import {Col, Form, FormCheck, FormGroup, Row} from "react-bootstrap";
-import React, {useState} from "react";
-import classNames from "classnames";
+import {FormCheck} from "react-bootstrap";
+import React from "react";
 
 const CurrentLeases = ({register, leaseId, leaseDescription, rooms, enabled}) => {
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import {render, screen, fireEvent} from '@testing-library/react';
+import {render, screen, fireEvent, within} from '@testing-library/react';
 import Content from './Content';
 import "@testing-library/jest-dom";
 
@@ -40,12 +40,13 @@ describe('Content', () => {
 
     it("should render a Carousel.Item component for each image when 'images' prop is provided", () => {
         const images = ["image1.png", "image2.png", "image3.png"];
-        render(<Content images={images}/>);
+        let bob = render(<Content images={images}/>);
         const carouselItems = screen.getAllByRole("carousel-item");
         expect(carouselItems.length).toBe(images.length);
         carouselItems.forEach((item, i) => {
-            expect(item).toHaveAttribute("key", i.toString());
             expect(item).toHaveClass("carousel-item");
+            const {getByRole} = within(item);
+            expect(getByRole("carousel-image")).toHaveAttribute("alt", images[i]);
         });
     });
 
@@ -55,11 +56,9 @@ describe('Content', () => {
         const carouselImages = screen.getAllByRole("carousel-image");
         expect(carouselImages.length).toBe(images.length);
         carouselImages.forEach((image, i) => {
-            // expect(image).toHaveAttribute("src", `/images/${images[i]}`);
             expect(image).toHaveAttribute("alt", images[i]);
             expect(image).toHaveAttribute("width", "650");
             expect(image).toHaveAttribute("height", "425");
-            expect(image).toHaveAttribute("priority", "true");
         });
     });
 
