@@ -12,7 +12,6 @@ const Title = ({bg, variant, initialUser, site}) => {
     const [editSite, setEditSite] = useState(!!user.editSite);
 
     const setNewUser = (newUser) => {
-        setShowLogin(false);
         setUser(newUser);
         setActionText(newUser.isLoggedIn ? "Sign out" : "Sign In");
     };
@@ -24,15 +23,15 @@ const Title = ({bg, variant, initialUser, site}) => {
             try {
                 const JSONdata = JSON.stringify({editSite: canEdit});
                 // API endpoint where we send form data.
-                const endpoint = '/api/maintain'
+                const endpoint = "/api/maintain"
 
                 // Form the request for sending data to the server.
                 const options = {
                     // The method is POST because we are sending data.
-                    method: 'POST',
-                    // Tell the server we're sending JSON.
+                    method: "POST",
+                    // Tell the server we"re sending JSON.
                     headers: {
-                        'Content-Type': 'application/json',
+                        "Content-Type": "application/json",
                     },
                     body: JSONdata
                 }
@@ -96,21 +95,14 @@ const Title = ({bg, variant, initialUser, site}) => {
 
     const signOut = async () => {
         try {
-
-            // API endpoint where we send form data.
-            const endpoint = '/api/logout'
-
-            // Form the request for sending data to the server.
             const options = {
-                // The method is POST because we are sending data.
-                method: 'POST',
-                // Tell the server we're sending JSON.
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
-            }
+            };
 
-            const resp = await fetch(endpoint, options);
+            const resp = await fetch("/api/logout", options);
             const user = await resp.json();
             setNewUser(user);
         } catch (e) {

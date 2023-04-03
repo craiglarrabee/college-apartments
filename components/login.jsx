@@ -1,25 +1,23 @@
 import {Alert, Button, Form, Modal} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
+import {useForm} from "react-hook-form";
 
 const Login = ({show, close, setNewUser, site}) => {
     const [loginError, setLoginError] = useState(false);
+    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
     const handleClose = () => {
         setLoginError(false);
         close();
     };
 
-    const handleLogin = async (event) => {
+    const onSubmit = async (data, event) => {
         event.preventDefault();
 
         try {
             // Get data from the form.
-            const data = {
-                username: event.target.username.value,
-                password: event.target.password.value,
-                site: site,
-            }
+            data.site = site;
 
             // Send the data to the server in JSON format.
             const JSONdata = JSON.stringify(data)
@@ -28,19 +26,19 @@ const Login = ({show, close, setNewUser, site}) => {
             const options = {
                 // The method is POST because we are sending data.
                 method: "POST",
-                // Tell the server we're sending JSON.
+                // Tell the server we"re sending JSON.
                 headers: {
                     "Content-Type": "application/json",
                 },
                 // Body of the request is the JSON data we created above.
                 body: JSONdata,
             }
-
-            const resp = await fetch("/api/login", options)
+            const resp = await fetch("/api/login", options);
             switch (resp.status) {
                 case 200:
                     setLoginError(false);
                     setNewUser(await resp.json());
+                    close();
                     return;
                 case 400:
                 default:
@@ -49,9 +47,9 @@ const Login = ({show, close, setNewUser, site}) => {
             }
 
         } catch (e) {
-
+            console.log(e);
         }
-    }
+    };
 
     return (
         <Modal show={show}
@@ -66,20 +64,20 @@ const Login = ({show, close, setNewUser, site}) => {
 
             <Modal.Body>
                 {loginError && <Alert variant="danger" >Incorrect username or password.</Alert>}
-                <Form onSubmit={handleLogin} method="post">
+                <Form onSubmit={handleSubmit(onSubmit)} method="post">
                     <Form.Group className="mb-3" controlId="username">
-                        <Form.Label visuallyHidden={false}>Username</Form.Label>
-                        <Form.Control name="username" type="text" placeholder="username" maxLength={25} />
+                        <Form.Label visuallyHidden={true}>Username</Form.Label>
+                        <Form.Control {...register("username", {required: "This is required."})} type="text" placeholder="username" maxLength={25} />
                     </Form.Group>
                     <Form.Group controlId="site">
                         <Form.Control name="site" type="hidden" value={site} />
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="password">
-                        <Form.Label visuallyHidden={false}>Password</Form.Label>
-                        <Form.Control name="password" type="password" placeholder="password" maxLength={100} />
+                        <Form.Label visuallyHidden={true}>Password</Form.Label>
+                        <Form.Control {...register("password", {required: "This is required."})} type="password" placeholder="password" maxLength={100} />
                     </Form.Group>
                     <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                        <Button variant="primary" type="submit">Login</Button>
+                        <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Login</Button>
                     </div>
                 </Form>
             </Modal.Body>
