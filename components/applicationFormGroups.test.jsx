@@ -49,7 +49,7 @@ describe("ApplicationFormGroups component", () => {
       expect(likesDislikesLabel).toBeInTheDocument();
     });
 
-    it("should render the "Please do not share my information" checkbox", () => {
+    it("should render the 'Please do not share my information' checkbox", () => {
       render(<ApplicationFormGroups />);
       const shareInfoCheckbox = screen.getByLabelText("Please do not share my information.");
       expect(shareInfoCheckbox).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe("ApplicationFormGroups component", () => {
   });
 
   describe("interactions", () => {
-    xit("should validate the "Preferred Roommate" field when typing more than 256 characters", async () => {
+    xit("should validate the 'Preferred Roommate' field when typing more than 256 characters", async () => {
       render(<ApplicationFormGroups />);
       const roommateInput = screen.getByLabelText("Preferred Roommate");
       await fireEvent.input(roommateInput, "a".repeat(257));
@@ -72,7 +72,7 @@ describe("ApplicationFormGroups component", () => {
       expect(errorMessage).toBeInTheDocument();
     });
 
-    it("should not validate the "Preferred Roommate" field when typing less than or equal to 256 characters", async () => {
+    it("should not validate the 'Preferred Roommate' field when typing less than or equal to 256 characters", async () => {
       render(<ApplicationFormGroups />);
       const roommateInput = screen.getByLabelText("Preferred Roommate");
       await userEvent.type(roommateInput, "a".repeat(256));
@@ -80,7 +80,7 @@ describe("ApplicationFormGroups component", () => {
       expect(errorMessage).not.toBeInTheDocument();
     });
 
-    it("should select the "Please do not share my information" checkbox when clicking it", async () => {
+    it("should select the 'Please do not share my information' checkbox when clicking it", async () => {
       render(<ApplicationFormGroups />);
       const shareInfoCheckbox = screen.getByLabelText("Please do not share my information.");
       expect(shareInfoCheckbox.checked).toBe(false);

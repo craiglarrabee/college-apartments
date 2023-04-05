@@ -51,7 +51,7 @@ describe("PageContent", () => {
 
     it("saves content on click of Save changes button", async () => {
         const canEdit = true;
-        const { getByRole } = render(
+        const { getByRole, getByText } = render(
             <PageContent
                 site={site}
                 page={page}
@@ -64,7 +64,6 @@ describe("PageContent", () => {
         const newContent = "New Content";
         userEvent.click(getByRole("edit"));
 
-        const { getByText } = within(document.getElementById("modal-id"));
         userEvent.type(getByText("Start typing..."), newContent);
 
         fetchMock.mockResponseOnce(JSON.stringify({}));

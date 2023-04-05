@@ -30,7 +30,7 @@ describe("Content", () => {
         expect(queryByTestId("carousel")).toBeNull();
     });
 
-    it("should render a Carousel component when "images" prop is provided", () => {
+    it("should render a Carousel component when images prop is provided", () => {
         const images = ["image1.png", "image2.png", "image3.png"];
         render(<Content images={images}/>);
         const carousel = screen.getByRole("carousel");
@@ -38,7 +38,7 @@ describe("Content", () => {
         expect(carousel).toHaveClass("carousel slide");
     });
 
-    it("should render a Carousel.Item component for each image when "images" prop is provided", () => {
+    it("should render a Carousel.Item component for each image when images prop is provided", () => {
         const images = ["image1.png", "image2.png", "image3.png"];
         let bob = render(<Content images={images}/>);
         const carouselItems = screen.getAllByRole("carousel-item");
@@ -50,7 +50,7 @@ describe("Content", () => {
         });
     });
 
-    it("should render an Image component for each image when "images" prop is provided", () => {
+    it("should render an Image component for each image when images prop is provided", () => {
         const images = ["image1.png", "image2.png", "image3.png"];
         render(<Content images={images}/>);
         const carouselImages = screen.getAllByRole("carousel-image");
@@ -62,7 +62,7 @@ describe("Content", () => {
         });
     });
 
-    it("should not render a Carousel component when "images" prop is not provided", () => {
+    it("should not render a Carousel component when images prop is not provided", () => {
         render(<Content/>);
         const carousel = screen.queryByTestId("carousel");
         expect(carousel).toBeNull();
