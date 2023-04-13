@@ -13,7 +13,7 @@ import PageContent from "../components/pageContent";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {useForm} from "react-hook-form";
-import {GetActiveSiteLeaseRooms} from "../lib/db/users/roomType";
+import {GetActiveSiteLeaseRooms, GetLeaseRooms} from "../lib/db/users/roomType";
 import CurrentLeases from "../components/currentLeases";
 import {GetPendingApplicationInfo} from "../lib/db/users/applicationInfo";
 
@@ -109,23 +109,26 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = SITE;
     const content = {};
     const editing = !!user && !!user.editSite;
-    const [contentRows, nav, currentRooms, pendingApplication] = await Promise.all([
+    const [contentRows, nav, pendingApplication] = await Promise.all([
         GetDynamicContent(site, page),
         GetNavLinks(user, site),
-        GetActiveSiteLeaseRooms(site),
         GetPendingApplicationInfo(user.id)
     ]);
+    let currentRooms;
+    if (pendingApplication) {
+        pendingApplication.submit_date = pendingApplication.submit_date.toISOString().split("T")[0];
+        pendingApplication.lease_room_type_id = `${pendingApplication.lease_id}_${pendingApplication.room_type_id}`;
+        pendingApplication.do_not_share_info = !pendingApplication.share_info;
+        currentRooms = await GetLeaseRooms(pendingApplication.lease_id);
+    } else {
+        currentRooms = await GetActiveSiteLeaseRooms(site);
+    }
     contentRows.forEach(row => content[row.name] = row.content);
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
     currentLeases = currentLeases.map(lease => {
         let rooms = currentRooms.filter(room => room.lease_id === lease);
         return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};
     });
-    if (pendingApplication) {
-        pendingApplication.submit_date = pendingApplication.submit_date.toISOString().split("T")[0];
-        pendingApplication.lease_room_type_id = `${pendingApplication.lease_id}_${pendingApplication.room_type_id}`;
-        pendingApplication.do_not_share_info = !pendingApplication.share_info;
-    }
 
     return {
         props: {

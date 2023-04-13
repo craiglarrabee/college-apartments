@@ -37,10 +37,10 @@ const Title = ({bg, variant, initialUser, site}) => {
                 }
 
                 await fetch(endpoint, options);
+                location = "/index";
             } catch (e) {
                 console.log(e);
             }
-            Router.reload();
         }
     }
 
@@ -55,10 +55,10 @@ const Title = ({bg, variant, initialUser, site}) => {
                     }
                 }
                 await fetch(endpoint, options);
+                location = "/index";
             } catch (e) {
                 console.log(e);
             }
-            Router.reload();
         }
     }
 
@@ -73,10 +73,10 @@ const Title = ({bg, variant, initialUser, site}) => {
                     }
                 }
                 await fetch(endpoint, options);
+                location = "/index";
             } catch (e) {
                 console.log(e);
             }
-            Router.reload();
         }
     }
 

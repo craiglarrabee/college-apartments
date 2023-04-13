@@ -2,7 +2,11 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
-import {AddApplicationInfo, GetApplicationInfo} from "../../../../../../lib/db/users/applicationInfo";
+import {
+    AddApplicationInfo,
+    GetApplicationInfo,
+    ProcessApplicationInfo
+} from "../../../../../../lib/db/users/applicationInfo";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.isLoggedIn) res.status(403).send();
@@ -10,6 +14,14 @@ const handler = withIronSessionApiRoute(async (req, res) => {
         switch (req.method) {
             case "POST":
                 await AddApplicationInfo(req.body.site, req.query.userId, req.query.leaseId, req.body);
+                res.status(204).send();
+                return;
+            case "PUT":
+                await ProcessApplicationInfo(req.body.site, req.query.userId, req.query.leaseId, req.body);
+                if (req.body.processed === true) {
+                    //TODO: send welcome email
+
+                }
                 res.status(204).send();
                 return;
             default:
