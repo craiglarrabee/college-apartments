@@ -7,6 +7,7 @@ import {
     GetApplicationInfo,
     ProcessApplicationInfo
 } from "../../../../../../lib/db/users/applicationInfo";
+import {AddUserLease, DeleteUserLease} from "../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.isLoggedIn) res.status(403).send();
@@ -17,6 +18,10 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 res.status(204).send();
                 return;
             case "PUT":
+                if (req.body.processed)
+                    await AddUserLease(req.query.userId, req.query.leaseId);
+                else
+                    await DeleteUserLease(req.query.userId, req.query.leaseId);
                 await ProcessApplicationInfo(req.body.site, req.query.userId, req.query.leaseId, req.body);
                 if (req.body.processed === true) {
                     //TODO: send welcome email

@@ -48,6 +48,7 @@ function buildNavLinks(links, parent) {
 function buildNavLink(item, links) {
     if (item.sub_menu) {
         const sub_items = buildNavLinks(links, item.page);
+        if (sub_items.length === 0) return <></>;
         return (
             <SidebarMenu.Sub key={item.position} eventKey={item.page}>
                 <SidebarMenu.Sub.Toggle>

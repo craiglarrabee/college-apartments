@@ -9,12 +9,12 @@ import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
 import {Tab, Tabs} from "react-bootstrap";
 import {ApplicationList} from "../../../../components/applicationList";
-import {GetUserLeases} from "../../../../lib/db/users/userLease";
+import {GetApplications} from "../../../../lib/db/users/applicationInfo";
 
 const SITE = process.env.SITE;
 
 const Lease = ({
-                   site, page, links, user, submittedLeases, pendingLeases
+                   site, page, links, user, unprocessedApplications, processedApplications
                }) => {
     const bg = "black";
     const variant = "dark";
@@ -27,11 +27,11 @@ const Lease = ({
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
-                        <Tab eventKey={1} title="Submitted">
-                            <ApplicationList data={submittedLeases} page={page}></ApplicationList>
+                        <Tab eventKey={1} title="Unprocessed">
+                            <ApplicationList data={unprocessedApplications} page={page}></ApplicationList>
                         </Tab>
-                        <Tab eventKey={2} title="Pending">
-                            <ApplicationList data={pendingLeases} page={page}></ApplicationList>
+                        <Tab eventKey={2} title="Processed">
+                            <ApplicationList data={processedApplications} page={page}></ApplicationList>
                         </Tab>
                     </Tabs>
                 </div>
@@ -49,10 +49,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {notFound: true};
     }
     const editing = !!user && !!user.editSite;
-    const [nav, pendingLeases, submittedLeases] = await Promise.all([
+    const [nav, unprocessedApplications, processedApplications] = await Promise.all([
         GetNavLinks(user, site),
-        GetUserLeases(context.query.leaseId, false),
-        GetUserLeases(context.query.leaseId, true)
+        GetApplications(site, context.query.leaseId, false),
+        GetApplications(site, context.query.leaseId, true)
     ]);
 
     return {
@@ -62,8 +62,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             links: nav,
             canEdit: editing,
             user: {...user},
-            submittedLeases: submittedLeases,
-            pendingLeases: pendingLeases
+            processedApplications: processedApplications,
+            unprocessedApplications: unprocessedApplications
         }
     };
 }, ironOptions);
