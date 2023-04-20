@@ -135,7 +135,7 @@ const Lease = ({
                                 </Col>
                             </Row>
                             <Row>
-                                <Form.Label column="sm" >REGISTERED OWNER'S NAME</Form.Label>
+                                <Form.Label column="sm" >REGISTERED OWNER&apos;S NAME</Form.Label>
                                 <Col xs="8">
                                     <Form.Control{...register("vehicle_owner", {disabled: submitted, maxLength: 100})} type="text"/>
                                 </Col>
@@ -179,10 +179,10 @@ const Lease = ({
                                 <Form.Control{...register("lease_address", {disabled: submitted, required: true, maxLength: 200})} type="text"/>
                             </Col>
                         </Row>
-                        <div>Tenant's Full Address: Street, City, State and Zip Code (NO P.O. BOXES)</div>
+                        <div>Tenant&apos;s Full Address: Street, City, State and Zip Code (NO P.O. BOXES)</div>
                         <br/>
                         <Row>
-                            <Form.Label column >Tenant's Cell Phone with Area Code</Form.Label>
+                            <Form.Label column >Tenant&apos;s Cell Phone with Area Code</Form.Label>
                             <Col>
                                 <Form.Control{...register("lease_cell_phone", {disabled: submitted, required: true, maxLength: 20})} type="text"/>
                             </Col>
@@ -190,7 +190,7 @@ const Lease = ({
                         <br/>
                         <div>FOR EMERGENCY PURPOSES</div>
                         <Row>
-                            <Form.Label column >Parents' names</Form.Label>
+                            <Form.Label column >Parents&apos; names</Form.Label>
                             <Col>
                                 <Form.Control{...register("lease_parent_name", {disabled: submitted, required: true, maxLength: 255})} type="text"/>
                             </Col>
