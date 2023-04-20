@@ -1,6 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { ExecuteQuery } from "../../../lib/db/pool";
 import {AddUser} from "../../../lib/db/users/user";
 
 export default async function handler(req, res) {

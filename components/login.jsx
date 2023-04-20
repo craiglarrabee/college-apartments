@@ -2,6 +2,7 @@ import {Alert, Button, Form, Modal} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 import {useForm} from "react-hook-form";
+import Router from "next/router";
 
 const Login = ({show, close, setNewUser, site}) => {
     const [loginError, setLoginError] = useState(false);
@@ -38,6 +39,7 @@ const Login = ({show, close, setNewUser, site}) => {
                 case 200:
                     setLoginError(false);
                     setNewUser(await resp.json());
+                    Router.reload();
                     close();
                     return;
                 case 400:

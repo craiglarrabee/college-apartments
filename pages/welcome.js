@@ -7,43 +7,58 @@ import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import PageContent from "../components/pageContent";
+import {GetTenantInfo} from "../lib/db/users/tenantInfo";
+import {Button} from "react-bootstrap";
+import {WelcomeEmailBody} from "../components/welcomeEmailBody";
+import ReactDomServer from "react-dom/server";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, page, header, body, links, canEdit, user, company}) => {
+const Home = ({site, page, header, body, links, canEdit, user, company, tenant}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const today = new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
+    const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
+                                        canEdit={false} company={company}
+                                        site={site} page={page}></WelcomeEmailBody>;
+    const bob = ReactDomServer.renderToString(emailBody);
+    const sendEmail = async () => {
+
+        try {
+            const payload = {
+                address: user.email,
+                body: bob
+            };
+
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+            }
+
+            const resp = await fetch(`/api/util/email`, options);
+            switch (resp.status) {
+                case 400:
+                    alert("An error occurred sending the email.");
+                    break;
+                case 204:
+                    alert("Email sent.");
+                    break;
+            }
+        } catch (e) {
+            alert(`An error occurred sending the email. ${e.message}`);
+            console.log(e);
+        }
+    }
 
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
-                <div>{company}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{today}</div>
-                <PageContent
-                    initialContent={header}
-                    site={site}
-                    page={page}
-                    name="header"
-                    canEdit={canEdit}/>
-                <div>Dear ___________:</div>
-                <br/>
-                <PageContent
-                    initialContent={body}
-                    site={site}
-                    page={page}
-                    name="body"
-                    canEdit={canEdit}/>
-                <div>----------------- **IMPORTANT** -----------------------------------------------<br/>
-                    Follow this link to electronically complete and submit your <a
-                        href="https://snowcollegeapartments.com/suu/lease.php?sid=45a2<<sid>>67z3">Lease</a><br/>
-                    <br/>
-                    Follow this link to view your <a href="https://snowcollegeapartments.com/suu/roomates.php?sid=45a2<<sid>>67z3">room assignment
-                        and roomates</a><br/>
-                </div>
+                <WelcomeEmailBody tenant={tenant} header={header} body={body} canEdit={canEdit} company={company}
+                                  site={site} page={page}></WelcomeEmailBody>
+                <Button style={{alignSelf: "center"}} size="lg" onClick={sendEmail}>{`Send to ${tenant.email}`}</Button>
                 <Footer bg={bg}/>
             </main>
         </Layout>
@@ -58,9 +73,24 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         if (user.admin !== site) return {notFound: true};
         const content = {};
         const editing = !!user && !!user.editSite;
-        const [contentRows, nav] = await Promise.all([GetDynamicContent(site, page), GetNavLinks(user, site)]);
+        const [contentRows, nav, tenant] = await Promise.all([
+            GetDynamicContent(site, page),
+            GetNavLinks(user, site),
+            GetTenantInfo(user.id)
+        ]);
         contentRows.forEach(row => content[row.name] = row.content);
-        return {props: {site: site, company: company, page: page, ...content, links: nav, canEdit: editing, user: {...user}}};
+        if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
+        return {
+            props: {
+                site: site,
+                company: company,
+                page: page, ...content,
+                links: nav,
+                canEdit: editing,
+                user: {...user},
+                tenant: {...tenant}
+            }
+        };
     }
     , ironOptions);
 
