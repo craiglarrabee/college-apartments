@@ -20,7 +20,7 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
             <main>
                 <Content top={top} site={site} page={page} bottom={bottom} images={images} canEdit={canEdit} />
                 <Footer bg={bg}/>
@@ -33,7 +33,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     if (!user.isLoggedIn) return {notFound: true};
     const page = context.resolvedUrl.replace(/\//, "");
-    const site = SITE;
+    const site = context.query.site || SITE;
     const content = {};
     const editing = !!user && !!user.editSite;
     const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), GetNavLinks(user, site)]);

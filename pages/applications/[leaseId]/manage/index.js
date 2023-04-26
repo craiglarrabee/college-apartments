@@ -23,7 +23,7 @@ const Lease = ({
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
@@ -44,7 +44,7 @@ const Lease = ({
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.replace(/\//, "");
-    const site = SITE;
+    const site = context.query.site || SITE;
     if (user.admin !== site && !user.manageApartment) {
         return {notFound: true};
     }

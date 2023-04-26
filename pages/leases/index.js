@@ -47,7 +47,7 @@ const Leases = ({site, links, page, user, leases}) => {
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(createLease)} method="post">
@@ -86,7 +86,7 @@ const Leases = ({site, links, page, user, leases}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    const site = SITE;
+    const site = context.query.site || SITE;
     const editing = !!user && !!user.editSite;
     if (!editing) return {notFound: true};
     const [nav, leases] = await Promise.all([GetNavLinks(user, site), GetLeases(site)]);

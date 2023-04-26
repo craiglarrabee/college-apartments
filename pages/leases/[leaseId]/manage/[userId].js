@@ -56,7 +56,7 @@ const Lease = ({
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
@@ -237,7 +237,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const navPage = context.resolvedUrl.replace(/\//, "")
         .replace(`/${userId}`, "");
     const page = navPage.replace("/manage", "");
-    const site = SITE;
+    const site = context.query.site || SITE;
     if (user.admin !== site) {
         return {notFound: true};
     }

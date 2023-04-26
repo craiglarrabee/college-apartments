@@ -15,7 +15,7 @@ import WorkFormGroups from "../../../../components/workFormGroups";
 import CurrentLeases from "../../../../components/currentLeases";
 import ApplicationFormGroups from "../../../../components/applicationFormGroups";
 import {GetLeaseRooms} from "../../../../lib/db/users/roomType";
-import {GetApplicationInfo} from "../../../../lib/db/users/applicationInfo";
+import {GetApplication} from "../../../../lib/db/users/applicationInfo";
 
 const SITE = process.env.SITE;
 
@@ -53,6 +53,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application}) 
         data.lease_id = ids[0];
         data.room_type_id = ids[1];
         data.share_info = data.do_not_share_info === "1" ? "0" : "1";
+        data.processed = !data.processed;
 
         //if modifications have been made, we POST and just update the application
         //otherwise we PUT which will complete the existing
@@ -80,7 +81,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application}) 
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
@@ -135,13 +136,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const site = SITE;
+    const site = context.query.site || SITE;
     const content = {};
     const [nav, tenant, currentRooms, application] = await Promise.all([
         GetNavLinks(user, site),
         GetTenantInfo(userId),
         GetLeaseRooms(leaseId),
-        GetApplicationInfo(site, userId, leaseId)
+        GetApplication(site, userId, leaseId)
     ]);
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
     currentLeases = currentLeases.map(lease => {

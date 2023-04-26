@@ -3,9 +3,9 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
 import {
-    AddApplicationInfo,
-    GetApplicationInfo,
-    ProcessApplicationInfo
+    AddApplication,
+    GetApplication,
+    ProcessApplication
 } from "../../../../../../lib/db/users/applicationInfo";
 import {AddUserLease, DeleteUserLease} from "../../../../../../lib/db/users/userLease";
 
@@ -14,19 +14,11 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "POST":
-                await AddApplicationInfo(req.body.site, req.query.userId, req.query.leaseId, req.body);
+                await AddApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
                 res.status(204).send();
                 return;
             case "PUT":
-                if (req.body.processed)
-                    await AddUserLease(req.query.userId, req.query.leaseId);
-                else
-                    await DeleteUserLease(req.query.userId, req.query.leaseId);
-                await ProcessApplicationInfo(req.body.site, req.query.userId, req.query.leaseId, req.body);
-                if (req.body.processed === true) {
-                    //TODO: send welcome email
-
-                }
+                await ProcessApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
                 res.status(204).send();
                 return;
             default:

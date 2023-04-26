@@ -23,15 +23,15 @@ const Lease = ({
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
-                        <Tab eventKey={1} title="Submitted">
-                            <ApplicationList data={submittedLeases} page={page}></ApplicationList>
-                        </Tab>
-                        <Tab eventKey={2} title="Pending">
+                        <Tab eventKey={1} title="Pending">
                             <ApplicationList data={pendingLeases} page={page}></ApplicationList>
+                        </Tab>
+                        <Tab eventKey={2} title="Submitted">
+                            <ApplicationList data={submittedLeases} page={page}></ApplicationList>
                         </Tab>
                     </Tabs>
                 </div>
@@ -44,7 +44,7 @@ const Lease = ({
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.replace(/\//, "");
-    const site = SITE;
+    const site = context.query.site || SITE;
     if (user.admin !== site && !user.manageApartment) {
         return {notFound: true};
     }

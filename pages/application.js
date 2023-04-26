@@ -15,7 +15,7 @@ import {ironOptions} from "../lib/session/options";
 import {useForm} from "react-hook-form";
 import {GetActiveSiteLeaseRooms, GetLeaseRooms} from "../lib/db/users/roomType";
 import CurrentLeases from "../components/currentLeases";
-import {GetPendingApplicationInfo} from "../lib/db/users/applicationInfo";
+import {GetPendingApplication} from "../lib/db/users/applicationInfo";
 
 const SITE = process.env.SITE;
 
@@ -55,7 +55,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
@@ -106,13 +106,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     if (!user.isLoggedIn) return {notFound: true};
     const page = context.resolvedUrl.replace(/\//, "");
-    const site = SITE;
+    const site = context.query.site || SITE;
     const content = {};
     const editing = !!user && !!user.editSite;
     const [contentRows, nav, pendingApplication] = await Promise.all([
         GetDynamicContent(site, page),
         GetNavLinks(user, site),
-        GetPendingApplicationInfo(user.id)
+        GetPendingApplication(user.id)
     ]);
     let currentRooms;
     if (pendingApplication) {

@@ -46,7 +46,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
@@ -73,7 +73,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const site = SITE;
+    const site = context.query.site || SITE;
     const content = {};
     const editing = !!user && !!user.editSite;
     const [nav, tenant] = await Promise.all([

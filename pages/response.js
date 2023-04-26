@@ -50,7 +50,7 @@ const Home = ({site, page, body, links, canEdit, user}) => {
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
             <main>
                 <PageContent
                     initialContent={body}
@@ -68,7 +68,7 @@ const Home = ({site, page, body, links, canEdit, user}) => {
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.replace(/\//, "");
-    const site = SITE;
+    const site = context.query.site || SITE;
     if (user.admin !== site) return {notFound: true};
     const content = {};
     const editing = !!user && !!user.editSite;

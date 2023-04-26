@@ -2,8 +2,8 @@ import SidebarMenu, {SidebarMenuBrand, SidebarMenuCollapse, SidebarMenuFooter, S
 import Image from "next/image";
 import classNames from "classnames";
 
-const Navigation = ({bg, variant, brandUrl, links, page}) => {
-    const navLinks = buildNavLinks(links, "");
+const Navigation = ({bg, variant, brandUrl, links, page, site}) => {
+    const navLinks = buildNavLinks(links, "", site);
 
     return (
         <SidebarMenu
@@ -38,14 +38,14 @@ const Navigation = ({bg, variant, brandUrl, links, page}) => {
     );
 };
 
-function buildNavLinks(links, parent) {
+function buildNavLinks(links, parent, site) {
     const navLinks = links.filter(item => item.parent_page === parent)
-        .map(item => buildNavLink(item, links));
+        .map(item => buildNavLink(item, links, site));
 
     return navLinks
 }
 
-function buildNavLink(item, links) {
+function buildNavLink(item, links, site) {
     if (item.sub_menu) {
         const sub_items = buildNavLinks(links, item.page);
         if (sub_items.length === 0) return <></>;
@@ -62,7 +62,7 @@ function buildNavLink(item, links) {
         );
     } else {
         return (
-            <SidebarMenu.Nav.Link href={`/${item.page}`} key={item.position} eventKey={item.page} target={item.target}>
+            <SidebarMenu.Nav.Link href={`/${item.page}?site=${site}`} key={item.position} eventKey={item.page} target={item.target}>
                 <SidebarMenu.Nav.Item>
                     <SidebarMenu.Nav.Title>{item.label}</SidebarMenu.Nav.Title>
                 </SidebarMenu.Nav.Item>

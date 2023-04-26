@@ -51,7 +51,7 @@ const Home = ({site, page, links, user}) => {
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")} style={{width: "100%"}}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
@@ -87,7 +87,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
     const page = context.resolvedUrl.replace(/\//, "");
-    const site = SITE;
+    const site = context.query.site || SITE;
     const [nav] = await Promise.all([GetNavLinks(user, site)]);
     return {props: {site: site, page: page, links: nav, user: {...user}}};
 }, ironOptions);

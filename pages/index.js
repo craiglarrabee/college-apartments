@@ -20,7 +20,7 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
     return (
         <Layout>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
-            <Navigation bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
             <main>
                 <Content top={top} site={site} page={page} bottom={bottom} images={images} canEdit={canEdit}/>
                 <Footer bg={bg}/>
@@ -31,7 +31,7 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    const site = SITE;
+    const site = context.query.site || SITE;
     const page = "index";
     const content = {};
     const editing = !!user && !!user.editSite;
