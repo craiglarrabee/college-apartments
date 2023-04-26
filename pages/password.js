@@ -86,7 +86,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const page = context.resolvedUrl.replace(/\//, "");
+    const page = "password";
     const site = context.query.site || SITE;
     const [nav] = await Promise.all([GetNavLinks(user, site)]);
     return {props: {site: site, page: page, links: nav, user: {...user}}};

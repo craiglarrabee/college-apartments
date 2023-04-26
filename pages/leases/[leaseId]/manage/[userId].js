@@ -234,7 +234,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const {userId, leaseId} = context.query;
 
-    const navPage = context.resolvedUrl.replace(/\//, "")
+    const navPage = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
     const page = navPage.replace("/manage", "");
     const site = context.query.site || SITE;

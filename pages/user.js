@@ -122,7 +122,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const page = context.resolvedUrl.replace(/\//, "");
+    const page = "user";
     const site = context.query.site || SITE;
     const editing = !!user && !!user.editSite;
     const [nav] = await Promise.all([GetNavLinks(user, site)]);

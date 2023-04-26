@@ -127,7 +127,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application}) 
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const {userId, leaseId} = context.query;
-    const navPage = context.resolvedUrl.replace(/\//, "")
+    const navPage = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
     const user = context.req.session.user;
     if (!user.isLoggedIn) return {notFound: true};

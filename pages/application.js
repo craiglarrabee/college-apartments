@@ -105,7 +105,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     if (!user.isLoggedIn) return {notFound: true};
-    const page = context.resolvedUrl.replace(/\//, "");
+    const page = "application";
     const site = context.query.site || SITE;
     const content = {};
     const editing = !!user && !!user.editSite;
