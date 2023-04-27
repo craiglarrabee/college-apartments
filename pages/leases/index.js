@@ -36,7 +36,7 @@ const Leases = ({site, links, page, user, leases}) => {
                     break;
                 case 200:
                     let json = await resp.json();
-                    location = `/leases/${json.id}`;
+                    location = `/leases/${json.id}?site=${site}`;
                     break;
             }
         } catch (e) {

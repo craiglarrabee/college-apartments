@@ -92,7 +92,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                             </span>
                         </div>
                         <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit" disabled={canEdit || !isDirty || !isValid}>Submit</Button>
+                            <Button variant="primary" type="submit" disabled={canEdit || !isDirty}>Submit</Button>
                         </div>
                     </Form>
                 </div>

@@ -47,7 +47,7 @@ function buildNavLinks(links, parent, site) {
 
 function buildNavLink(item, links, site) {
     if (item.sub_menu) {
-        const sub_items = buildNavLinks(links, item.page);
+        const sub_items = buildNavLinks(links, item.page, site);
         if (sub_items.length === 0) return <></>;
         return (
             <SidebarMenu.Sub key={item.position} eventKey={item.page}>

@@ -61,7 +61,7 @@ const Home = ({site, page, links, canEdit, user}) => {
                 case 200:
                 case 204:
                     await fetch("/api/login", options);
-                    location = "/tenant";
+                    location = "/tenant?newApplication";
             }
 
         } catch (e) {

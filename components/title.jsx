@@ -37,7 +37,7 @@ const Title = ({bg, variant, initialUser, site}) => {
                 }
 
                 await fetch(endpoint, options);
-                location = "/index";
+                location = `/index?site=${site}`;
             } catch (e) {
                 console.log(e);
             }
@@ -55,7 +55,7 @@ const Title = ({bg, variant, initialUser, site}) => {
                     }
                 }
                 await fetch(endpoint, options);
-                location = "/index";
+                location = `/index?site=${site}`;
             } catch (e) {
                 console.log(e);
             }
@@ -73,7 +73,7 @@ const Title = ({bg, variant, initialUser, site}) => {
                     }
                 }
                 await fetch(endpoint, options);
-                location = "/index";
+                location = `/index?site=${site}`;
             } catch (e) {
                 console.log(e);
             }
@@ -87,7 +87,7 @@ const Title = ({bg, variant, initialUser, site}) => {
     const handleUserAction = async (event) => {
         if (user.isLoggedIn) {
             await signOut(event);
-            location = "/index";
+            location = `/index?site=${site}`;
         } else {
             setShowLogin(true);
         }
@@ -105,6 +105,7 @@ const Title = ({bg, variant, initialUser, site}) => {
             const resp = await fetch("/api/logout", options);
             const user = await resp.json();
             setNewUser(user);
+            location = `/index?site=${site}`;
         } catch (e) {
             console.log(e);
         }
