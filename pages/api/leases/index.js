@@ -5,6 +5,7 @@ import {AddNavLink} from "../../../lib/db/content/navLinks";
 import {CopyDynamicContent} from "../../../lib/db/content/dynamicContent";
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../lib/session/options";
+import {AddLeaseRooms, CopyLeaseRooms} from "../../../lib/db/users/roomType";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.admin) {
@@ -14,10 +15,12 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "POST":
-                let leaseId = await AddLease(req.body);
+                const leaseId = await AddLease(req.body);
                 req.body.leaseId = leaseId;
-                let newPage = `leases/${leaseId}`;
-                await Promise.all([AddNavLink(req.body), CopyDynamicContent(req.body.site, req.body.template, newPage)]);
+                const newPage = `leases/${leaseId}`;
+                let oldLeaseId;
+                if (req.body.template) oldLeaseId = req.body.template.substring(req.body.template.indexOf("/")+1);
+                await Promise.all([AddNavLink(req.body), CopyDynamicContent(req.body.site, req.body.template, newPage), oldLeaseId ? CopyLeaseRooms(oldLeaseId, leaseId) : AddLeaseRooms(req.body.site, leaseId)]);
                 res.json({id: leaseId});
                 res.status(200).send();
                 return;

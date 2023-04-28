@@ -17,7 +17,7 @@ const Leases = ({site, links, page, user, leases}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, formState: {isValid, isDirty}, handleSubmit} = useForm();
+    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
     const createLease = async (data, event) => {
         event.preventDefault();
@@ -51,23 +51,25 @@ const Leases = ({site, links, page, user, leases}) => {
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(createLease)} method="post">
-                        <div className="h4">LeaseId Information:</div>
+                        <div className="h4">Lease Definition Information:</div>
                         <Row>
                             <Form.Group as={Col} xs={3} className="mb-3" controlId="leasename">
-                                <Form.Label visuallyHidden={true}>LeaseId Name</Form.Label>
-                                <Form.Control {...register("leasename", {required: true, minLength: 5, maxLength: 15})} type="text"
+                                <Form.Label visuallyHidden={true}>Lease Definition Name</Form.Label>
+                                <Form.Control {...register("leasename", {required: {value: true, message: "Required"}, minLength: {value: 5, message: "Too short"}, maxLength: {value: 15, message: "Too long"}})} type="text"
                                               placeholder="LeaseId Name"/>
+                                {errors && errors.leasename && <Form.Text className={classNames("text-danger")}>{errors && errors.leasename.message}</Form.Text>}
                             </Form.Group>
                             <Form.Group as={Col} xs={9} className="mb-3" controlId="description">
                                 <Form.Label visuallyHidden={true}>LeaseId Description</Form.Label>
-                                <Form.Control {...register("description", {required: true, minLength: 5, maxLength: 50})} type="text"
+                                <Form.Control {...register("description", {required: {value: true, message: "Required"}, minLength: {value: 5, message: "Too short"}, maxLength: {value: 50, message: "Too long"}})} type="text"
                                               placeholder="LeaseId Description"/>
+                                {errors && errors.description && <Form.Text className={classNames("text-danger")}>{errors && errors.description.message}</Form.Text>}
                             </Form.Group>
                         </Row>
                         <Form.Group className="mb-3" controlId="template">
-                            <Form.Label visuallyHidden={true}>LeaseId Template</Form.Label>
-                            <Form.Select {...register("template", {required: true})} type="select">
-                                <option>Choose LeaseId to copy</option>
+                            <Form.Label >Choose Lease Definition to copy</Form.Label>
+                            <Form.Select {...register("template")} type="select">
+                                <option></option>
                                 {leases.map((def, index) => (<option key={index} value={def.page}>{def.label}</option>))}
                             </Form.Select>
                         </Form.Group>
