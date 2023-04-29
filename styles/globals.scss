@@ -13,6 +13,24 @@ html,
 body,
 #root,
 
+
+
+#myCarousel {margin-left: 40px; margin-right: 80px;}
+
+.carousel-control {
+  top: 50%;
+}
+.carousel-inner {
+  margin-left: 50px;
+  margin-right: 50px;
+  width: 85%;
+}
+.carousel-control-prev, .carousel-control-next {
+  background: none;
+  border: none;
+  width: 10%;
+}
+
 body {
   display: flex;
   justify-content: center;

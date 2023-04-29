@@ -27,10 +27,10 @@ const Lease = ({
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
-                        <Tab eventKey={1} title="Pending">
+                        <Tab eventKey={1} title="Sent">
                             <ApplicationList data={pendingLeases} page={page}></ApplicationList>
                         </Tab>
-                        <Tab eventKey={2} title="Submitted">
+                        <Tab eventKey={2} title="Signed">
                             <ApplicationList data={submittedLeases} page={page}></ApplicationList>
                         </Tab>
                     </Tabs>
