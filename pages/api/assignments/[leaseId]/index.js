@@ -3,7 +3,6 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import {RemoveApartmentNumbers} from "../../../../lib/db/users/tenant";
-import Router from "next/router";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.manageApartment) {
