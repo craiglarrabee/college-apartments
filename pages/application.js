@@ -13,17 +13,16 @@ import PageContent from "../components/pageContent";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {useForm} from "react-hook-form";
-import {GetActiveSiteLeaseRooms, GetLeaseRooms} from "../lib/db/users/roomType";
+import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 import CurrentLeases from "../components/currentLeases";
-import {GetPendingApplication} from "../lib/db/users/applicationInfo";
 
 const SITE = process.env.SITE;
 
-const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user, currentLeases, pendingApplication}) => {
+const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user, currentLeases}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: pendingApplication});
+    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
@@ -53,16 +52,16 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
     }
 
     return (
-        <Layout>
+        <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        {site === "suu" ? <WorkFormGroups register={register} application={pendingApplication} errors={errors} /> : null}
+                        {site === "suu" ? <WorkFormGroups register={register}  errors={errors} /> : null}
                         <div className="h4">Room Type:</div>
                         <br/>
-                        {currentLeases.map(lease => <CurrentLeases {...lease} register={register} enabled={pendingApplication === undefined || pendingApplication === null || pendingApplication.lease_id === lease.leaseId} />)}
+                        {currentLeases.map(lease => <CurrentLeases {...lease} register={register} />)}
                         {errors && errors.lease_room_type_id && <Form.Text className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
                         <ApplicationFormGroups register={register} errors={errors} />
                         <PageContent
@@ -109,19 +108,16 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = context.query.site || SITE;
     const content = {};
     const editing = !!user && !!user.editSite;
-    const [contentRows, nav, pendingApplication] = await Promise.all([
+    const [contentRows, nav, currentRooms] = await Promise.all([
         GetDynamicContent(site, page),
         GetNavLinks(user, site),
-        GetPendingApplication(user.id)
+        GetUserAvailableLeaseRooms(site, user.id)
     ]);
-    let currentRooms;
-    if (pendingApplication) {
-        pendingApplication.submit_date = pendingApplication.submit_date.toISOString().split("T")[0];
-        pendingApplication.lease_room_type_id = `${pendingApplication.lease_id}_${pendingApplication.room_type_id}`;
-        pendingApplication.do_not_share_info = !pendingApplication.share_info;
-        currentRooms = await GetLeaseRooms(pendingApplication.lease_id);
-    } else {
-        currentRooms = await GetActiveSiteLeaseRooms(site);
+
+    if(!currentRooms || currentRooms.length === 0) {
+        context.res.writeHead(302, {Location: "/deposit"});
+        context.res.end();
+        return {};
     }
     contentRows.forEach(row => content[row.name] = row.content);
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
@@ -139,8 +135,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             links: nav,
             canEdit: editing,
             user: {...user},
-            currentLeases: currentLeases,
-            pendingApplication: pendingApplication
+            currentLeases: currentLeases
         }
     };
 }, ironOptions);

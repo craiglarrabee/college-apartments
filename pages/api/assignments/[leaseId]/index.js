@@ -2,18 +2,20 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
-import {GetPendingApplications} from "../../../../lib/db/users/application";
+import {RemoveApartmentNumbers} from "../../../../lib/db/users/tenant";
+import Router from "next/router";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.isLoggedIn) res.status(403).send();
+    if (!req.session.user.manageApartment) {
+        res.status(403).send();
+        return;
+    }
     try {
         switch (req.method) {
-            case "GET":
-                res.body = await GetPendingApplications(req.query.userId);
-                if (!res.body) {
-                    res.status(404).send();
-                }
-                res.status(200).send();
+            case "DELETE":
+                const leaseId = req.query.leaseId;
+                await RemoveApartmentNumbers(leaseId);
+                res.status(204).send();
                 return;
             default:
                 res.status(405).send();

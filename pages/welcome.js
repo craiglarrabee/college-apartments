@@ -7,7 +7,7 @@ import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetTenantInfo} from "../lib/db/users/tenantInfo";
+import {GetTenant} from "../lib/db/users/tenant";
 import {Button} from "react-bootstrap";
 import {WelcomeEmailBody} from "../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";
@@ -52,7 +52,7 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant})
     }
 
     return (
-        <Layout>
+        <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
@@ -76,7 +76,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const [contentRows, nav, tenant] = await Promise.all([
             GetDynamicContent(site, page),
             GetNavLinks(user, site),
-            GetTenantInfo(user.id)
+            GetTenant(user.id)
         ]);
         contentRows.forEach(row => content[row.name] = row.content);
         if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];

@@ -45,7 +45,7 @@ const Leases = ({site, links, page, user, leases}) => {
     }
 
     return (
-        <Layout>
+        <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

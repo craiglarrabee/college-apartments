@@ -1,7 +1,7 @@
 import {FormCheck} from "react-bootstrap";
 import React from "react";
 
-const CurrentLeases = ({register, leaseId, leaseDescription, rooms, enabled}) => {
+const CurrentLeases = ({register, leaseId, leaseDescription, rooms}) => {
 
     return (
         <>
@@ -15,8 +15,7 @@ const CurrentLeases = ({register, leaseId, leaseDescription, rooms, enabled}) =>
                     setValueAs: value => value !== null ? value.toString() : ""
                 })} type="radio"
                            label={`$${room.room_rent}/sem - ${room.room_desc}`} id={`${leaseId}_${room.room_type_id}`}
-                           value={`${room.lease_id}_${room.room_type_id}`}
-                           disabled={!enabled}></FormCheck>
+                           value={`${room.lease_id}_${room.room_type_id}`}></FormCheck>
             ))}
             <br/>
         </>

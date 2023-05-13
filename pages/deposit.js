@@ -18,9 +18,9 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     return (
-        <Layout>
+        <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page="user" />
             <main>
                 <Content top={top} site={site} page={page} bottom={bottom} images={images} canEdit={canEdit} />
                 <Footer bg={bg}/>

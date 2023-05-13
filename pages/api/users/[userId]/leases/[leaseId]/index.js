@@ -2,7 +2,7 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
-import {AddTenantInfo, GetTenantInfo} from "../../../../../../lib/db/users/tenantInfo";
+import {AddTenant, GetTenant} from "../../../../../../lib/db/users/tenant";
 import {AddUserLease, GetUserLease, UpdateUserLease} from "../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {

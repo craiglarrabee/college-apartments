@@ -2,17 +2,17 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
-import {AddTenantInfo, GetTenantInfo} from "../../../../lib/db/users/tenantInfo";
+import {AddTenant, GetTenant} from "../../../../lib/db/users/tenant";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "GET":
-                res.body = await GetTenantInfo(req.query.userId);
+                res.body = await GetTenant(req.query.userId);
                 res.status(200).send();
             case "POST":
-                await AddTenantInfo(req.query.userId, req.body);
+                await AddTenant(req.query.userId, req.body);
                 res.status(204).send();
                 return;
             default:

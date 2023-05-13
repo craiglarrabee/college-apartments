@@ -8,18 +8,18 @@ import {Button, Form, Tab, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
-import {GetTenantInfo} from "../../../../lib/db/users/tenantInfo";
+import {GetUserLeaseTenant} from "../../../../lib/db/users/tenant";
 import {useForm} from "react-hook-form";
 import {TenantFormGroups} from "../../../../components/tenantFormGroups";
 import WorkFormGroups from "../../../../components/workFormGroups";
 import CurrentLeases from "../../../../components/currentLeases";
 import ApplicationFormGroups from "../../../../components/applicationFormGroups";
 import {GetLeaseRooms} from "../../../../lib/db/users/roomType";
-import {GetApplication} from "../../../../lib/db/users/applicationInfo";
+import {GetApplication} from "../../../../lib/db/users/application";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, navPage, links, user, tenant, currentLeases, application}) => {
+const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -35,7 +35,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application}) 
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/tenant`, options);
+            const resp = await fetch(`/api/users/${userId}/tenant?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     break;
@@ -65,21 +65,40 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application}) 
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/leases/${data.lease_id}/application`, options)
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     break;
                 case 204:
-                    location = `/${navPage}`;
+                    location = `/${navPage}?site=${site}`;
             }
         } catch (e) {
             console.log(e);
         }
-    }
+    };
+
+    const handleDelete = async() => {
+        try {
+            const options = {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"}
+            }
+
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 204:
+                    location = `/${navPage}?site=${site}`;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
 
     return (
-        <Layout>
+        <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
@@ -113,7 +132,8 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application}) 
                             </span>
                                 </div>
                                 <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                                    <Button variant="primary" type="submit" >{isDirty ? "Save" : application.processed ? "Mark Unprocessed" : "Mark Processed"}</Button>
+                                    <Button variant="primary" type="submit" style={{margin: "5px"}}>{isDirty ? "Save" : application.processed ? "Mark Unprocessed" : "Mark Processed"}</Button>
+                                    <Button variant="primary" onClick={handleDelete} style={{margin: "5px"}}>{"Delete"}</Button>
                                 </div>
                             </Form>
                         </Tab>
@@ -137,10 +157,9 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
     const site = context.query.site || SITE;
-    const content = {};
     const [nav, tenant, currentRooms, application] = await Promise.all([
         GetNavLinks(user, site),
-        GetTenantInfo(userId),
+        GetUserLeaseTenant(userId, leaseId),
         GetLeaseRooms(leaseId),
         GetApplication(site, userId, leaseId)
     ]);
@@ -163,7 +182,9 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             tenant: {...tenant},
             currentLeases: currentLeases,
             application: application,
-            navPage: navPage
+            navPage: navPage,
+            userId: userId,
+            leaseId: leaseId
         }
     };
 }, ironOptions);

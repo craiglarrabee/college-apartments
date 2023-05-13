@@ -35,7 +35,9 @@
     "run": "^1.4.0",
     "sharp": "^0.31.3",
     "tls": "^0.0.1",
-    "yup": "^1.0.1"
+    "yup": "^1.0.1",
+    "@dnd-kit/core": "^6.0.8",
+    "@dnd-kit/utilities": "^3.2.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",

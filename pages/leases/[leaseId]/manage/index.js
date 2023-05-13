@@ -8,7 +8,7 @@ import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
 import {Tab, Tabs} from "react-bootstrap";
-import {ApplicationList} from "../../../../components/applicationList";
+import {ApplicationList, SentLeaseList, SignedLeaseList} from "../../../../components/applicationList";
 import {GetUserLeases} from "../../../../lib/db/users/userLease";
 
 const SITE = process.env.SITE;
@@ -21,17 +21,17 @@ const Lease = ({
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     return (
-        <Layout>
+        <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
                         <Tab eventKey={1} title="Sent">
-                            <ApplicationList data={pendingLeases} page={page}></ApplicationList>
+                            <SentLeaseList data={pendingLeases} page={page}></SentLeaseList>
                         </Tab>
                         <Tab eventKey={2} title="Signed">
-                            <ApplicationList data={submittedLeases} page={page}></ApplicationList>
+                            <SignedLeaseList data={submittedLeases} page={page}></SignedLeaseList>
                         </Tab>
                     </Tabs>
                 </div>

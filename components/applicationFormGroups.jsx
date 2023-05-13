@@ -106,10 +106,10 @@ const ApplicationFormGroups = ({
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="school_year">
                     <Form.Label>School Year</Form.Label>
-                    <Form.Select {...register("school_year", {pattern: {value: /^\w{6,}$/, message: "Please select your year in school."}})}>
-                        <option value=""></option>
+                    <Form.Select {...register("school_year", {required: {value: true, message: "Please select your year in school."}})}>
+                        <option value="School Year" disabled={true}></option>
                         <option value="Freshman">Freshman</option>
-                        <option value="Sophmore">Sophmore</option>
+                        <option value="Sophmore">Sophomore</option>
                         <option value="Junior">Junior</option>
                         <option value="Senior">Senior</option>
                         <option value="Graduate">Graduate</option>

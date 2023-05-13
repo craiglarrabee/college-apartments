@@ -8,9 +8,10 @@ import {Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetTenantInfo} from "../lib/db/users/tenantInfo";
+import {GetTenant} from "../lib/db/users/tenant";
 import {useForm} from "react-hook-form";
 import {TenantFormGroups} from "../components/tenantFormGroups";
+import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 
 const SITE = process.env.SITE;
 
@@ -44,7 +45,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
     }
 
     return (
-        <Layout>
+        <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
@@ -75,11 +76,18 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     }
     const site = context.query.site || SITE;
     const content = {};
-    const editing = !!user && !!user.editSite;
-    const [nav, tenant] = await Promise.all([
+    const [nav, tenant, leases] = await Promise.all([
         GetNavLinks(user, site),
-        GetTenantInfo(user.id)
+        GetTenant(user.id),
+        GetUserAvailableLeaseRooms(site, user.id)
     ]);
+
+    if(!leases || leases.length === 0) {
+        context.res.writeHead(302, {Location: "/deposit"});
+        context.res.end();
+        return {};
+    }
+
     if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
     return {
         props: {

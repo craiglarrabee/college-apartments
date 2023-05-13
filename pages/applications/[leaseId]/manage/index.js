@@ -8,30 +8,41 @@ import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
 import {Tab, Tabs} from "react-bootstrap";
-import {ApplicationList} from "../../../../components/applicationList";
-import {GetApplications} from "../../../../lib/db/users/applicationInfo";
+import {
+    DepositReceivedApplicationList,
+    ProcessedApplicationList,
+    UnprocessedApplicationList
+} from "../../../../components/applicationList";
+import {
+    GetDepositReceivedApplications,
+    GetProcessedApplications,
+    GetUnprocessedApplications
+} from "../../../../lib/db/users/application";
 
 const SITE = process.env.SITE;
 
 const Lease = ({
-                   site, page, links, user, unprocessedApplications, processedApplications
+                   site, page, links, user, unprocessedApplications, processedApplications, depositReceivedApplications
                }) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     return (
-        <Layout>
+        <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
                         <Tab eventKey={1} title="Unprocessed">
-                            <ApplicationList data={unprocessedApplications} page={page}></ApplicationList>
+                            <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site} />
                         </Tab>
                         <Tab eventKey={2} title="Processed">
-                            <ApplicationList data={processedApplications} page={page}></ApplicationList>
+                            <ProcessedApplicationList data={processedApplications} page={page} site={site} />
+                        </Tab>
+                        <Tab eventKey={3} title="Deposit Received">
+                            <DepositReceivedApplicationList data={depositReceivedApplications} page={page} site={site} />
                         </Tab>
                     </Tabs>
                 </div>
@@ -49,10 +60,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {notFound: true};
     }
     const editing = !!user && !!user.editSite;
-    const [nav, unprocessedApplications, processedApplications] = await Promise.all([
+    const [nav, unprocessedApplications, processedApplications, depositReceivedApplications] = await Promise.all([
         GetNavLinks(user, site),
-        GetApplications(site, context.query.leaseId, false),
-        GetApplications(site, context.query.leaseId, true)
+        GetUnprocessedApplications(site, context.query.leaseId),
+        GetProcessedApplications(site, context.query.leaseId),
+        GetDepositReceivedApplications(site, context.query.leaseId)
     ]);
 
     return {
@@ -63,7 +75,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             canEdit: editing,
             user: {...user},
             processedApplications: processedApplications,
-            unprocessedApplications: unprocessedApplications
+            unprocessedApplications: unprocessedApplications,
+            depositReceivedApplications: depositReceivedApplications
         }
     };
 }, ironOptions);

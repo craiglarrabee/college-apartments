@@ -72,11 +72,27 @@ main {
   border-bottom-right-radius: 50px;
 }
 
+.user-main-wrapper {
+  max-width: 950px;
+}
+
+.admin-main-wrapper {
+  width: 1450px;
+}
+
 .main-wrapper {
   height: 80%;
-  max-width: $app-max-width;
   border-bottom-right-radius: 50px;
   border-top-right-radius: 50px;
+  background: #f3f4f6;
+  grid-area: main;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
 }
 
 .react-bootstrap-img {
@@ -88,16 +104,19 @@ main {
   no-repeat left center;
 }
 
-.main-wrapper {
-  background: #f3f4f6;
-  grid-area: main;
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "sidebar header"
-    "sidebar main";
+.droppable {
+  width: 200px;
+  border: medium solid black;
+  border-radius: 10px;
+  margin: 5px;
+}
+
+.draggable {
+  height: fit-content;
+  text-align: left;
+  border: 1px solid black;
+  border-radius: 5px;
+  margin: 2px;
 }
 
 .navbar-dark {
