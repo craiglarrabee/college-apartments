@@ -117,13 +117,13 @@ const Home = ({site, page, links, canEdit, user}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
+    const site = context.query.site || SITE;
     if (user && user.isLoggedIn) {
-        context.res.writeHead(302, {Location: "/tenant?newApplication"});
+        context.res.writeHead(302, {Location: `/tenant?newApplication&site=${site}`});
         context.res.end();
         return {};
     }
     const page = "user";
-    const site = context.query.site || SITE;
     const editing = !!user && !!user.editSite;
     const [nav] = await Promise.all([GetNavLinks(user, site)]);
     return {props: {site: site, page: page, links: nav, canEdit: editing, user: {...user}}};
