@@ -2,21 +2,16 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
-import {
-    AddApplication,
-    GetApplication,
-    UpdateApplication
-} from "../../../../../../lib/db/users/application";
-import {AddUserLease, DeleteUserLease} from "../../../../../../lib/db/users/userLease";
-import {CopyTenantForUserLease, SetApartmentNumber} from "../../../../../../lib/db/users/tenant";
+import {ReceiveDeposit} from "../../../../../../lib/db/users/application";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
-            case "PUT":
-                await SetApartmentNumber(req.query.userId, req.query.leaseId, req.body.apartmentNumber);
-                res.status(204).send();
+            case "POST":
+                const resp = await ReceiveDeposit(req.query.site, req.query.userId, req.query.leaseId);
+                res.json({...resp});
+                res.status(200).send();
                 return;
             default:
                 res.status(405).send();

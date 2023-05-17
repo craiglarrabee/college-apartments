@@ -8,21 +8,22 @@ import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {GetTenant} from "../lib/db/users/tenant";
-import {Button} from "react-bootstrap";
-import {WelcomeEmailBody} from "../components/welcomeEmailBody";
-import ReactDomServer from "react-dom/server";
+import {Button, Col, Form, Row} from "react-bootstrap";
+import Image from "next/image";
+import {useForm} from "react-hook-form";
+import classNames from "classnames";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, page, header, body, links, canEdit, user, company, tenant}) => {
+const Home = ({site, page, header, body, links, user}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
-                                        canEdit={false} company={company}
-                                        site={site} page={page}></WelcomeEmailBody>;
-    const emailBodyString = ReactDomServer.renderToString(emailBody);
-    const sendEmail = async () => {
+
+    const {register, formState: {isDirty, errors}, handleSubmit} = useForm();
+
+    const sendEmail = async (data, event) => {
+        event.preventDefault();
 
         try {
             const payload = {
@@ -52,13 +53,40 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant})
     }
 
     return (
-        <Layout user={user} >
+        <Layout user={user}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
-                <WelcomeEmailBody tenant={tenant} header={header} body={body} canEdit={canEdit} company={company}
-                                  site={site} page={page}></WelcomeEmailBody>
-                <Button style={{alignSelf: "center"}} size="lg" onClick={sendEmail}>{`Send to ${tenant.email}`}</Button>
+                <Form onSubmit={handleSubmit(sendEmail)} method="post">
+                    <Row>
+                        <Col>
+                            <Image src="/images/contactus.jpg" alt="Email" width={250} height={177}/>
+                        </Col>
+                        <Form.Group as={Col} xs={9} className="mb-3" controlId="body">
+                            <Form.Label visuallyHidden={true}>Email Body</Form.Label>
+                            <Form.Control
+                                className={errors && errors.email && classNames("border-danger")} {...register("body", {
+                                required: {value: true, message: "Email body is required."},
+                                maxLength: 512
+                            })} as="textarea" type="text" rows={7} placeholder="Enter email text here."/>
+                            {errors && errors.email && <Form.Text className={classNames("text-danger")}>{errors && errors.email.message}</Form.Text>}
+                        </Form.Group>
+                    </Row>
+                    <div>Now choose who should receive the email, then click <span style={{fontWeight: "bold"}}>Send Email</span> at the bottom of the page:</div>
+                    <Form.Check className="mb-3" {...register("recipients", {
+                        required: true,
+                        setValueAs: value => value !== null ? value.toString() : ""
+                    })} type="radio" inline value="1" label="Yes"/>
+                    <Form.Check className="mb-3" {...register("recipients", {
+                        required: true,
+                        setValueAs: value => value !== null ? value.toString() : ""
+                    })} type="radio" inline value="0" label="No"/>
+
+                    <div style={{width: "100%"}}
+                         className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                        <Button variant="primary" type="submit" disabled={!isDirty}>Send Email</Button>
+                    </div>
+                </Form>
                 <Footer bg={bg}/>
             </main>
         </Layout>
@@ -67,12 +95,11 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant})
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
-        const page = "welcome";
+        const page = "email";
         const site = context.query.site || SITE;
-        const company = "Stadium Way/College Way Apartments, LLC";
+
         if (user.admin !== site) return {notFound: true};
         const content = {};
-        const editing = !!user && !!user.editSite;
         const [contentRows, nav, tenant] = await Promise.all([
             GetDynamicContent(site, page),
             GetNavLinks(user, site),
@@ -83,10 +110,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {
             props: {
                 site: site,
-                company: company,
                 page: page, ...content,
                 links: nav,
-                canEdit: editing,
                 user: {...user},
                 tenant: {...tenant}
             }

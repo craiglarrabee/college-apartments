@@ -2,31 +2,111 @@ import Layout from "../../../../components/layout";
 import Navigation from "../../../../components/navigation";
 import Title from "../../../../components/title";
 import Footer from "../../../../components/footer";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
-import {Tab, Tabs} from "react-bootstrap";
+import {Button, Tab, Table, Tabs} from "react-bootstrap";
 import {
     DepositReceivedApplicationList,
     ProcessedApplicationList,
     UnprocessedApplicationList
 } from "../../../../components/applicationList";
 import {
-    GetDepositReceivedApplications,
-    GetProcessedApplications,
-    GetUnprocessedApplications
+    GetApplications
 } from "../../../../lib/db/users/application";
 
 const SITE = process.env.SITE;
 
-const Lease = ({
-                   site, page, links, user, unprocessedApplications, processedApplications, depositReceivedApplications
+
+const Applications = ({
+                   leaseId, site, page, links, user, applications
                }) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
+    const [allApplications, setAllApplications] = useState(applications);
+    const [unprocessedApplications, setUnprocessedApplications] = useState(allApplications.filter(app => app.processed === 0));
+    const [processedApplications, setProcessedApplications] = useState(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
+    const [depositReceivedApplications, setDepositReceivedApplications] = useState(allApplications.filter(app => app.deposit_date));
+
+    const processApplication = async (userId, site, leaseId, processed) => {
+        try {
+            const options = {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({processed: processed}),
+            }
+
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 204:
+                    // now remove from the applications on this page components
+                    const newApplications = await Promise.all(allApplications.map(async (app) => { if (app.user_id === userId) {app.processed = processed ? 1 : 0; return app} else {return app}}));
+                    setAllApplications(newApplications);
+                    setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
+                    setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
+                    setDepositReceivedApplications(newApplications.filter(app => app.deposit_date));
+                    break;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    const deleteApplication = async (userId, site, leaseId) => {
+        try {
+            const options = {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"}
+            }
+
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 204:
+                    // now remove from the applications on this page components
+                    setAllApplications(allApplications.filter(app => app.user_id !== userId))
+                    setUnprocessedApplications(allApplications.filter(app => app.processed === 0));
+                    setProcessedApplications(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
+                    setDepositReceivedApplications(allApplications.filter(app => app.deposit_date));
+                    break;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+
+    const receiveDeposit = async (userId, site, leaseId) => {
+        try {
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+            }
+
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options)
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 200:
+                    // now remove from the applications on this page components
+                    const updatedApplication = await resp.json();
+                    const newApplications = await Promise.all(allApplications.map(async (app) => { if (app.user_id === userId) {return updatedApplication} else {return app}}));
+                    setAllApplications(newApplications);
+                    setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
+                    setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
+                    setDepositReceivedApplications(newApplications.filter(app => app.deposit_date));
+                    break;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
     return (
         <Layout user={user} >
@@ -34,15 +114,15 @@ const Lease = ({
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
-                    <Tabs defaultActiveKey={1}>
+                    <Tabs defaultActiveKey={1} >
                         <Tab eventKey={1} title="Unprocessed">
-                            <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site} />
+                            <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleProcess={processApplication}/>
                         </Tab>
                         <Tab eventKey={2} title="Processed">
-                            <ProcessedApplicationList data={processedApplications} page={page} site={site} />
+                            <ProcessedApplicationList data={processedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleDeposit={receiveDeposit} handleProcess={processApplication}/>
                         </Tab>
                         <Tab eventKey={3} title="Deposit Received">
-                            <DepositReceivedApplicationList data={depositReceivedApplications} page={page} site={site} />
+                            <DepositReceivedApplicationList data={depositReceivedApplications} page={page} leaseId={leaseId} site={site} />
                         </Tab>
                     </Tabs>
                 </div>
@@ -60,25 +140,22 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {notFound: true};
     }
     const editing = !!user && !!user.editSite;
-    const [nav, unprocessedApplications, processedApplications, depositReceivedApplications] = await Promise.all([
+    const [nav, applications] = await Promise.all([
         GetNavLinks(user, site),
-        GetUnprocessedApplications(site, context.query.leaseId),
-        GetProcessedApplications(site, context.query.leaseId),
-        GetDepositReceivedApplications(site, context.query.leaseId)
+        GetApplications(site, context.query.leaseId)
     ]);
 
     return {
         props: {
+            leaseId: context.query.leaseId,
             site: site,
             page: page,
             links: nav,
             canEdit: editing,
             user: {...user},
-            processedApplications: processedApplications,
-            unprocessedApplications: unprocessedApplications,
-            depositReceivedApplications: depositReceivedApplications
+            applications: [...applications],
         }
     };
 }, ironOptions);
 
-export default Lease;
+export default Applications;

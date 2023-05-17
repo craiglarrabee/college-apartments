@@ -112,23 +112,33 @@ const Title = ({bg, variant, initialUser, site}) => {
     };
 
     return (
-        <Navbar className={classNames("d-inline-flex", "flex-row")}  expand={true} bg={bg} variant={variant}>
-            <Navbar.Brand>presents: <span className={classNames("h3", "sub-brand")}>Park Place Apartments</span></Navbar.Brand>
-            <Navbar.Brand style={{width: "100%"}} ><span className={classNames("d-inline-flex", "justify-content-end", "navbar-brand")} style={{width: "100%"}}>
-            {user.isLoggedIn ? <Navbar.Text>{`Welcome ${user.firstName ? user.firstName : user.username}`}</Navbar.Text> : <Navbar.Text style={{cursor: "pointer"}} onClick={handleUserAction}>{actionText}</Navbar.Text>}
-            <Nav style={{paddingRight: "1.5rem"}} className={classNames("justify-content-end")}>
+        <Navbar style={{display: "block"}} expand={true} bg={bg} variant={variant}>
+            <Navbar.Brand >presents: <span className={classNames("h3", "sub-brand")}>{site === "snow" ? "Park Place Apartments @ Snow College" : "Stadium Way & College Way @ SUU"}</span></Navbar.Brand>
+            <Navbar.Brand style={{width: "100%"}}>
+                <span className={classNames("d-inline-flex", "justify-content-end", "navbar-brand")}
+                      style={{width: "100%"}}>
+                {user && user.isLoggedIn ?
+                    <Navbar.Text>{`Welcome ${user.firstName ? user.firstName : user.username}`}</Navbar.Text> :
+                    <Navbar.Text style={{cursor: "pointer"}} onClick={handleUserAction}>{actionText}</Navbar.Text>
+                }
+                    <Nav style={{paddingRight: "1.5rem"}} className={classNames("justify-content-end")}>
                 <NavDropdown align="end" style={{fontSize: "1rem"}} title={<Person className={classNames("h3")}/>}>
-                    {user && (user.editSite || user.manageApartment) ? <NavDropdown.Item onClick={handleViewSite} >View Site</NavDropdown.Item> : <></>}
-                    {user.admin  && !user.editSite ? <NavDropdown.Item onClick={handleEditSite} >Manage Site</NavDropdown.Item> : <></>}
-                    {user.admin && !user.manageApartment ? <NavDropdown.Item onClick={handleManageApartment} >Manage Apartments</NavDropdown.Item> : <></>}
-                    {!editSite ? <NavDropdown.Item href={"/tenant"} hidden={!user.isLoggedIn}>Manage Profile</NavDropdown.Item> : <></>}
-                    {!editSite ? <NavDropdown.Item href={"/password"} hidden={!user.isLoggedIn}>Change Password</NavDropdown.Item> : <></>}
+                    {user.editSite || user.manageApartment ?
+                        <NavDropdown.Item onClick={handleViewSite}>View Site</NavDropdown.Item> : <></>}
+                    {user.admin && !user.editSite ?
+                        <NavDropdown.Item onClick={handleEditSite}>Manage Site</NavDropdown.Item> : <></>}
+                    {user.admin && !user.manageApartment ?
+                        <NavDropdown.Item onClick={handleManageApartment}>Manage Apartments</NavDropdown.Item> : <></>}
+                    {!editSite ? <NavDropdown.Item href={"/tenant"} hidden={!user.isLoggedIn}>Manage
+                        Profile</NavDropdown.Item> : <></>}
+                    {!editSite ? <NavDropdown.Item href={"/password"} hidden={!user.isLoggedIn}>Change
+                        Password</NavDropdown.Item> : <></>}
                     <NavDropdown.Item onClick={handleUserAction}>{actionText}</NavDropdown.Item>
                 </NavDropdown>
             </Nav>
-            </span>
+                </span>
             </Navbar.Brand>
-            <Login close={handleCloseLogin} setNewUser={setNewUser} show={showLogin} site={site} />
+            <Login close={handleCloseLogin} setNewUser={setNewUser} show={showLogin} site={site}/>
         </Navbar>
     );
 };

@@ -17,7 +17,7 @@ const Home = ({site, page, links, canEdit, user}) => {
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
 
-    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
+    const {register, formState: {isDirty, errors}, handleSubmit} = useForm();
 
     const checkUsername = async (value) => {
         try {

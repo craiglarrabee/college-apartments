@@ -2,12 +2,7 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
-import {
-    AddApplication, DeleteApplication,
-    GetApplication,
-    ProcessApplication
-} from "../../../../../../lib/db/users/application";
-import {AddUserLease, DeleteUserLease} from "../../../../../../lib/db/users/userLease";
+import {AddApplication, DeleteApplication, ProcessApplication} from "../../../../../../lib/db/users/application";
 import {CopyTenantForUserLease, DeleteUserLeaseTenant} from "../../../../../../lib/db/users/tenant";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
@@ -20,7 +15,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 res.status(204).send();
                 return;
             case "PUT":
-                await ProcessApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
+                await ProcessApplication(req.query.site, req.query.userId, req.query.leaseId, req.body);
                 res.status(204).send();
                 return;
             case "DELETE":

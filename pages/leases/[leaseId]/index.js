@@ -72,7 +72,7 @@ const Lease = ({
                         <Form.Group controlId="lease_date">
                             <Form.Control name="lease_date" type="hidden" value={submitted ? lease.lease_date : today}/>
                         </Form.Group>
-                        <div>This Contract is entered into on <strong>{submitted ? lease.lease_date : today}</strong>, between Stadium Way/College Way
+                        <div>This Contract is entered into on <strong>{submitted ? lease.lease_date : today}</strong>, {site === "suu" ? "between Stadium Way/College Way" : "between PARK PLACE APARTMENTS, L.L.C."}
                             Apartments, LLC, L.L.C.
                             (hereinafter &quot;Landlord&quot;),
                             and <strong>{lease.name ? lease.name : "____________________________"}</strong> (hereinafter &quot;Resident&quot;).

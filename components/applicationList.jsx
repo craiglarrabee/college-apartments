@@ -1,7 +1,6 @@
-import {Table} from "react-bootstrap";
+import {Button, Table} from "react-bootstrap";
 
-
-export const UnprocessedApplicationList = ({data, page, site}) => {
+export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDelete, handleProcess}) => {
     return (
         <>
             <Table>
@@ -9,16 +8,24 @@ export const UnprocessedApplicationList = ({data, page, site}) => {
                 <tr>
                     <th>Tenant</th>
                     <th>Application Date</th>
+                    <th></th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
-                {data.map(row => (<tr><td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td><td>{row.submit_date}</td></tr>))}
+                {data.map(row => (<tr>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                    <td>{row.submit_date}</td>
+                    <td><Button onClick={(e) => handleProcess(row.user_id, site, leaseId, true)}>Process</Button></td>
+                    <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId)}>Delete</Button></td>
+                </tr>))}
                 </tbody>
             </Table>
         </>
     );
 };
-export const ProcessedApplicationList = ({data, page, site}) => {
+export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelete, handleDeposit, handleProcess}) => {
+
     return (
         <>
             <Table>
@@ -26,16 +33,28 @@ export const ProcessedApplicationList = ({data, page, site}) => {
                 <tr>
                     <th>Tenant</th>
                     <th>Application Date</th>
+                    <th></th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
-                {data.map(row => (<tr><td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td><td>{row.submit_date}</td></tr>))}
+                {
+                    data.map(row => (
+                        <tr>
+                            <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                            <td>{row.submit_date}</td>
+                            <td><Button onClick={(e) => handleDeposit(row.user_id, site, leaseId)}>Deposit</Button></td>
+                            <td><Button onClick={(e) => handleProcess(row.user_id, site, leaseId, false)}>Unprocess</Button></td>
+                            <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId)}>Delete</Button></td>
+                        </tr>
+                    ))
+                }
                 </tbody>
             </Table>
         </>
     );
 };
-export const DepositReceivedApplicationList = ({data, page, site}) => {
+export const DepositReceivedApplicationList = ({data, page, site, leaseId}) => {
     return (
         <>
             <Table>
@@ -46,7 +65,10 @@ export const DepositReceivedApplicationList = ({data, page, site}) => {
                 </tr>
                 </thead>
                 <tbody>
-                {data.map(row => (<tr><td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td><td>{row.deposit_date}</td></tr>))}
+                {data.map(row => (<tr>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                    <td>{row.deposit_date}</td>
+                </tr>))}
                 </tbody>
             </Table>
         </>
@@ -65,7 +87,10 @@ export const SentLeaseList = ({data, page, site}) => {
                 </tr>
                 </thead>
                 <tbody>
-                {data.map(row => (<tr><td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td><td>{row.lease_date}</td></tr>))}
+                {data.map(row => (<tr>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                    <td>{row.lease_date}</td>
+                </tr>))}
                 </tbody>
             </Table>
         </>
@@ -82,7 +107,10 @@ export const SignedLeaseList = ({data, page, site}) => {
                 </tr>
                 </thead>
                 <tbody>
-                {data.map(row => (<tr><td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td><td>{row.signed_date}</td></tr>))}
+                {data.map(row => (<tr>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                    <td>{row.signed_date}</td>
+                </tr>))}
                 </tbody>
             </Table>
         </>
