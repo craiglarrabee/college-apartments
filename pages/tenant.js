@@ -37,7 +37,7 @@ const Home = ({site, navPage, links, user, tenant, isNewApplication = false}) =>
                     break;
                 case 204:
                     reset(data);
-                    if (isNewApplication || tenant?.pending_application) location = "/application";
+                    if (isNewApplication || tenant?.pending_application) location = `/application?site=${site}`;
             }
         } catch (e) {
             console.log(e);
