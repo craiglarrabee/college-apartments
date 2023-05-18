@@ -9,6 +9,7 @@ import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
 import {Button, Tab, Table, Tabs} from "react-bootstrap";
 import {
+    AssignedApplicationList,
     DepositReceivedApplicationList,
     ProcessedApplicationList,
     UnprocessedApplicationList
@@ -29,7 +30,8 @@ const Applications = ({
     const [allApplications, setAllApplications] = useState(applications);
     const [unprocessedApplications, setUnprocessedApplications] = useState(allApplications.filter(app => app.processed === 0));
     const [processedApplications, setProcessedApplications] = useState(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
-    const [depositReceivedApplications, setDepositReceivedApplications] = useState(allApplications.filter(app => app.deposit_date));
+    const [depositReceivedApplications, setDepositReceivedApplications] = useState(allApplications.filter(app => app.deposit_date && !app.apartment_number));
+    const [assignedApplications, setAssignedApplications] = useState(allApplications.filter(app => app.apartment_number));
 
     const processApplication = async (userId, site, leaseId, processed) => {
         try {
@@ -108,6 +110,10 @@ const Applications = ({
         }
     };
 
+    const welcome = async (userId, site, leaseId) => {
+
+    };
+
     return (
         <Layout user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
@@ -123,6 +129,9 @@ const Applications = ({
                         </Tab>
                         <Tab eventKey={3} title="Deposit Received">
                             <DepositReceivedApplicationList data={depositReceivedApplications} page={page} leaseId={leaseId} site={site} />
+                        </Tab>
+                        <Tab eventKey={4} title="Assignment Made">
+                            <AssignedApplicationList data={assignedApplications} page={page} leaseId={leaseId} site={site} handleWelcome={welcome} />
                         </Tab>
                     </Tabs>
                 </div>

@@ -74,6 +74,30 @@ export const DepositReceivedApplicationList = ({data, page, site, leaseId}) => {
         </>
     );
 };
+export const AssignedApplicationList = ({data, page, site, leaseId, handleWelcome}) => {
+    return (
+        <>
+            <Table>
+                <thead>
+                <tr>
+                    <th>Tenant</th>
+                    <th>Apartment Number</th>
+                    <th>Discount</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {data.map(row => (<tr>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                    <td>{row.apartment_number}</td>
+                    <td></td>
+                    <td><Button onClick={(e) => handleWelcome(row.user_id, site, leaseId)}>Welcome</Button></td>
+                </tr>))}
+                </tbody>
+            </Table>
+        </>
+    );
+};
 
 
 export const SentLeaseList = ({data, page, site}) => {
