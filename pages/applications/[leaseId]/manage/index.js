@@ -19,7 +19,11 @@ import {
 } from "../../../../lib/db/users/application";
 
 const SITE = process.env.SITE;
+let resetHooks = {};
 
+const addResetHook = (userId, hook) => {
+    resetHooks[userId] = hook;
+}
 
 const Applications = ({
                    leaseId, site, page, links, user, applications
@@ -51,7 +55,8 @@ const Applications = ({
                     setAllApplications(newApplications);
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
-                    setDepositReceivedApplications(newApplications.filter(app => app.deposit_date));
+                    setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number));
                     break;
             }
         } catch (e) {
@@ -75,7 +80,8 @@ const Applications = ({
                     setAllApplications(allApplications.filter(app => app.user_id !== userId))
                     setUnprocessedApplications(allApplications.filter(app => app.processed === 0));
                     setProcessedApplications(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
-                    setDepositReceivedApplications(allApplications.filter(app => app.deposit_date));
+                    setDepositReceivedApplications(allApplications.filter(app => app.deposit_date && !app.apartment_number));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number));
                     break;
             }
         } catch (e) {
@@ -102,7 +108,8 @@ const Applications = ({
                     setAllApplications(newApplications);
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
-                    setDepositReceivedApplications(newApplications.filter(app => app.deposit_date));
+                    setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number));
                     break;
             }
         } catch (e) {
@@ -110,7 +117,35 @@ const Applications = ({
         }
     };
 
-    const welcome = async (userId, site, leaseId) => {
+    const welcome = async (data, event) => {
+        event.preventDefault();
+        try {
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(data)
+            }
+
+            const resp = await fetch(`/api/users/${data.userId}/leases/${data.leaseId}?site=${data.site}`, options);
+            //TODO: send welcome email
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 204:
+                    // now remove from the applications on this page components
+                    const newApplications = allApplications.filter(app => app.user_id != data.userId);
+                    setAllApplications(newApplications);
+                    setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
+                    setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
+                    setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number));
+                    delete resetHooks[data.userId];
+                    Object.values(resetHooks).forEach(hook => hook());
+                    break;
+            }
+        } catch (e) {
+            console.log(e);
+        }
 
     };
 
@@ -122,7 +157,7 @@ const Applications = ({
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1} >
                         <Tab eventKey={1} title="Unprocessed">
-                            <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleProcess={processApplication}/>
+                            <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleProcess={processApplication} />
                         </Tab>
                         <Tab eventKey={2} title="Processed">
                             <ProcessedApplicationList data={processedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleDeposit={receiveDeposit} handleProcess={processApplication}/>
@@ -131,7 +166,7 @@ const Applications = ({
                             <DepositReceivedApplicationList data={depositReceivedApplications} page={page} leaseId={leaseId} site={site} />
                         </Tab>
                         <Tab eventKey={4} title="Assignment Made">
-                            <AssignedApplicationList data={assignedApplications} page={page} leaseId={leaseId} site={site} handleWelcome={welcome} />
+                            <AssignedApplicationList data={assignedApplications} page={page} leaseId={leaseId} site={site} handleWelcome={welcome} addResetHook={addResetHook} />
                         </Tab>
                     </Tabs>
                 </div>

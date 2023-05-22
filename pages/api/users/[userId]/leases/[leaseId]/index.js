@@ -2,7 +2,6 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
-import {AddTenant, GetTenant} from "../../../../../../lib/db/users/tenant";
 import {AddUserLease, GetUserLease, UpdateUserLease} from "../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
@@ -12,6 +11,9 @@ const handler = withIronSessionApiRoute(async (req, res) => {
             case "GET":
                 res.body = await GetUserLease(req.query.userId, req.query.leaseId);
                 res.status(200).send();
+            case "POST":
+                await AddUserLease(req.query.userId, req.query.leaseId, req.body);
+                res.status(204).send();
             case "PUT":
                 await UpdateUserLease(req.query.userId, req.query.leaseId, req.body);
                 res.status(204).send();

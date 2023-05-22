@@ -2,36 +2,36 @@ import Layout from "../../../../components/layout";
 import Navigation from "../../../../components/navigation";
 import Title from "../../../../components/title";
 import Footer from "../../../../components/footer";
-import React from "react";
+import React, {useState} from "react";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
 import {Tab, Tabs} from "react-bootstrap";
-import {ApplicationList, SentLeaseList, SignedLeaseList} from "../../../../components/applicationList";
+import {SentLeaseList, SignedLeaseList} from "../../../../components/applicationList";
 import {GetUserLeases} from "../../../../lib/db/users/userLease";
 
 const SITE = process.env.SITE;
 
-const Lease = ({
-                   site, page, links, user, submittedLeases, pendingLeases
-               }) => {
+const Lease = ({site, page, links, user, leases}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
+    const [pendingLeases, setPendingLeases] = useState(leases.filter(lease => !lease.signature_date));
+    const [signedLeases, setSignedLeases] = useState(leases.filter(lease => lease.signature_date));
 
     return (
-        <Layout user={user} >
+        <Layout user={user}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
-                        <Tab eventKey={1} title="Sent">
-                            <SentLeaseList data={pendingLeases} page={page}></SentLeaseList>
+                        <Tab eventKey={1} title="Welcomed">
+                            <SentLeaseList data={pendingLeases} page={page} site={site} />
                         </Tab>
                         <Tab eventKey={2} title="Signed">
-                            <SignedLeaseList data={submittedLeases} page={page}></SignedLeaseList>
+                            <SignedLeaseList data={signedLeases} page={page} site={site} />
                         </Tab>
                     </Tabs>
                 </div>
@@ -43,16 +43,15 @@ const Lease = ({
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    const page = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "");
+    const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
     if (user.admin !== site && !user.manageApartment) {
         return {notFound: true};
     }
     const editing = !!user && !!user.editSite;
-    const [nav, pendingLeases, submittedLeases] = await Promise.all([
+    const [nav, leases] = await Promise.all([
         GetNavLinks(user, site),
-        GetUserLeases(context.query.leaseId, false),
-        GetUserLeases(context.query.leaseId, true)
+        GetUserLeases(context.query.leaseId)
     ]);
 
     return {
@@ -62,8 +61,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             links: nav,
             canEdit: editing,
             user: {...user},
-            submittedLeases: submittedLeases,
-            pendingLeases: pendingLeases
+            leases: [...leases]
         }
     };
 }, ironOptions);
