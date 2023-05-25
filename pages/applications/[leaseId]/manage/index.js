@@ -153,7 +153,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
         event.preventDefault();
 
         const thisApp = allApplications.filter(app => app.user_id == data.userId)[0];
-        const emailBody = <WelcomeEmailBody tenant={thisApp} header={header} body={body}
+        const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={header} body={body}
                                             canEdit={false} company={`${company}, LLC`}
                                             site={data.site} page={page}></WelcomeEmailBody>;
         const emailBodyString = ReactDomServer.renderToString(emailBody);

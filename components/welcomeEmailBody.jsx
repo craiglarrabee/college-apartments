@@ -22,12 +22,14 @@ export const WelcomeEmailBody = function ({company, tenant, header, site, page, 
                 page={page}
                 name="body"
                 canEdit={canEdit}/>
-            <PageContent
-                initialContent={footer}
-                site={site}
-                page={page}
-                name="footer"
-                canEdit={canEdit}/>
+            <div>----------------- **IMPORTANT** -----------------------------------------------<br/>
+                Follow this link to electronically complete and submit your <a
+                    href={`https://uca.snowcollegeapartments.com/leases/${tenant.lease_id}?site=${site}`}>Lease</a><br/>
+                <br/>
+                Follow this link to view your <a
+                    href={`https://uca.snowcollegeapartments.com/assignments/${tenant.lease_id}?site=${site}`}>room assignment
+                    and roomates</a><br/>
+            </div>
         </>
     );
 }

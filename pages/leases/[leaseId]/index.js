@@ -55,10 +55,11 @@ const Lease = ({
 
     return (
         <Layout user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} startWithLogin={!user.isLoggedIn} />
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
+                    {user && user.isLoggedIn ?
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
                         {canEdit ? <LeaseDefinitionGroup {...lease} className={classNames("custom-content")}/> : null}
                         <PageContent
@@ -223,6 +224,7 @@ const Lease = ({
                             name="cleaning"
                             canEdit={canEdit}/>
                     </Form>
+                        : <></> }
                 </div>
                 <Footer bg={bg}/>
             </main>
@@ -234,13 +236,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
-    if (user.admin !== site) {
-        return {notFound: true};
-    }
     const content = {};
     const editing = !!user && !!user.editSite;
     const [lease, contentRows, nav, rooms] = await Promise.all([
-        editing ? GetLease(context.query.leaseId) : GetUserLease(user.id, context.query.leaseId),
+        editing ? GetLease(context.query.leaseId) : (user && user.isLoggedIn ? GetUserLease(user.id, context.query.leaseId) : {}),
         GetDynamicContent(site, page),
         GetNavLinks(user, site),
         GetLeaseRooms(context.query.leaseId)

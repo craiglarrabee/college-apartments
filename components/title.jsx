@@ -5,8 +5,8 @@ import Login from "./login";
 import {useState} from "react";
 import Router from "next/router";
 
-const Title = ({bg, variant, initialUser, site}) => {
-    const [showLogin, setShowLogin] = useState(false);
+const Title = ({bg, variant, initialUser, site, startWithLogin=false}) => {
+    const [showLogin, setShowLogin] = useState(startWithLogin);
     const [actionText, setActionText] = useState(initialUser.isLoggedIn ? "Sign out" : "Sign In");
     const [user, setUser] = useState(initialUser);
     const [editSite, setEditSite] = useState(!!user.editSite);
