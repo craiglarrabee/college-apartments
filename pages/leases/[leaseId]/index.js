@@ -27,8 +27,7 @@ const Lease = ({
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, formState: {errors, isValid, isDirty}, handleSubmit} = useForm({defaultValues: lease});
-    const today = new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
+    const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({defaultValues: lease});
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
@@ -45,7 +44,7 @@ const Lease = ({
                 case 400:
                     break;
                 case 204:
-                    // location = "/index";
+                    reset(data);
                     break;
             }
         } catch (e) {
@@ -69,10 +68,10 @@ const Lease = ({
                             name="lease_header"
                             canEdit={canEdit}/>
 
-                        <Form.Group controlId="lease_date">
-                            <Form.Control name="lease_date" type="hidden" value={signed ? lease.lease_date : today}/>
+                        <Form.Group controlId="signed_date">
+                            <Form.Control {...register("signed_date")} type="hidden" value={lease.signed_date}/>
                         </Form.Group>
-                        <div>This Contract is entered into on <strong>{signed ? lease.lease_date : today}</strong>, {site === "suu" ? "between Stadium Way/College Way" : "between PARK PLACE APARTMENTS, L.L.C."}
+                        <div>This Contract is entered into on <strong>{lease.signed_date}</strong>, {site === "suu" ? "between Stadium Way/College Way" : "between Park Place Apartments, L.L.C."}
                             Apartments, LLC, L.L.C.
                             (hereinafter &quot;Landlord&quot;),
                             and <strong>{lease.name ? lease.name : "____________________________"}</strong> (hereinafter &quot;Resident&quot;).
@@ -237,6 +236,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
     const content = {};
+    const today = new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
     const editing = !!user && !!user.editSite;
     const [lease, contentRows, nav, rooms] = await Promise.all([
         editing ? GetLease(context.query.leaseId) : (user && user.isLoggedIn ? GetUserLease(user.id, context.query.leaseId) : {}),
@@ -244,6 +244,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetNavLinks(user, site),
         GetLeaseRooms(context.query.leaseId)
     ]);
+    const signed = !!lease.signed_date;
+    if (!signed) lease.signed_date = today;
     contentRows.forEach(row => content[row.name] = row.content);
 
     return {
@@ -255,7 +257,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             canEdit: editing,
             user: {...user},
             rooms: rooms,
-            signed: !!lease.signed_date
+            signed: signed
         }
     };
 }, ironOptions);

@@ -72,7 +72,7 @@ const Login = ({show, close, setNewUser, site}) => {
                         <Form.Control {...register("username", {required: "This is required."})} type="text" placeholder="username" maxLength={25} />
                     </Form.Group>
                     <Form.Group controlId="site">
-                        <Form.Control name="site" type="hidden" value={site} />
+                        <Form.Control {...register("site")} type="hidden" value={site} />
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="password">
                         <Form.Label visuallyHidden={true}>Password</Form.Label>
