@@ -16,6 +16,9 @@ import CurrentLeases from "../../../../components/currentLeases";
 import ApplicationFormGroups from "../../../../components/applicationFormGroups";
 import {GetLeaseRooms} from "../../../../lib/db/users/roomType";
 import {GetApplication} from "../../../../lib/db/users/application";
+import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
+import ReactDomServer from "react-dom/server";
+import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
 
 const SITE = process.env.SITE;
 
@@ -23,7 +26,42 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application, u
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
+    const from = `${site}@snowcollegeapartments.com`;
     const {register, reset, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: {...tenant, ...application}});
+    const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
+                                        canEdit={false} company={`${company}, LLC`}
+                                        site={site} page={page}></WelcomeEmailBody>;
+    const emailBodyString = ReactDomServer.renderToString(emailBody);
+    const sendEmail = async () => {
+
+        try {
+            const payload = {
+                from: from,
+                subject: `Welcome Email from ${company}`,
+                address: user.email,
+                body: emailBodyString
+            };
+
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+            }
+
+            const resp = await fetch(`/api/util/email`, options);
+            switch (resp.status) {
+                case 400:
+                    alert("An error occurred sending the welcome email.");
+                    break;
+                case 204:
+                    alert("Welcome email sent.");
+                    break;
+            }
+        } catch (e) {
+            alert(`An error occurred sending the welcome email. ${e.message}`);
+            console.log(e);
+        }
+    }
 
     const onSubmitPersonal = async (data, event) => {
         event.preventDefault();
@@ -149,6 +187,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const {userId, leaseId} = context.query;
     const navPage = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
+    const welcomePage = "welcome";
+    const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
     const user = context.req.session.user;
     if (!user.isLoggedIn) return {notFound: true};
     if (user.isLoggedIn && user.editSite) {
@@ -157,7 +197,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
     const site = context.query.site || SITE;
-    const [nav, tenant, currentRooms, application] = await Promise.all([
+    const [contentRows, nav, tenant, currentRooms, application] = await Promise.all([
+        GetDynamicContent(site, welcomePage),
         GetNavLinks(user, site),
         GetUserLeaseTenant(userId, leaseId),
         GetLeaseRooms(leaseId),
@@ -180,11 +221,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             links: nav,
             user: {...user},
             tenant: {...tenant},
+            ...contentRows,
             currentLeases: currentLeases,
             application: application,
             navPage: navPage,
             userId: userId,
-            leaseId: leaseId
+            leaseId: leaseId,
+            company: company
         }
     };
 }, ironOptions);

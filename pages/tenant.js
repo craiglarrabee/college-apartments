@@ -75,7 +75,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
     const site = context.query.site || SITE;
-    const content = {};
     const [nav, tenant, leases] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(user.id),
@@ -93,7 +92,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         props: {
             site: site,
             navPage: newApplication || tenant?.pending_application ? "user" : "",
-            ...content,
             links: nav,
             user: {...user},
             tenant: {...tenant},

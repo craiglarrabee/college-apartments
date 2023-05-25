@@ -22,9 +22,9 @@ const email = withIronSessionApiRoute(async (req, res) => {
         switch (req.method) {
             case "POST":
                 let info = await transporter.sendMail({
-                    from: "suu@uca.snowcollegeapartments.com",
+                    from: req.body.from,
                     to: req.body.address,
-                    subject: "test",
+                    subject: req.body.subject,
                     html: req.body.body
                 })
                 res.status(204).send();

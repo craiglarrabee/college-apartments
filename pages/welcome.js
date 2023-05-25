@@ -18,14 +18,17 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant})
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
+    const from = `${site}@snowcollegeapartments.com`;
     const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
-                                        canEdit={false} company={company}
+                                        canEdit={false} company={`${company}, LLC`}
                                         site={site} page={page}></WelcomeEmailBody>;
     const emailBodyString = ReactDomServer.renderToString(emailBody);
     const sendEmail = async () => {
 
         try {
             const payload = {
+                from: from,
+                subject: `Welcome Email from ${company}`,
                 address: user.email,
                 body: emailBodyString
             };
@@ -69,7 +72,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = "welcome";
         const site = context.query.site || SITE;
-        const company = "Stadium Way/College Way Apartments, LLC";
+        const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
         if (user.admin !== site) return {notFound: true};
         const content = {};
         const editing = !!user && !!user.editSite;
@@ -84,7 +87,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             props: {
                 site: site,
                 company: company,
-                page: page, ...content,
+                page: page,
+                ...content,
                 links: nav,
                 canEdit: editing,
                 user: {...user},

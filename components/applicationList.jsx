@@ -3,6 +3,8 @@ import {useForm} from "react-hook-form";
 import React from "react";
 import classNames from "classnames";
 import {add} from "@dnd-kit/utilities";
+import {WelcomeEmailBody} from "./welcomeEmailBody";
+import ReactDomServer from "react-dom/server";
 
 
 export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDelete, handleProcess}) => {
@@ -122,7 +124,8 @@ export const WelcomeRow = ({page, site, row, leaseId, handleWelcome, addResetHoo
     )
 };
 
-export const AssignedApplicationList = ({data, page, site, leaseId, handleWelcome, addResetHook}) => {
+export const AssignedApplicationList = ({data, page, site, leaseId, handleWelcome, addResetHook, header, body, company}) => {
+
     return (
         <>
             <Table>

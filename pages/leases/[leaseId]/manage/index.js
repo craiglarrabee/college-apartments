@@ -17,8 +17,8 @@ const Lease = ({site, page, links, user, leases}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const [pendingLeases, setPendingLeases] = useState(leases.filter(lease => !lease.signature_date));
-    const [signedLeases, setSignedLeases] = useState(leases.filter(lease => lease.signature_date));
+    const [pendingLeases, setPendingLeases] = useState(leases.filter(lease => !lease.signed_date));
+    const [signedLeases, setSignedLeases] = useState(leases.filter(lease => lease.signed_date));
 
     return (
         <Layout user={user}>
