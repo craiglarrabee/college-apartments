@@ -15,14 +15,45 @@ import {ironOptions} from "../lib/session/options";
 import {useForm} from "react-hook-form";
 import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 import CurrentLeases from "../components/currentLeases";
+import {GetTenant} from "../lib/db/users/tenant";
 
 const SITE = process.env.SITE;
 
-const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user, currentLeases}) => {
+const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user, currentLeases, company, body, tenant}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
+    const from = `${site}@snowcollegeapartments.com`;
+    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm(tenant);
+
+    const sendEmail = async (emailAddress) => {
+
+        try {
+            const payload = {
+                from: from,
+                subject: `Welcome to ${company}`,
+                address: emailAddress,
+                body: body
+            };
+
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+            }
+
+            const resp = await fetch(`/api/util/email`, options);
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 204:
+                    break;
+            }
+        } catch (e) {
+            alert(`An error occurred sending the welcome email. ${e.message}`);
+            console.log(e);
+        }
+    }
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
@@ -44,6 +75,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                 case 400:
                     break;
                 case 204:
+                    await sendEmail(data.email);
                     location = "/deposit";
             }
         } catch (e) {
@@ -58,6 +90,9 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
             <main>
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
+                        <Form.Group controlId="email">
+                            <Form.Control {...register("email")} type="hidden" value={tenant.email}/>
+                        </Form.Group>
                         {site === "suu" ? <WorkFormGroups register={register}  errors={errors} /> : null}
                         <div className="h4">Room Type:</div>
                         <br/>
@@ -107,11 +142,15 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = "application";
     const site = context.query.site || SITE;
     const content = {};
+    const emailContent = {};
     const editing = !!user && !!user.editSite;
-    const [contentRows, nav, currentRooms] = await Promise.all([
+    const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
+    const [contentRows, emailContenRows, nav, currentRooms, tenant] = await Promise.all([
         GetDynamicContent(site, page),
+        GetDynamicContent(site, "response"),
         GetNavLinks(user, site),
-        GetUserAvailableLeaseRooms(site, user.id)
+        GetUserAvailableLeaseRooms(site, user.id),
+        GetTenant(user.id)
     ]);
 
     if(!currentRooms || currentRooms.length === 0) {
@@ -119,7 +158,9 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
+    if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
     contentRows.forEach(row => content[row.name] = row.content);
+    emailContenRows.forEach(row => emailContent[row.name] = row.content);
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
     currentLeases = currentLeases.map(lease => {
         let rooms = currentRooms.filter(room => room.lease_id === lease);
@@ -132,10 +173,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             page: page,
             navPage: "user",
             ...content,
+            ...emailContent,
             links: nav,
             canEdit: editing,
             user: {...user},
-            currentLeases: currentLeases
+            currentLeases: currentLeases,
+            company: company,
+            tenant: {...tenant}
         }
     };
 }, ironOptions);

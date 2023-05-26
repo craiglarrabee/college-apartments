@@ -12,15 +12,18 @@ import {Button} from "react-bootstrap";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, page, body, links, canEdit, user}) => {
+const Home = ({site, page, body, links, canEdit, user, company}) => {
     const bg = "black";
     const variant = "dark";
+    const from = `${site}@snowcollegeapartments.com`;
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     const sendEmail = async () => {
 
         try {
             const payload = {
+                from: from,
+                subject: `Welcome to ${company}`,
                 address: user.email,
                 body: body
             };
@@ -72,9 +75,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     if (user.admin !== site) return {notFound: true};
     const content = {};
     const editing = !!user && !!user.editSite;
+    const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
     const [contentRows, nav] = await Promise.all([GetDynamicContent(site, page), GetNavLinks(user, site)]);
     contentRows.forEach(row => content[row.name] = row.content);
-    return {props: {site: site, page: page, ...content, links: nav, canEdit: editing, user: {...user}}};
+    return {props: {site: site, page: page, ...content, links: nav, canEdit: editing, user: {...user}, company: company}};
 }, ironOptions);
 
 export default Home;
