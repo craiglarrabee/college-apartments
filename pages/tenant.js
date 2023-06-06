@@ -69,12 +69,12 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     if (!user.isLoggedIn) return {notFound: true};
     const newApplication = context.query && context.query.hasOwnProperty("newApplication");
+    const site = context.query.site || SITE;
     if (user.isLoggedIn && user.editSite) {
-        context.res.writeHead(302, {Location: "/application"});
+        context.res.writeHead(302, {Location: `/application?site=${site}`});
         context.res.end();
         return {};
     }
-    const site = context.query.site || SITE;
     const [nav, tenant, leases] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(user.id),
@@ -82,7 +82,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
 
     if(!leases || leases.length === 0) {
-        context.res.writeHead(302, {Location: "/deposit"});
+        context.res.writeHead(302, {Location: `/deposit?site=${site}`});
         context.res.end();
         return {};
     }

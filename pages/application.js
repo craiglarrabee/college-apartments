@@ -76,7 +76,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
                     break;
                 case 204:
                     await sendEmail(data.email);
-                    location = "/deposit";
+                    location = `/deposit?site=${site}`;
             }
         } catch (e) {
             console.log(e);
@@ -154,7 +154,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
 
     if(!currentRooms || currentRooms.length === 0) {
-        context.res.writeHead(302, {Location: "/deposit"});
+        context.res.writeHead(302, {Location: `/deposit?site=${site}`});
         context.res.end();
         return {};
     }
