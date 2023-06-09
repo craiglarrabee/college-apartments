@@ -15,7 +15,7 @@ const SITE = process.env.SITE;
 const Home = ({site, page, body, links, canEdit, user, company}) => {
     const bg = "black";
     const variant = "dark";
-    const from = `${site}@snowcollegeapartments.com`;
+    const from = `${site}@uca.snowcollegeapartments.com`;
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     const sendEmail = async () => {

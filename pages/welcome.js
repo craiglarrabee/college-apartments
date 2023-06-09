@@ -18,7 +18,7 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant})
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const from = `${site}@snowcollegeapartments.com`;
+    const from = `${site}@uca.snowcollegeapartments.com`;
     const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
                                         canEdit={false} company={`${company}, LLC`}
                                         site={site} page={page}></WelcomeEmailBody>;

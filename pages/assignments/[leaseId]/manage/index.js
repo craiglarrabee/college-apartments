@@ -112,9 +112,10 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, l
                                 <div style={{width: "100%"}} className={classNames("d-flex")}>
                                     <div style={{
                                         margin: "5px",
-                                        width: "60%",
+                                        width: "49%",
                                         border: "1px solid grey",
-                                        borderRadius: "15px"
+                                        borderRadius: "15px",
+                                        overflowY: "auto"
                                     }}
                                          className={classNames("d-flex", "flex-row", "flex-wrap")}>
                                         {apartments
@@ -124,7 +125,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, l
                                                            data={{spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[apartment.apartment_number].reduce((partialSum, a) => partialSum + a.spots, 0)}}>
                                                     {assignments[apartment.apartment_number].map(tenant =>
                                                         <Tenant id={tenant.user_id} data={apartment.apartment_number}>
-                                                            {`${tenant.spots === 2 ? "*" : ""} ${tenant.first_name} ${tenant.last_name}`}
+                                                            <TenantCard tenant={tenant} />
                                                         </Tenant>)}
                                                 </Apartment>
                                             )}

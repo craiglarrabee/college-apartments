@@ -3,7 +3,6 @@ import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
-import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
@@ -15,10 +14,11 @@ import classNames from "classnames";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, page, header, body, links, user}) => {
+const Home = ({site, page, links, user, company}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
+    const from = `${site}@uca.snowcollegeapartments.com`;
 
     const {register, formState: {isDirty, errors}, handleSubmit} = useForm();
 
@@ -27,8 +27,10 @@ const Home = ({site, page, header, body, links, user}) => {
 
         try {
             const payload = {
+                from: from,
+                subject: `Message from ${company}`,
                 address: user.email,
-                body: emailBodyString
+                body: data.body
             };
 
             const options = {
@@ -97,20 +99,19 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = "email";
         const site = context.query.site || SITE;
+        const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
 
         if (user.admin !== site) return {notFound: true};
-        const content = {};
-        const [contentRows, nav, tenant] = await Promise.all([
-            GetDynamicContent(site, page),
+        const [nav, tenant] = await Promise.all([
             GetNavLinks(user, site),
             GetTenant(user.id)
         ]);
-        contentRows.forEach(row => content[row.name] = row.content);
         if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
         return {
             props: {
+                company: company,
                 site: site,
-                page: page, ...content,
+                page: page,
                 links: nav,
                 user: {...user},
                 tenant: {...tenant}
