@@ -1,21 +1,22 @@
 import {useDraggable, useDroppable} from "@dnd-kit/core";
 import classNames from "classnames";
 import {CSS} from "@dnd-kit/utilities";
+import {forwardRef} from "react";
 
-export const Apartment = ({id, children, data}) => {
-    const {isOver, setNodeRef} = useDroppable({
+export const Apartment = ({id, children, data, tenants}) => {
+    const {isOver, setNodeRef, active} = useDroppable({
         id: id,
         data: data
     });
+    let tenant = tenants.filter(tenant => tenant.user_id === active?.id)[0];
 
     const style = {
-        opacity: isOver && data.spots > 0 ? 1 : 0.6,
-        height: isOver && data.spots > 0 ? "200px" : "fit-content"
+        opacity: isOver && data.spots > tenant.spots ? 1 : 0.6
     };
 
     return (
         <div ref={setNodeRef} style={style} className={classNames("droppable")}>
-            <div style={{width: "100%", backgroundColor: "lightgray", borderRadius: "6px"}} >
+            <div style={{width: "100%", backgroundColor: "lightgrey", borderRadius: "6px"}}>
                 <span style={{paddingLeft: "2px", textAlign: "left"}}>{id}</span>
                 <span style={{paddingRight: "2px", float: "right"}}>{`${data.spots} spots left`}</span>
             </div>
@@ -33,8 +34,10 @@ export const UnassignedTenants = ({children}) => {
         padding: "3px",
         width: "49%",
         border: "1px solid grey",
-        borderRadius: "15px",
-        alignContent: "start"
+        borderRadius: "5px",
+        alignContent: "start",
+        height: "750px",
+        overflowY: "auto"
     };
 
     return (
@@ -55,20 +58,21 @@ export const Tenant = ({id, data, children}) => {
     };
 
     return (
-        <button className={classNames("draggable")} ref={setNodeRef} style={style} {...listeners} {...attributes}
-                value={id}>{children}</button>
+        <div ref={setNodeRef} style={style} {...listeners} {...attributes} value={id}>{children}</div>
     );
 };
 
-export const TenantCard = ({tenant, children}) => {
+export const TenantCard = ({tenant, children, visible}) => {
     const roomates = buildRoomateList(tenant);
     return (
-        <div style={{width: "550px"}}>
-            {`${tenant.spots === 2 ? "*" : ""} ${tenant.room_type} - ${tenant.first_name} ${tenant.last_name} | ${new Date().getFullYear() - new Date(tenant.date_of_birth).getFullYear()} | ${tenant.gender === "M" ? "Male" : "Female"} | ${tenant.school_year} | ${tenant.submit_date}`}<br/>
-            {roomates}{roomates ? <br/> : ""}
-            {tenant.roomate_desc}
-            {children}
-        </div>
+        <button className={classNames("draggable")} style={{borderWidth: visible ? "1px" : "0px", opacity: visible ? "1.0" : "0.0"}} >
+            <div style={{width: "530px", visibility: visible ? "visible" : "hidden"}}>
+                {`${tenant.spots === 2 ? "*" : ""} ${tenant.room_type} - ${tenant.first_name} ${tenant.last_name} | ${new Date().getFullYear() - new Date(tenant.date_of_birth).getFullYear()} | ${tenant.gender === "M" ? "Male" : "Female"} | ${tenant.school_year} | ${tenant.submit_date}`}<br/>
+                {roomates}{roomates ? <br/> : ""}
+                {tenant.roomate_desc}
+                {children}
+            </div>
+        </button>
     );
 };
 

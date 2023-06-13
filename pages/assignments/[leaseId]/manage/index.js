@@ -11,7 +11,7 @@ import {withIronSessionSsr} from "iron-session/next";
 import {GetUserLeaseTenants} from "../../../../lib/db/users/tenant";
 import {Apartment, Tenant, TenantCard, UnassignedTenants} from "../../../../components/dragAndDrop";
 import classNames from "classnames";
-import {DndContext} from "@dnd-kit/core";
+import {DndContext, DragOverlay} from "@dnd-kit/core";
 import {GetRoomTypes} from "../../../../lib/db/users/roomType";
 import Router from "next/router";
 
@@ -21,6 +21,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, l
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
+    const [activeId, setActiveId] = useState(null);
 
 
     const getAssignments = (apartments, tenants) => {
@@ -38,17 +39,27 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, l
 
     const [assignments, setAssignments] = useState(getAssignments(apartments, tenants));
 
+    const handleDragStart = (event) => {
+        setActiveId(event.active.id);
+    }
     const handleDragEnd = async ({active, over}) => {
+        let tenant = tenants.filter(tenant => tenant.user_id === active.id)[0];
+        if (!await updateApartmentNumber(tenant, over.id)) {
+            return;
+        }
+        setActiveId(null);
+    };
+
+    const handleDragOver = async ({active, over}) => {
         let tenant = tenants.filter(tenant => tenant.user_id === active.id)[0];
         if (!over || over.data.current?.spots < tenant.spots) {
             return;
         }
-        if (!await updateApartmentNumber(tenant, over.id)) {
-            return;
-        }
         let newAssignments = {...assignments};
-        if (tenant.apartment_number) newAssignments[tenant.apartment_number] = newAssignments[tenant.apartment_number].filter(assignment => assignment.user_id !== active.id);
-        tenant.apartment_number = over.id === "unassigned" ? null : over.id;
+        if (tenant.apartment_number) {
+            newAssignments[tenant.apartment_number] = newAssignments[tenant.apartment_number].filter(assignment => assignment.user_id !== active.id);
+        }
+        tenant.apartment_number = !over || over.id === "unassigned" ? null : over.id;
         newAssignments[over.id].push(tenant);
         setAssignments(newAssignments);
     };
@@ -108,24 +119,27 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, l
                                 <div style={{marginRight: "5px", float: "right"}}><Button onClick={resetAssignments}>Reset Assignments</Button></div>
                                 <div>{type.room_desc}</div>
                             </div>
-                            <DndContext onDragEnd={handleDragEnd}>
+                            <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} onDragOver={handleDragOver} >
                                 <div style={{width: "100%"}} className={classNames("d-flex")}>
                                     <div style={{
                                         margin: "5px",
                                         width: "49%",
                                         border: "1px solid grey",
-                                        borderRadius: "15px",
-                                        overflowY: "auto"
+                                        borderRadius: "5px",
+                                        height: "750px",
+                                        overflowY: "auto",
+                                        overflowX: "hidden"
                                     }}
                                          className={classNames("d-flex", "flex-row", "flex-wrap")}>
                                         {apartments
                                             .filter(apartment => apartment.room_type_id === type.id)
                                             .map(apartment =>
                                                 <Apartment id={apartment.apartment_number}
+                                                           tenants={tenants}
                                                            data={{spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[apartment.apartment_number].reduce((partialSum, a) => partialSum + a.spots, 0)}}>
                                                     {assignments[apartment.apartment_number].map(tenant =>
-                                                        <Tenant id={tenant.user_id} data={apartment.apartment_number}>
-                                                            <TenantCard tenant={tenant} />
+                                                        <Tenant id={tenant.user_id} data={apartment.apartment_number} >
+                                                            <TenantCard visible={activeId !== tenant.user_id} tenant={tenant} />
                                                         </Tenant>)}
                                                 </Apartment>
                                             )}
@@ -135,10 +149,16 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, l
                                             .filter(tenant => tenant.base_type_id === type.id && !tenant.apartment_number)
                                             .map(tenant =>
                                                 <Tenant id={tenant.user_id}>
-                                                    <TenantCard tenant={tenant}/>
+                                                    <TenantCard visible={activeId !== tenant.user_id} tenant={tenant} />
                                                 </Tenant>
                                             )}
                                     </UnassignedTenants>
+                                    <DragOverlay >
+                                        {activeId ? tenants
+                                            .filter(tenant => tenant.user_id === activeId)
+                                                .map(tenant => <TenantCard visible={true} tenant={tenant} />)
+                                            : null}
+                                    </DragOverlay>
                                 </div>
                             </DndContext>
                         </Tab>
