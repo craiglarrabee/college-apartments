@@ -6,7 +6,7 @@ const Layout = ({children, user}) => {
         <div>
             <div className={classNames(
                 "main-wrapper",
-                user && (user.editSite || user.manageApartment) ? "admin-main-wrapper" : "user-main-wrapper",
+                user && (user.manageApartment) ? "admin-main-wrapper" : "user-main-wrapper",
                 "main-wrapper-responsive-lg"
             )}>
                 {children}

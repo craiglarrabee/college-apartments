@@ -37,7 +37,8 @@ export const UnassignedTenants = ({children}) => {
         borderRadius: "5px",
         alignContent: "start",
         height: "750px",
-        overflowY: "auto"
+        overflowY: "auto",
+        overflowX: "hidden"
     };
 
     return (

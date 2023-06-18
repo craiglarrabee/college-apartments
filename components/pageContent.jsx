@@ -1,4 +1,4 @@
-import {Button, Modal} from "react-bootstrap";
+import {Alert, Button, Form, Modal} from "react-bootstrap";
 import React, {useMemo, useState} from "react";
 import {Pencil} from "react-bootstrap-icons";
 import classNames from "classnames";
@@ -7,11 +7,11 @@ import dynamic from "next/dynamic";
 const JoditEditor = dynamic(() => import("jodit-react"), {ssr: false});
 
 const PageContent = ({site, page, name, canEdit, initialContent}) => {
-    const [show, setShow] = useState(false);
+    const [showEditor, setShowEditor] = useState(false);
     const [content, setContent] = useState(initialContent);
 
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+    const handleClose = () => setShowEditor(false);
+    const handleShow = () => setShowEditor(true);
 
     if (canEdit) {
         return (
@@ -22,7 +22,7 @@ const PageContent = ({site, page, name, canEdit, initialContent}) => {
                     </Button>
                     <div dangerouslySetInnerHTML={{__html: content}}/>
                 </div>
-                <Editor show={show}
+                <Editor show={showEditor}
                         handleClose={handleClose}
                         title="Description Text"
                         initialContent={content}
@@ -72,7 +72,7 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
             readOnly: false,
             height: "250px",
             minHeight: "100px",
-            maxHeight: "400px",
+            maxHeight: "600px",
             toolbarAdaptive: false,
             buttons: ["undo", "redo",
                 "font", "fontSize", "paragraph",
@@ -96,7 +96,7 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
                centered
                enforceFocus={false}
         >
-            <Modal.Header closeButton>
+            <Modal.Header closeButton >
                 <Modal.Title>{title}</Modal.Title>
             </Modal.Header>
 
