@@ -27,7 +27,7 @@ const Lease = ({
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({defaultValues: lease});
+    const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({defaultValues: lease, mode: "onChange"});
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
@@ -60,7 +60,7 @@ const Lease = ({
                 <div className={classNames("main-content")}>
                     {user && user.isLoggedIn ?
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        {canEdit ? <LeaseDefinitionGroup {...lease} className={classNames("custom-content")}/> : null}
+                        {canEdit ? <LeaseDefinitionGroup {...lease} register={register} className={classNames("custom-content")}/> : null}
                         <PageContent
                             initialContent={lease_header}
                             site={site}

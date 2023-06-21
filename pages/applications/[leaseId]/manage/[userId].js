@@ -22,7 +22,7 @@ import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId}) => {
+const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId, header, body, page, company}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -188,6 +188,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const navPage = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
     const welcomePage = "welcome";
+    const site = context.query.site || SITE;
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
     const user = context.req.session.user;
     if (!user.isLoggedIn) return {notFound: true};
@@ -196,7 +197,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const site = context.query.site || SITE;
     const [contentRows, nav, tenant, currentRooms, application] = await Promise.all([
         GetDynamicContent(site, welcomePage),
         GetNavLinks(user, site),
@@ -210,7 +210,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};
     });
     if (application) {
-        application.submit_date = application.submit_date.toISOString().split("T")[0];
         application.lease_room_type_id = `${application.lease_id}_${application.room_type_id}`;
         application.do_not_share_info = !application.share_info;
     }
@@ -225,6 +224,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             currentLeases: currentLeases,
             application: application,
             navPage: navPage,
+            page: welcomePage,
             userId: userId,
             leaseId: leaseId,
             company: company

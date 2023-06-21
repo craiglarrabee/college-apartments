@@ -13,11 +13,11 @@ const image = withIronSessionApiRoute(async (req, res) => {
         switch (req.method) {
             case "POST":
                 const img = req.body.replace(/^data:image\/\w+;base64,/, "");
-                fs.writeFileSync(`./public/images/${req.query.site}/${req.query.page}/${req.query.fileName}`, img, {encoding: "base64"});
+                fs.writeFileSync(`./upload/images/${req.query.site}/${req.query.page}/${req.query.fileName}`, img, {encoding: "base64"});
                 res.status(204).send();
                 return;
             case "DELETE":
-                fs.rmSync(`./public/images/${req.query.site}/${req.query.page}/${req.query.fileName}`);
+                fs.rmSync(`./upload/images/${req.query.site}/${req.query.page}/${req.query.fileName}`);
                 res.status(204).send();
                 return;
            default:

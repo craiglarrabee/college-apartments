@@ -12,10 +12,10 @@ import {
     AssignedApplicationList,
     DepositReceivedApplicationList,
     ProcessedApplicationList,
-    UnprocessedApplicationList
+    UnprocessedApplicationList,
+    WelcomedApplicationList
 } from "../../../../components/applicationList";
 import {GetApplications} from "../../../../lib/db/users/application";
-import {useForm} from "react-hook-form";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
@@ -35,7 +35,8 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
     const [unprocessedApplications, setUnprocessedApplications] = useState(allApplications.filter(app => app.processed === 0));
     const [processedApplications, setProcessedApplications] = useState(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
     const [depositReceivedApplications, setDepositReceivedApplications] = useState(allApplications.filter(app => app.deposit_date && !app.apartment_number));
-    const [assignedApplications, setAssignedApplications] = useState(allApplications.filter(app => app.apartment_number));
+    const [assignedApplications, setAssignedApplications] = useState(allApplications.filter(app => app.apartment_number && !app.lease_date));
+    const [welcomedApplications, setWelcomedApplications] = useState(allApplications.filter(app => app.lease_date));
     const from = `${site}@snowcollegeapartments.com`;
     const sendEmail = async (emailAddress, emailBodyString) => {
 
@@ -208,6 +209,9 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                         <Tab eventKey={4} title="Assignment Made">
                             <AssignedApplicationList data={assignedApplications} page={page} leaseId={leaseId} site={site} handleWelcome={welcome} addResetHook={addResetHook} header={header} company={company} body={body} />
                         </Tab>
+                        <Tab eventKey={5} title="Welcomed">
+                            <WelcomedApplicationList data={welcomedApplications} page={page} leaseId={leaseId} site={site} header={header} company={company} body={body} />
+                        </Tab>
                     </Tabs>
                 </div>
                 <Footer bg={bg}/>
@@ -233,6 +237,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
     let content = {};
     contentRows.forEach(row => content[row.name] = row.content);
+
 
     return {
         props: {

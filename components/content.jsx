@@ -70,8 +70,8 @@ const Content = ({site, page, top, bottom, images, canEdit}) => {
                             return (
                                 <Carousel.Item role="carousel-item" key={i}>
                                     {buttons}
-                                    <img role="carousel-image" src={`/images/${site}/${page}/${image}`} alt={image}
-                                         width={"560px"} priority={true}/>
+                                    <img role="carousel-image" src={`/upload/images/${site}/${page}/${image}`} alt={image}
+                                         width={"560px"} />
                                 </Carousel.Item>
                             );
                         }
