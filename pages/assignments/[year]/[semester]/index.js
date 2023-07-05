@@ -38,7 +38,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
-    const content = {};
     const [tenants, nav] = await Promise.all([
         user && user.isLoggedIn ? GetUserRoomates(user.id, context.query.year, context.query.semester): [],
         GetNavLinks(user, site)
