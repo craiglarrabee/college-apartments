@@ -129,7 +129,7 @@ export const WelcomedRow = ({page, site, row, leaseId}) => {
     const [fallYear, setFallYear] = useState(row.fall_year);
     const [summerYear, setSummerYear] = useState(row.summer_year);
     const [springYear, setSpringYear] = useState(row.spring_year);
-    const {register, formState: {errors}, handleSubmit, reset} = useForm();
+    const {register } = useForm();
 
     useEffect(() => {
         saveTenantSemesters({fall_year: fallYear, summer_year: summerYear, spring_year: springYear});
@@ -234,29 +234,7 @@ export const WelcomedApplicationList = ({data, page, site, leaseId}) => {
         </>
     );
 };
-
-
-export const SentLeaseList = ({data, page, site}) => {
-    return (
-        <>
-            <Table>
-                <thead>
-                <tr>
-                    <th>Tenant</th>
-                    <th>Welcome Sent Date</th>
-                </tr>
-                </thead>
-                <tbody>
-                {data.map(row => (<tr>
-                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
-                    <td>{row.lease_date}</td>
-                </tr>))}
-                </tbody>
-            </Table>
-        </>
-    );
-};
-export const SignedLeaseList = ({data, page, site}) => {
+export const SignedLeaseList = ({data, page, site, leaseId}) => {
     return (
         <>
             <Table>
@@ -264,13 +242,12 @@ export const SignedLeaseList = ({data, page, site}) => {
                 <tr>
                     <th>Tenant</th>
                     <th>Lease Signed Date</th>
+                    <th>Semesters</th>
                 </tr>
                 </thead>
                 <tbody>
-                {data.map(row => (<tr>
-                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
-                    <td>{row.signed_date}</td>
-                </tr>))}
+                {data.map(row => (
+                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} />))}
                 </tbody>
             </Table>
         </>

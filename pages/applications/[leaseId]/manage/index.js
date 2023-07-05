@@ -238,7 +238,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     let content = {};
     contentRows.forEach(row => content[row.name] = row.content);
 
-
     return {
         props: {
             leaseId: context.query.leaseId,

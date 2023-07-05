@@ -8,12 +8,12 @@ import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
 import {Tab, Tabs} from "react-bootstrap";
-import {SentLeaseList, SignedLeaseList} from "../../../../components/applicationList";
+import {SentLeaseList, SignedLeaseList, WelcomedApplicationList} from "../../../../components/applicationList";
 import {GetUserLeases} from "../../../../lib/db/users/userLease";
 
 const SITE = process.env.SITE;
 
-const Lease = ({site, page, links, user, leases}) => {
+const Lease = ({site, page, links, user, leaseId, leases}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -28,10 +28,10 @@ const Lease = ({site, page, links, user, leases}) => {
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
                         <Tab eventKey={1} title="Welcomed">
-                            <SentLeaseList data={pendingLeases} page={page} site={site} />
+                            <WelcomedApplicationList data={pendingLeases} page={page} site={site} leaseId={leaseId} />
                         </Tab>
                         <Tab eventKey={2} title="Signed">
-                            <SignedLeaseList data={signedLeases} page={page} site={site} />
+                            <SignedLeaseList data={signedLeases} page={page} site={site} leaseId={leaseId} />
                         </Tab>
                     </Tabs>
                 </div>
@@ -61,7 +61,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             links: nav,
             canEdit: editing,
             user: {...user},
-            leases: [...leases]
+            leases: [...leases],
+            leaseId: context.query.leaseId
         }
     };
 }, ironOptions);

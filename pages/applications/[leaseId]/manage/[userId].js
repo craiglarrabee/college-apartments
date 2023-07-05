@@ -22,7 +22,7 @@ import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId, header, body, page, company}) => {
+const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId, header, body, page, company, year, semester}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -30,7 +30,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application, u
     const {register, reset, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: {...tenant, ...application}});
     const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
                                         canEdit={false} company={`${company}, LLC`}
-                                        site={site} page={page}></WelcomeEmailBody>;
+                                        site={site} page={page} leaseId={leaseId} year={year} semester={semester} ></WelcomeEmailBody>;
     const emailBodyString = ReactDomServer.renderToString(emailBody);
     const sendEmail = async () => {
 
@@ -191,6 +191,9 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = context.query.site || SITE;
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
     const user = context.req.session.user;
+    let year;
+    let semester;
+
     if (!user.isLoggedIn) return {notFound: true};
     if (user.isLoggedIn && user.editSite) {
         context.res.writeHead(302, {Location: "/application"});
@@ -214,6 +217,16 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         application.do_not_share_info = !application.share_info;
     }
     if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
+    if (tenant.fall_year) {
+        year = tenant.fall_year;
+        semester = "fall";
+    } else if (tenant.spring_year) {
+        year = tenant.spring_year;
+        semester = "spring";
+    } else if (tenant.summer_year) {
+        year = tenant.summer_year;
+        semester = "summer";
+    }
     return {
         props: {
             site: site,
@@ -227,7 +240,9 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             page: welcomePage,
             userId: userId,
             leaseId: leaseId,
-            company: company
+            company: company,
+            year: year,
+            semester: semester
         }
     };
 }, ironOptions);

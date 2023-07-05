@@ -1,23 +1,23 @@
-import Layout from "../../../../components/layout";
-import Navigation from "../../../../components/navigation";
-import Title from "../../../../components/title";
+import Layout from "../../../../../components/layout";
+import Navigation from "../../../../../components/navigation";
+import Title from "../../../../../components/title";
 import React, {useState} from "react";
-import {GetNavLinks} from "../../../../lib/db/content/navLinks";
+import {GetNavLinks} from "../../../../../lib/db/content/navLinks";
 import {Button, Tab, Tabs} from "react-bootstrap";
-import Footer from "../../../../components/footer";
-import {GetApartments} from "../../../../lib/db/users/apartments";
-import {ironOptions} from "../../../../lib/session/options";
+import Footer from "../../../../../components/footer";
+import {GetApartments} from "../../../../../lib/db/users/apartments";
+import {ironOptions} from "../../../../../lib/session/options";
 import {withIronSessionSsr} from "iron-session/next";
-import {GetUserLeaseTenants} from "../../../../lib/db/users/tenant";
-import {Apartment, Tenant, TenantCard, UnassignedTenants} from "../../../../components/dragAndDrop";
+import {GetUserLeaseTenants} from "../../../../../lib/db/users/tenant";
+import {Apartment, Tenant, TenantCard, UnassignedTenants} from "../../../../../components/dragAndDrop";
 import classNames from "classnames";
 import {DndContext, DragOverlay} from "@dnd-kit/core";
-import {GetRoomTypes} from "../../../../lib/db/users/roomType";
+import {GetRoomTypes} from "../../../../../lib/db/users/roomType";
 import Router from "next/router";
 
 const SITE = process.env.SITE;
 
-const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, leaseId}) => {
+const Assignments = ({site, page, links, user, apartments, roomTypes, tenants}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -87,25 +87,25 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, l
         }
     }
 
-    const resetAssignments = async () => {
-        try {
-            const options = {
-                method: "DELETE",
-                headers: {"Content-Type": "application/json"}
-            }
-
-            const resp = await fetch(`/api/assignments/${leaseId}`, options);
-            switch (resp.status) {
-                case 400:
-                    return;
-                case 204:
-                    Router.reload();
-                    return;
-            }
-        } catch (e) {
-            console.log(e);
-        }
-    }
+    // const resetAssignments = async () => {
+    //     try {
+    //         const options = {
+    //             method: "DELETE",
+    //             headers: {"Content-Type": "application/json"}
+    //         }
+    //
+    //         const resp = await fetch(`/api/assignments/${leaseId}`, options);
+    //         switch (resp.status) {
+    //             case 400:
+    //                 return;
+    //             case 204:
+    //                 Router.reload();
+    //                 return;
+    //         }
+    //     } catch (e) {
+    //         console.log(e);
+    //     }
+    // }
 
     return (
         <Layout user={user}>
@@ -115,10 +115,10 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants, l
                 <Tabs>
                     {roomTypes.map(type =>
                         <Tab eventKey={type.id} title={`${type.location} ${type.room_type}`}>
-                            <div style={{display: "inline", width: "100%"}}>
-                                <div style={{marginRight: "5px", float: "right"}}><Button onClick={resetAssignments}>Reset Assignments</Button></div>
-                                <div>{type.room_desc}</div>
-                            </div>
+                            {/*<div style={{display: "inline", width: "100%"}}>*/}
+                            {/*    <div style={{marginRight: "5px", float: "right"}}><Button onClick={resetAssignments}>Reset Assignments</Button></div>*/}
+                            {/*    <div>{type.room_desc}</div>*/}
+                            {/*</div>*/}
                             <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} onDragOver={handleDragOver} >
                                 <div style={{width: "100%"}} className={classNames("d-flex")}>
                                     <div style={{
@@ -183,7 +183,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetNavLinks(user, site),
         GetRoomTypes(site),
         GetApartments(site),
-        GetUserLeaseTenants(context.query.leaseId)
+        GetUserLeaseTenants(context.query.year, context.query.semester)
     ]);
 
     return {
@@ -194,8 +194,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             apartments: [...apartments],
             roomTypes: [...roomTypes],
             tenants: [...tenants],
-            user: {...user},
-            leaseId: leaseId
+            user: {...user}
         }
     };
 }, ironOptions);
