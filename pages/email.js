@@ -101,7 +101,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const site = context.query.site || SITE;
         const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
 
-        if (user.admin !== site) return {notFound: true};
+        if (!user.admin.includes(site)) return {notFound: true};
         const [nav, tenant] = await Promise.all([
             GetNavLinks(user, site),
             GetTenant(user.id)
