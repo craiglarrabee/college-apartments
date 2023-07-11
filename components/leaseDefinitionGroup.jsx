@@ -1,7 +1,7 @@
 import {Col, Form, Row} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 
-const LeaseDefinitionGroup = ({start_date, end_date, description, fall_year, summer_year, spring_year, id, register = () => {}}) => {
+const LeaseDefinitionGroup = ({site, start_date, end_date, description, fall_year, summer_year, spring_year, id, register = () => {}}) => {
     const [timer, setTimer] = useState(null);
     const [startDate, setStartDate] = useState(start_date);
     const [endDate, setEndDate] = useState(end_date);
@@ -70,9 +70,11 @@ const LeaseDefinitionGroup = ({start_date, end_date, description, fall_year, sum
                     <Form.Check
                         className="mb-3" {...register("spring_year", {onChange: (e) => e.target.checked ? setSpringYear(secondYear) : setSpringYear(null) })}
                         type="checkbox" id="spring_year" label={`Spring ${secondYear}`} inline />
+                    {site === "suu" ?
                     <Form.Check
                         className="mb-3" {...register("summer_year", {onChange: (e) => e.target.checked ? setSummerYear(secondYear) : setSummerYear(null) })}
                         type="checkbox" id="summer_year" label={`Summer ${secondYear}`} inline />
+                        : null}
                 </Col>
             </Row>
         </>

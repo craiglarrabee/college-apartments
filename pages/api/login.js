@@ -1,17 +1,18 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
-import {GetUserAndVerifyPassword} from "../../lib/db/users/user";
+import {GetUserAdminSites, GetUserAndVerifyPassword} from "../../lib/db/users/user";
 
 const login = withIronSessionApiRoute(async (req, res) => {
     // get user from database
     try {
-        const userData = await GetUserAndVerifyPassword(req.body.site, req.body.username, req.body.password);
+        const userData = await GetUserAndVerifyPassword(req.body.username, req.body.password);
+        const adminSites = (await GetUserAdminSites(userData.id)).map(site => site.site);
         const user = {
             id: userData.id,
             username: req.body.username,
             firstName: userData.first_name,
             isLoggedIn: true,
-            admin: userData.site,
+            admin: adminSites,
             editSite: false,
             email: userData.email
         };
