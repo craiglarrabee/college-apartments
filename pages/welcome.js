@@ -73,7 +73,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const page = "welcome";
         const site = context.query.site || SITE;
         const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
-        if (user.admin !== site) return {notFound: true};
+        if (!user.admin.includes(site)) return {notFound: true};
         const content = {};
         const editing = !!user && !!user.editSite;
         const [contentRows, nav, tenant] = await Promise.all([

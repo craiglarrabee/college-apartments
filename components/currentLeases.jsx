@@ -15,7 +15,7 @@ const CurrentLeases = ({register, leaseId, leaseDescription, rooms}) => {
                     setValueAs: value => value !== null ? value.toString() : ""
                 })} type="radio"
                            label={`$${room.room_rent}/sem - ${room.room_desc}`} id={`${leaseId}_${room.room_type_id}`}
-                           value={`${room.lease_id}_${room.room_type_id}`}></FormCheck>
+                           value={`${leaseId}_${room.room_type_id}`}></FormCheck>
             ))}
             <br/>
         </>

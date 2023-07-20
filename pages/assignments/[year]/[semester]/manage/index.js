@@ -3,7 +3,7 @@ import Navigation from "../../../../../components/navigation";
 import Title from "../../../../../components/title";
 import React, {useState} from "react";
 import {GetNavLinks} from "../../../../../lib/db/content/navLinks";
-import {Button, Tab, Tabs} from "react-bootstrap";
+import {Tab, Tabs} from "react-bootstrap";
 import Footer from "../../../../../components/footer";
 import {GetApartments} from "../../../../../lib/db/users/apartments";
 import {ironOptions} from "../../../../../lib/session/options";
@@ -13,7 +13,6 @@ import {Apartment, Tenant, TenantCard, UnassignedTenants} from "../../../../../c
 import classNames from "classnames";
 import {DndContext, DragOverlay} from "@dnd-kit/core";
 import {GetRoomTypes} from "../../../../../lib/db/users/roomType";
-import Router from "next/router";
 
 const SITE = process.env.SITE;
 
@@ -175,7 +174,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
     const leaseId = context.query.leaseId;
-    if (user.admin !== site && !user.manageApartment) {
+    if (!user.admin.includes(site) && !user.manageApartment) {
         return {notFound: true};
     }
 
@@ -183,7 +182,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetNavLinks(user, site),
         GetRoomTypes(site),
         GetApartments(site),
-        GetUserLeaseTenants(context.query.year, context.query.semester)
+        GetUserLeaseTenants(site, context.query.year, context.query.semester)
     ]);
 
     return {

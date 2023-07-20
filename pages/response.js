@@ -72,7 +72,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = "response";
     const site = context.query.site || SITE;
-    if (user.admin !== site) return {notFound: true};
+    if (!user.admin.includes(site)) return {notFound: true};
     const content = {};
     const editing = !!user && !!user.editSite;
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";

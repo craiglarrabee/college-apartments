@@ -22,7 +22,7 @@ const snowTransporter = nodemailer.createTransport({
     }
 });
 
-const email = withIronSessionApiRoute(async (req, res) => {
+export const email = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.admin && req.body.address !== req.session.user.email) {
         res.status(403).send();
         return;

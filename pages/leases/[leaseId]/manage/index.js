@@ -45,7 +45,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
-    if (user.admin !== site && !user.manageApartment) {
+    if (!user.admin.includes(site) && !user.manageApartment) {
         return {notFound: true};
     }
     const editing = !!user && !!user.editSite;

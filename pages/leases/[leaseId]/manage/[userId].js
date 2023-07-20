@@ -238,7 +238,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         .replace(`/${userId}`, "");
     const page = navPage.replace("/manage", "");
     const site = context.query.site || SITE;
-    if (user.admin !== site) {
+    if (!user.admin.includes(site)) {
         return {notFound: true};
     }
     const content = {};
