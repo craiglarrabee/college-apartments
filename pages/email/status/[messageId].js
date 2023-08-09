@@ -17,7 +17,7 @@ const Index = ({site, page, links, user, details}) => {
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     return (
-        <Layout user={user}>
+        <Layout user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
@@ -74,9 +74,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = "email/status";
         const site = context.query.site || SITE;
-        const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
+        if (!user.manageApartment || !user.admin.includes(site)) {
+            res.status(403).send();
+            return;
+        }
 
-        if (!user.admin.includes(site)) return {notFound: true};
         const [nav, messageDetails] = await Promise.all([
             GetNavLinks(user, site),
             GetBulkEmailDetails(context.query.messageId)
@@ -84,7 +86,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
 
         return {
             props: {
-                company: company,
                 site: site,
                 page: page,
                 links: nav,

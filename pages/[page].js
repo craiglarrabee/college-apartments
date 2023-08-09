@@ -4,7 +4,7 @@ import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
 import Content from "../components/content";
-import DynamicContent, {GetDynamicContent} from "../lib/db/content/dynamicContent";
+import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";

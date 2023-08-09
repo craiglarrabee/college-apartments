@@ -12,14 +12,12 @@ import {UserApartment} from "../../../../components/assignments";
 
 const SITE = process.env.SITE;
 
-const Lease = ({
-                   site, page, tenants, links, user
-               }) => {
+const Lease = ({site, page, tenants, links, user}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
     return (
-        <Layout user={user} >
+        <Layout user={user} wide={true} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} startWithLogin={!user.isLoggedIn} />
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page="index"/>
             <main>

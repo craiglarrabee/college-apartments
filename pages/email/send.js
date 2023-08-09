@@ -58,24 +58,21 @@ const Send = ({site, page, links, user, company, semesters, tenants, apartments}
             const resp = await fetch(`/api/util/bulk-email`, options);
             switch (resp.status) {
                 case 400:
-                    //TODO: change this to an alert message in the content to be consistent and testable
                     setMessage({value:"An error occurred submitting the email.", type: "error"});
                     break;
                 case 200:
                     let json = await resp.json();
-                    //TODO: change this to an alert message in the content to be consistent and testable
                     setMessage({value:"Message submitted.", type: "info"});
                     break;
             }
         } catch (e) {
-            //TODO: change this to an alert message in the content to be consistent and testable
             setMessage({value:"An error occurred submitting the email.", type: "error"});
             console.log(e);
         }
     }
 
     return (
-        <Layout user={user}>
+        <Layout user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

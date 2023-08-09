@@ -12,7 +12,7 @@ import {GetUserLeaseTenant} from "../../../../lib/db/users/tenant";
 import {useForm} from "react-hook-form";
 import {TenantForm} from "../../../../components/tenantForm";
 import ApplicationForm from "../../../../components/applicationForm";
-import {GetCurrentLeases} from "../../../../lib/db/users/roomType";
+import {GetCurrentLeaseRooms} from "../../../../lib/db/users/roomType";
 import {GetApplication} from "../../../../lib/db/users/application";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";
@@ -103,7 +103,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetDynamicContent(site, welcomePage),
         GetNavLinks(user, site),
         GetUserLeaseTenant(userId, leaseId),
-        GetCurrentLeases(leaseId),
+        GetCurrentLeaseRooms(leaseId),
         GetApplication(site, userId, leaseId)
     ]);
 

@@ -1,12 +1,12 @@
 import React from "react";
 import classNames from "classnames";
 
-const Layout = ({children, user}) => {
+const Layout = ({children, user, wide}) => {
     return (
         <div>
             <div className={classNames(
                 "main-wrapper",
-                user && (user.manageApartment) ? "admin-main-wrapper" : "user-main-wrapper",
+                wide ? "admin-main-wrapper" : "user-main-wrapper",
                 "main-wrapper-responsive-lg"
             )}>
                 {children}

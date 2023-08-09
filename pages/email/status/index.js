@@ -18,13 +18,13 @@ const Index = ({site, page, links, user, semesters, emails}) => {
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     return (
-        <Layout user={user}>
+        <Layout user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                     <Tabs>
                         {semesters.map((item) =>
-                            <Tab style={{minHeight: "350px"}} title={item.semester} eventKey={item.semester.replace(" ", "_")} >
+                            <Tab style={{minHeight: "390px"}} title={item.semester} eventKey={item.semester.replace(" ", "_")} >
                                 <Table>
                                     <thead>
                                     <tr>
@@ -56,8 +56,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = "email/status";
         const site = context.query.site || SITE;
+        if (!user.manageApartment || !user.admin.includes(site)) {
+            res.status(403).send();
+            return;
+        }
 
-        if (!user.admin.includes(site)) return {notFound: true};
         const [nav, semesters] = await Promise.all([
             GetNavLinks(user, site),
             GetActiveSemesters(site)

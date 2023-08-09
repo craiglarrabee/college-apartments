@@ -86,38 +86,14 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants}) 
         }
     }
 
-    // const resetAssignments = async () => {
-    //     try {
-    //         const options = {
-    //             method: "DELETE",
-    //             headers: {"Content-Type": "application/json"}
-    //         }
-    //
-    //         const resp = await fetch(`/api/assignments/${leaseId}`, options);
-    //         switch (resp.status) {
-    //             case 400:
-    //                 return;
-    //             case 204:
-    //                 Router.reload();
-    //                 return;
-    //         }
-    //     } catch (e) {
-    //         console.log(e);
-    //     }
-    // }
-
     return (
-        <Layout user={user}>
+        <Layout user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <Tabs>
                     {roomTypes.map(type =>
                         <Tab eventKey={type.id} title={`${type.location} ${type.room_type}`}>
-                            {/*<div style={{display: "inline", width: "100%"}}>*/}
-                            {/*    <div style={{marginRight: "5px", float: "right"}}><Button onClick={resetAssignments}>Reset Assignments</Button></div>*/}
-                            {/*    <div>{type.room_desc}</div>*/}
-                            {/*</div>*/}
                             <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} onDragOver={handleDragOver} >
                                 <div style={{width: "100%"}} className={classNames("d-flex")}>
                                     <div style={{
