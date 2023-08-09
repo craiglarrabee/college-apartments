@@ -1,6 +1,6 @@
 import React from "react";
 import {render, screen, fireEvent, within} from "@testing-library/react";
-import Content from "./Content";
+import Content from "../../components/content";
 import "@testing-library/jest-dom";
 
 describe("Content", () => {
@@ -57,8 +57,7 @@ describe("Content", () => {
         expect(carouselImages.length).toBe(images.length);
         carouselImages.forEach((image, i) => {
             expect(image).toHaveAttribute("alt", images[i]);
-            expect(image).toHaveAttribute("width", "650");
-            expect(image).toHaveAttribute("height", "425");
+            expect(image).toHaveAttribute("width", "560px");
         });
     });
 

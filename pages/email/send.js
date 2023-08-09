@@ -1,22 +1,22 @@
-import Layout from "../components/layout";
-import Navigation from "../components/navigation";
-import Title from "../components/title";
-import Footer from "../components/footer";
+import Layout from "../../components/layout";
+import Navigation from "../../components/navigation";
+import Title from "../../components/title";
+import Footer from "../../components/footer";
 import React, {useState} from "react";
-import {GetNavLinks} from "../lib/db/content/navLinks";
+import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
-import {ironOptions} from "../lib/session/options";
-import {Button, Col, Form, Row, Tab, Tabs} from "react-bootstrap";
+import {ironOptions} from "../../lib/session/options";
+import {Alert, Button, Col, Form, Row, Tab, Tabs} from "react-bootstrap";
 import Image from "next/image";
 import {useForm} from "react-hook-form";
 import classNames from "classnames";
-import {GetActiveSemesterApartments, GetActiveSemesters, GetActiveSemesterTenants} from "../lib/db/users/userLease";
-import {BulkEmailOptions} from "../components/bulkEmailOptions";
+import {GetActiveSemesterApartments, GetActiveSemesters, GetActiveSemesterTenantNames} from "../../lib/db/users/userLease";
+import {BulkEmailOptions} from "../../components/bulkEmailOptions";
 import async from "async";
 
 const SITE = process.env.SITE;
 
-const Email = ({site, page, links, user, company, semesters, tenants, apartments}) => {
+const Send = ({site, page, links, user, company, semesters, tenants, apartments}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -24,11 +24,14 @@ const Email = ({site, page, links, user, company, semesters, tenants, apartments
     const [semester, setSemester] = useState();
     const [year, setYear] = useState();
     const {register, formState: {isDirty, errors, isValid}, handleSubmit} = useForm({mode: "all"});
+    const [message, setMessage] = useState();
+    const [fullSemester, setFullSemester] = useState();
 
     const handleSemester = (semester) => {
         let arr = semester.split(" ");
         setSemester(arr[0]);
         setYear(arr[1]);
+        setFullSemester(semester);
     }
     const sendBulkEmail = async (data, event) => {
         event.preventDefault();
@@ -36,13 +39,14 @@ const Email = ({site, page, links, user, company, semesters, tenants, apartments
         try {
             const payload = {
                 from: from,
-                subject: `Message from ${company}`,
+                subject: data.subject,
                 recipients: data.recipients,
                 ids: "Tenants" === data.recipients ? data.selected_recipients : data.selected_apartments,
                 site: site,
                 semester: semester,
                 year: year,
-                body: data.body
+                body: data.body,
+                fullSemester: fullSemester
             };
 
             const options = {
@@ -54,15 +58,18 @@ const Email = ({site, page, links, user, company, semesters, tenants, apartments
             const resp = await fetch(`/api/util/bulk-email`, options);
             switch (resp.status) {
                 case 400:
-                    alert("An error occurred sending the emails.");
+                    //TODO: change this to an alert message in the content to be consistent and testable
+                    setMessage({value:"An error occurred submitting the email.", type: "error"});
                     break;
                 case 200:
                     let json = await resp.json();
-                    alert(`${json.count} Emails sent.`);
+                    //TODO: change this to an alert message in the content to be consistent and testable
+                    setMessage({value:"Message submitted.", type: "info"});
                     break;
             }
         } catch (e) {
-            alert(`An error occurred sending the email. ${e.message}`);
+            //TODO: change this to an alert message in the content to be consistent and testable
+            setMessage({value:"An error occurred submitting the email.", type: "error"});
             console.log(e);
         }
     }
@@ -72,22 +79,34 @@ const Email = ({site, page, links, user, company, semesters, tenants, apartments
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
+                {message && <Alert variant={message.type === "error" ? "danger" : "primary"} >{message.value}</Alert> }
                 <Form onSubmit={handleSubmit(sendBulkEmail)} method="post">
                     <Row>
                         <Col>
-                            <Image src="/images/contactus.jpg" alt="Email" width={250} height={177}/>
+                            <Image src="/images/contactus.jpg" alt="Send" width={250} height={177}/>
                         </Col>
-                        <Form.Group as={Col} xs={9} className="mb-3" controlId="body">
-                            <Form.Label visuallyHidden={true}>Email Body</Form.Label>
-                            <Form.Control
-                                className={errors && errors.body && classNames("border-danger")} {...register("body", {
-                                required: {value: true, message: "Email body is required."}
-                            })} as="textarea" type="text" rows={7} placeholder="Enter email text here."/>
-                            {errors && errors.body && <Form.Text hidden={false}
-                                                                 className={classNames("text-danger")}>{errors && errors.body.message}</Form.Text>}
-                        </Form.Group>
+                        <Col xs={9}>
+                            <Form.Group className="mb-3" controlId="subject">
+                                <Form.Label visuallyHidden={true}>Subject</Form.Label>
+                                <Form.Control
+                                    className={errors && errors.subject && classNames("border-danger")} {...register("subject", {
+                                    required: {value: true, message: "Subject is required."}
+                                })} as="input" type="text" placeholder="Enter subject here."/>
+                                {errors && errors.subject && <Form.Text hidden={false}
+                                                                     className={classNames("text-danger")}>{errors && errors.subject.message}</Form.Text>}
+                            </Form.Group>
+                            <Form.Group className="mb-3" controlId="body">
+                                <Form.Label visuallyHidden={true}>Send Body</Form.Label>
+                                <Form.Control
+                                    className={errors && errors.body && classNames("border-danger")} {...register("body", {
+                                    required: {value: true, message: "Send body is required."}
+                                })} as="textarea" type="text" rows={5} placeholder="Enter email text here."/>
+                                {errors && errors.body && <Form.Text hidden={false}
+                                                                     className={classNames("text-danger")}>{errors && errors.body.message}</Form.Text>}
+                            </Form.Group>
+                        </Col>
                     </Row>
-                    <div>Now choose who should receive the email, then click <span style={{fontWeight: "bold"}}>Send Email</span> at
+                    <div>Now choose who should receive the email, then click <span style={{fontWeight: "bold"}}>Send Send</span> at
                         the bottom of the page:
                     </div>
                     <Tabs>
@@ -104,7 +123,7 @@ const Email = ({site, page, links, user, company, semesters, tenants, apartments
 
                     <div style={{width: "100%"}}
                          className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                        <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Send Email</Button>
+                        <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Send</Button>
                     </div>
                 </Form>
                 <Footer bg={bg}/>
@@ -115,14 +134,14 @@ const Email = ({site, page, links, user, company, semesters, tenants, apartments
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
-        const page = "email";
+        const page = "email/send";
         const site = context.query.site || SITE;
         const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
 
         if (!user.admin.includes(site)) return {notFound: true};
         const [nav, tenants, semesters, apartments] = await Promise.all([
             GetNavLinks(user, site),
-            GetActiveSemesterTenants(site),
+            GetActiveSemesterTenantNames(site),
             GetActiveSemesters(site),
             GetActiveSemesterApartments(site)
         ]);
@@ -142,4 +161,4 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     }
     , ironOptions);
 
-export default Email;
+export default Send;

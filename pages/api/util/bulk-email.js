@@ -1,31 +1,13 @@
-import nodemailer from "nodemailer";
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../lib/session/options";
 import {
     GetUserLeaseTenants,
+    GetUserLeaseTenantsByApartments,
     GetUserLeaseTenantsByGender,
-    GetUserLeaseTenantsByIdsAndSemester, GetUserLeaseTenantsByApartments
+    GetUserLeaseTenantsByIdsAndSemester
 } from "../../../lib/db/users/tenant";
-
-const suuTransporter = nodemailer.createTransport({
-    host: "uca.snowcollegeapartments.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.SUU_EMAIL_USER,
-        pass: process.env.SUU_EMAIL_PASS
-    }
-});
-
-const snowTransporter = nodemailer.createTransport({
-    host: "uca.snowcollegeapartments.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.SNOW_EMAIL_USER,
-        pass: process.env.SNOW_EMAIL_PASS
-    }
-});
+import {AddEmailDefinition, AddEmailRecipient} from "../../../lib/db/users/bulkEmail";
+import {crypto} from "next/dist/compiled/@edge-runtime/primitives/crypto";
 
 export const bulkEmail = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.admin.includes(req.body.site) || !req.session.user.manageApartment) {
@@ -36,8 +18,10 @@ export const bulkEmail = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "POST":
-                let transporter = req.body.site === "suu" ? suuTransporter : snowTransporter;
                 let tenants;
+                //first insert the email definition into the db
+                let message_id = crypto.randomUUID();
+                await AddEmailDefinition(message_id, req.body);
                 switch (req.body.recipients) {
                     case "All":
                         tenants = await GetUserLeaseTenants(req.body.site, req.body.year, req.body.semester.toLowerCase());
@@ -56,12 +40,11 @@ export const bulkEmail = withIronSessionApiRoute(async (req, res) => {
                         break;
                 }
                 tenants.forEach(tenant => {
-                    transporter.sendMail({
-                        from: req.body.from,
-                        to: tenant.email,
-                        subject: req.body.subject,
-                        html: req.body.body
-                    })
+                    let data = {
+                        address: tenant.email,
+                        user_id: tenant.user_id
+                    }
+                    AddEmailRecipient(message_id, data);
                 });
                 res.json({count: tenants.length});
                 res.status(200).send();

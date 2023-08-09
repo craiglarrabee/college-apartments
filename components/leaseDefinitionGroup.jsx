@@ -48,32 +48,44 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, fall_yea
     return (
         <>
             <Row>
-                <Col xs={3}>
+                <Form.Group as={Col} controlId="start_date" xs={3}>
                     <Form.Label>Visible From</Form.Label>
-                    <Form.Control{...register("start_date", {onChange: (e) => setStartDate(e.target.value) })} type="date" value={startDate} />
-                </Col>
-                <Col xs={3} className="mb-3" >
+                    <Form.Control{...register("start_date")} onChange={(e) => {
+                        setStartDate(e.target.value)
+                    }} type="date" value={startDate}/>
+                </Form.Group>
+                <Form.Group as={Col} controlId="end_date" xs={3} className="mb-3">
                     <Form.Label>Visible Until</Form.Label>
-                    <Form.Control {...register("end_date", {onChange: (e) => setEndDate(e.target.value) })} type="date" value={endDate} />
-                </Col>
-                <Col xs={6} className="mb-3" >
+                    <Form.Control {...register("end_date")} onChange={(e) => {
+                        setEndDate(e.target.value)
+                    }} type="date" value={endDate}/>
+                </Form.Group>
+                <Form.Group as={Col} controlId="description" xs={6} className="mb-3">
                     <Form.Label>Description</Form.Label>
-                    <Form.Control {...register("description", {required: true, maxLength: 100, onChange: (e) => setLeaseDescription(e.target.value) })} type="text" value={leaseDescription} />
-                </Col>
+                    <Form.Control {...register("description", {required: true, maxLength: 100})}
+                                  onChange={(e) => setLeaseDescription(e.target.value)} type="text"
+                                  value={leaseDescription}/>
+                </Form.Group>
             </Row>
             <Row>
-                <Col >
+                <Col>
                     <Form.Label>Valid Semesters:&nbsp;</Form.Label>
                     <Form.Check
-                        className="mb-3" {...register("fall_year", {onChange: (e) => e.target.checked ? setFallYear(secondYear) : setFallYear(null) })}
-                        type="checkbox" id="fall_year" label={`Fall ${firstYear}`} inline />
+                        className="mb-3" {...register("fall_year")} onChange={(e) => {
+                        e.target.checked ? setFallYear(firstYear) : setFallYear(null)
+                    }}
+                        type="checkbox" id="fall_year" label={`Fall ${firstYear}`} inline/>
                     <Form.Check
-                        className="mb-3" {...register("spring_year", {onChange: (e) => e.target.checked ? setSpringYear(secondYear) : setSpringYear(null) })}
-                        type="checkbox" id="spring_year" label={`Spring ${secondYear}`} inline />
+                        className="mb-3" {...register("spring_year")} onChange={(e) => {
+                        e.target.checked ? setSpringYear(secondYear) : setSpringYear(null)
+                    }}
+                        type="checkbox" id="spring_year" label={`Spring ${secondYear}`} inline/>
                     {site === "suu" ?
-                    <Form.Check
-                        className="mb-3" {...register("summer_year", {onChange: (e) => e.target.checked ? setSummerYear(secondYear) : setSummerYear(null) })}
-                        type="checkbox" id="summer_year" label={`Summer ${secondYear}`} inline />
+                        <Form.Check
+                            className="mb-3" {...register("summer_year")} onChange={(e) => {
+                            e.target.checked ? setSummerYear(secondYear) : setSummerYear(null)
+                        }}
+                            type="checkbox" id="summer_year" label={`Summer ${secondYear}`} inline/>
                         : null}
                 </Col>
             </Row>

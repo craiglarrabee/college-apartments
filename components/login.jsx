@@ -39,8 +39,8 @@ const Login = ({show, close, setNewUser, site}) => {
                 case 200:
                     setLoginError(false);
                     setNewUser(await resp.json());
-                    Router.reload();
                     close();
+                    Router.reload();
                     return;
                 case 400:
                 default:

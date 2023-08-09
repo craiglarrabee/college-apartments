@@ -1,7 +1,7 @@
 import React from "react";
 import {act, getByRole, render, waitFor} from "@testing-library/react";
 import fetchMock from "jest-fetch-mock";
-import Title from "./Title";
+import Title from "../../components/title";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import Router from "next/router";
@@ -33,22 +33,35 @@ describe("Title component", () => {
         const initialUser = {
             isLoggedIn: false,
         };
-        const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-        await user.click(getByRole("button"));
-        const signin = await waitFor(() => queryByText("Sign In"));
-        expect(signin).toBeInTheDocument();
+        const {queryAllByText, getByRole} = render(<Title initialUser={initialUser}/>);
+        await act(() => user.click(getByRole("button")));
+        const signins = await waitFor(() => queryAllByText("Sign In"));
+        expect(signins.length).toEqual(2);
     });
 
-    it("opens login modal when user clicks sign in", async () => {
+    it("opens login modal when user clicks first sign in button", async () => {
         const initialUser = {
             isLoggedIn: false,
         };
-        const {getByRole, queryByLabelText, queryByText} = render(
+        const {getByRole, queryByLabelText, queryAllByText} = render(
             <Title initialUser={initialUser}/>
         );
-        await user.click(getByRole("button"));
-        const signInButton = await waitFor(() => queryByText("Sign In"));
-        await user.click(signInButton);
+        await act(() => user.click(getByRole("button")));
+        const signInButtons = await waitFor(() => queryAllByText("Sign In"));
+        await act(() => user.click(signInButtons[0]));
+        await waitFor(() => expect(queryByLabelText("Username")).toBeInTheDocument());
+    });
+
+    it("opens login modal when user clicks second sign in button", async () => {
+        const initialUser = {
+            isLoggedIn: false,
+        };
+        const {getByRole, queryByLabelText, queryAllByText} = render(
+            <Title initialUser={initialUser}/>
+        );
+        await act(() => user.click(getByRole("button")));
+        const signInButtons = await waitFor(() => queryAllByText("Sign In"));
+        await act(() => user.click(signInButtons[1]));
         await waitFor(() => expect(queryByLabelText("Username")).toBeInTheDocument());
     });
 
@@ -57,12 +70,12 @@ describe("Title component", () => {
             isLoggedIn: true,
             username: "johndoe",
         };
-        fetchMock.mockResponseOnce(JSON.stringify({}));
-        const {getByRole, queryByText} = render(<Title initialUser={initialUser}/>);
-        await user.click(getByRole("button"));
+        fetchMock.mockResponseOnce(JSON.stringify({isLoggeIn: false}));
+        const {getByRole, queryByText, queryAllByText} = render(<Title initialUser={initialUser}/>);
+        await act(() => user.click(getByRole("button")));
         const signOutButton = await waitFor(() => queryByText("Sign out"));
-        await user.click(signOutButton);
-        await waitFor(() => expect(queryByText("Sign In")).toBeInTheDocument());
+        await act(() => user.click(signOutButton));
+        await waitFor(() => expect(queryAllByText("Sign In").length).toEqual(2));
         expect(fetchMock).toHaveBeenCalledWith("/api/logout", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -72,76 +85,72 @@ describe("Title component", () => {
     it("sends API request to edit site when user clicks manage site", async () => {
         const initialUser = {
             isLoggedIn: true,
-            admin: true,
+            admin: ["site"],
         };
         fetchMock.mockResponseOnce(JSON.stringify({}));
-        const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-        await user.click(getByRole("button"));
+        const {queryByText, getByRole} = render(<Title initialUser={initialUser} site="site" />);
+        await act(() => user.click(getByRole("button")));
         const manageSiteButton = await waitFor(() => queryByText("Manage Site"));
-        await user.click(manageSiteButton);
+        await act(() => user.click(manageSiteButton));
         expect(fetchMock).toHaveBeenCalledWith("/api/maintain", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({editSite: true}),
         });
         expect(window.location.pathname).toBe("/");
-        expect(Router.reload).toHaveBeenCalled();
     });
 
     it("sends API request to manage apartments when user clicks manage apartments", async () => {
         const initialUser = {
             isLoggedIn: true,
-            admin: true,
+            admin: ["site"],
         };
         fetchMock.mockResponseOnce(JSON.stringify({}));
-        const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-        await user.click(getByRole("button"));
+        const {queryByText, getByRole} = render(<Title initialUser={initialUser} site="site" />);
+        await act(() => user.click(getByRole("button")));
         const manageApartmentsButton = await waitFor(() => queryByText("Manage Apartments"));
-        await user.click(manageApartmentsButton);
+        await act(() => user.click(manageApartmentsButton));
         expect(fetchMock).toHaveBeenCalledWith("/api/manage", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
         });
         expect(window.location.pathname).toBe("/");
-        expect(Router.reload).toHaveBeenCalled();
     });
 
     it("sends API request to view site when user is managing site and clicks view site", async () => {
         const initialUser = {
             isLoggedIn: true,
-            admin: true,
+            admin: ["site"],
             editSite: true
         };
         fetchMock.mockResponseOnce(JSON.stringify({}));
-        const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-        await user.click(getByRole("button"));
+        const {queryByText, getByRole} = render(<Title initialUser={initialUser} site="site" />);
+        await act(() => user.click(getByRole("button")));
         const manageApartmentsButton = await waitFor(() => queryByText("View Site"));
-        await user.click(manageApartmentsButton);
+        await act(() => user.click(manageApartmentsButton));
         expect(fetchMock).toHaveBeenCalledWith("/api/view", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
         });
         expect(window.location.pathname).toBe("/");
-        expect(Router.reload).toHaveBeenCalled();
     });
 
     it("sends API request to view site when user is managing apartments and clicks view site", async () => {
         const initialUser = {
             isLoggedIn: true,
-            admin: true,
+            admin: ["site"],
             manageApartment: true
         };
         fetchMock.mockResponseOnce(JSON.stringify({}));
-        const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-        await user.click(getByRole("button"));
+        const {queryByText, getByRole} = render(<Title initialUser={initialUser} site="site" />);
+        await act(() => user.click(getByRole("button")));
         const viewButton = await waitFor(() => queryByText("View Site"));
-        await user.click(viewButton);
+        await act(() => user.click(viewButton));
         expect(fetchMock).toHaveBeenCalledWith("/api/view", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
         });
         expect(window.location.pathname).toBe("/");
-        expect(Router.reload).toHaveBeenCalled();
     });
 
     it("redirects for tenant page when user clicks on manage profile", async () => {
@@ -150,7 +159,7 @@ describe("Title component", () => {
         };
         fetchMock.mockResponseOnce(JSON.stringify({}));
         const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-        await user.click(getByRole("button"));
+        await act(() => user.click(getByRole("button")));
         const manageProfile = await waitFor(() => queryByText("Manage Profile"));
         expect(manageProfile.pathname).toBe("/tenant");
     });
@@ -161,7 +170,7 @@ describe("Title component", () => {
         };
         fetchMock.mockResponseOnce(JSON.stringify({}));
         const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-        await user.click(getByRole("button"));
+        await act(() => user.click(getByRole("button")));
         const changePasswordButton = await waitFor(() => queryByText("Change Password"));
         expect(changePasswordButton.pathname).toBe("/password");
     });

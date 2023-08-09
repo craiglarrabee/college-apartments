@@ -1,21 +1,29 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import LeaseRoom from "./LeaseRoom";
+import { render, screen } from "@testing-library/react";
+import LeaseRoom from "../../components/leaseRoom";
 import "@testing-library/jest-dom";
+import userEvent from "@testing-library/user-event";
+import fetchMock from "jest-fetch-mock";
+
 
 describe("LeaseRoom", () => {
     const lease_id = "1";
     const room_type_id = "2";
     const room_rent = "100";
     const room_desc = "test description";
+    let user;
 
-    beforeEach(() => {
-        global.fetch = jest.fn(() =>
-            Promise.resolve()
-        )
+    beforeAll(() => {
+        fetchMock.enableMocks();
+        user = userEvent.setup();
     });
 
-    test("renders room details for non-editable mode", () => {
+    beforeEach(() => {
+        fetchMock.resetMocks();
+        fetchMock.mockResponseOnce(undefined, {status: 204});
+    });
+
+    it("renders room details for non-editable mode", () => {
         render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc} canEdit={false} />);
         const roomId = screen.getByText(`#${room_type_id}:`);
         const rent = screen.getByText(`$${room_rent}.00`);
@@ -25,34 +33,38 @@ describe("LeaseRoom", () => {
         expect(desc).toBeInTheDocument();
     });
 
-    test("renders edit form for editable mode", () => {
+    it("renders edit form for editable mode", () => {
         render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc} canEdit={true} />);
-        const rent = screen.getByDisplayValue(room_rent);
-        const desc = screen.getByDisplayValue(room_desc);
+        const roomId = screen.getByLabelText("Room Type");
+        const rent = screen.getByLabelText("Room Rent");
+        const desc = screen.getByLabelText("Room Description");
+        expect(roomId).toBeInTheDocument();
         expect(rent).toBeInTheDocument();
         expect(desc).toBeInTheDocument();
     });
 
-    test("updates room rent when changed", async () => {
+    it("updates room rent when changed", async () => {
         render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc} canEdit={true} />);
-        const rentInput = screen.getByDisplayValue(room_rent);
-        fireEvent.change(rentInput, {target: {value: "200"}});
+        const rentInput = screen.getByLabelText("Room Rent");
+        await user.type(rentInput, "200", {initialSelectionStart: 0, initialSelectionEnd: 4});
+        await user.tab();
         expect(rentInput).toHaveValue("200");
         await new Promise(resolve => setTimeout(resolve, 1500)); // wait for debounce
-        expect(global.fetch).toHaveBeenCalledWith(`/api/leases/${lease_id}/rooms/${room_type_id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${lease_id}/rooms/${room_type_id}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({room_rent: "200"}),
         });
     });
 
-    test("updates room description when changed", async () => {
+    it("updates room description when changed", async () => {
         render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc} canEdit={true} />);
-        const descInput = screen.getByDisplayValue(room_desc);
-        fireEvent.change(descInput, {target: {value: "new description"}});
+        const descInput = screen.getByLabelText("Room Description");
+        await user.type(descInput, "new description", {initialSelectionStart: 0, initialSelectionEnd: 16});
+        await user.tab();
         expect(descInput).toHaveValue("new description");
         await new Promise(resolve => setTimeout(resolve, 1500)); // wait for debounce
-        expect(global.fetch).toHaveBeenCalledWith(`/api/rooms/${room_type_id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/rooms/${room_type_id}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({room_desc: "new description"}),

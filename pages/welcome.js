@@ -45,7 +45,7 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant})
                     alert("An error occurred sending the email.");
                     break;
                 case 204:
-                    alert("Email sent.");
+                    alert("Send sent.");
                     break;
             }
         } catch (e) {
@@ -82,7 +82,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             GetTenant(user.id)
         ]);
         contentRows.forEach(row => content[row.name] = row.content);
-        if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
         return {
             props: {
                 site: site,

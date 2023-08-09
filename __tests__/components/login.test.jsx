@@ -1,9 +1,10 @@
-import {fireEvent, render, screen, waitFor} from "@testing-library/react";
-import Login from "./Login";
+import {render, screen, waitFor} from "@testing-library/react";
+import Login from "../../components/Login";
 import "@testing-library/jest-dom";
 import React from "react";
 import userEvent from "@testing-library/user-event";
 import fetchMock from "jest-fetch-mock";
+
 let user;
 
 describe("Login component", () => {

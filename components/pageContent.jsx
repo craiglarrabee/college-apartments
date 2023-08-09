@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 
 const JoditEditor = dynamic(() => import("jodit-react"), {ssr: false});
 
-const PageContent = ({site, page, name, canEdit, initialContent}) => {
+export const PageContent = ({site, page, name, canEdit, initialContent}) => {
     const [showEditor, setShowEditor] = useState(false);
     const [content, setContent] = useState(initialContent);
 
@@ -44,8 +44,9 @@ const PageContent = ({site, page, name, canEdit, initialContent}) => {
     }
 };
 
-function Editor({show, handleClose, title, site, page, name, initialContent, setEditableText}) {
+export const Editor = ({show, handleClose, title, site, page, name, initialContent, setEditableText}) => {
     const [content, setContent] = useState(initialContent);
+    const [error, setError] = useState();
     const json = {
         site: site,
         page: page,
@@ -53,7 +54,6 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
     };
     const saveContent = async () => {
         json.content = content;
-        console.log(content);
         let resp = await fetch(`/api/${site}/content/${page}`, {
             method: "PUT",
             headers: {
@@ -61,10 +61,17 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
             },
             body: JSON.stringify(json)
         });
-        console.log(resp.status);
-        setEditableText(content);
-        console.log(content);
-        handleClose();
+        switch (resp.status) {
+            case 200:
+            case 204:
+                setError(null);
+                setEditableText(content);
+                handleClose();
+                break;
+            case 400:
+            case 500:
+                setError(`Sorry, something went wrong saving your changes. ${resp.json()}`);
+        }
     };
 
     const editorOptions = useMemo(() => (
@@ -100,7 +107,7 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
                 <Modal.Title>{title}</Modal.Title>
             </Modal.Header>
 
-            <Modal.Body>
+            <Modal.Body role="editor" >
                 <JoditEditor
                     config={editorOptions}
                     tabIndex={1}
@@ -111,11 +118,12 @@ function Editor({show, handleClose, title, site, page, name, initialContent, set
             </Modal.Body>
 
             <Modal.Footer>
+                {error && <Alert variant="danger" >{error}</Alert>}
                 <Button size="sm" variant="secondary" onClick={handleClose}>Close</Button>
                 <Button role="save" size="sm" variant="primary" onClick={saveContent}>Save changes</Button>
             </Modal.Footer>
         </Modal>
     );
-}
+};
 
 export default PageContent;

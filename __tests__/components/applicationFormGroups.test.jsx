@@ -3,60 +3,60 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 
-import ApplicationFormGroups from "./ApplicationFormGroups";
+import ApplicationForm from "../../components/applicationForm";
 
-describe("ApplicationFormGroups component", () => {
+describe("ApplicationForm component", () => {
   describe("rendering", () => {
     it("should render the Preferences label", () => {
-      render(<ApplicationFormGroups />);
+      render(<ApplicationForm />);
       const preferencesLabel = screen.getByText("Preferences:");
       expect(preferencesLabel).toBeInTheDocument();
     });
 
     it("should render the Preferred Roommate label", () => {
-      render(<ApplicationFormGroups />);
+      render(<ApplicationForm />);
       const roommateLabel = screen.getByLabelText("Preferred Roommate");
       expect(roommateLabel).toBeInTheDocument();
     });
 
     it("should render the roomate2 input", () => {
-      render(<ApplicationFormGroups />);
-      const roommate2Input = screen.getByPlaceholderText("Preferred Apartment Mate 1");
+      render(<ApplicationForm />);
+      const roommate2Input = screen.getByLabelText("Preferred Roommate 2");
       expect(roommate2Input).toBeInTheDocument();
     });
 
     it("should render the roomate3 input", () => {
-      render(<ApplicationFormGroups />);
-      const roommate3Input = screen.getByPlaceholderText("Preferred Apartment Mate 2");
+      render(<ApplicationForm />);
+      const roommate3Input = screen.getByLabelText("Preferred Roommate 3");
       expect(roommate3Input).toBeInTheDocument();
     });
 
     it("should render the roomate4 input", () => {
-      render(<ApplicationFormGroups />);
-      const roommate4Input = screen.getByPlaceholderText("Preferred Apartment Mate 3");
+      render(<ApplicationForm />);
+      const roommate4Input = screen.getByLabelText("Preferred Roommate 4");
       expect(roommate4Input).toBeInTheDocument();
     });
 
     it("should render the roomate5 input", () => {
-      render(<ApplicationFormGroups />);
-      const roommate5Input = screen.getByPlaceholderText("Preferred Apartment Mate 4");
+      render(<ApplicationForm />);
+      const roommate5Input = screen.getByLabelText("Preferred Roommate 5");
       expect(roommate5Input).toBeInTheDocument();
     });
 
     it("should render the Likes and Dislikes label", () => {
-      render(<ApplicationFormGroups />);
+      render(<ApplicationForm />);
       const likesDislikesLabel = screen.getByLabelText("Likes and Dislikes");
       expect(likesDislikesLabel).toBeInTheDocument();
     });
 
     it("should render the 'Please do not share my information' checkbox", () => {
-      render(<ApplicationFormGroups />);
+      render(<ApplicationForm />);
       const shareInfoCheckbox = screen.getByLabelText("Please do not share my information.");
       expect(shareInfoCheckbox).toBeInTheDocument();
     });
 
     it("should render the Roommate Description label", () => {
-      render(<ApplicationFormGroups />);
+      render(<ApplicationForm />);
       const roommateDescLabel = screen.getByLabelText("Roommate Description");
       expect(roommateDescLabel).toBeInTheDocument();
     });
@@ -64,7 +64,7 @@ describe("ApplicationFormGroups component", () => {
 
   describe("interactions", () => {
     xit("should validate the 'Preferred Roommate' field when typing more than 256 characters", async () => {
-      render(<ApplicationFormGroups />);
+      render(<ApplicationForm />);
       const roommateInput = screen.getByLabelText("Preferred Roommate");
       await fireEvent.input(roommateInput, "a".repeat(257));
       await fireEvent.blur(roommateInput);
@@ -73,7 +73,7 @@ describe("ApplicationFormGroups component", () => {
     });
 
     it("should not validate the 'Preferred Roommate' field when typing less than or equal to 256 characters", async () => {
-      render(<ApplicationFormGroups />);
+      render(<ApplicationForm />);
       const roommateInput = screen.getByLabelText("Preferred Roommate");
       await userEvent.type(roommateInput, "a".repeat(256));
       const errorMessage = screen.queryByText("Too long.");
@@ -81,7 +81,7 @@ describe("ApplicationFormGroups component", () => {
     });
 
     it("should select the 'Please do not share my information' checkbox when clicking it", async () => {
-      render(<ApplicationFormGroups />);
+      render(<ApplicationForm />);
       const shareInfoCheckbox = screen.getByLabelText("Please do not share my information.");
       expect(shareInfoCheckbox.checked).toBe(false);
       await fireEvent.click(shareInfoCheckbox);

@@ -2,9 +2,6 @@ import {Button, Col, Form, Row, Table} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import React, {useEffect, useState} from "react";
 import classNames from "classnames";
-import {add} from "@dnd-kit/utilities";
-import {WelcomeEmailBody} from "./welcomeEmailBody";
-import ReactDomServer from "react-dom/server";
 
 
 export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDelete, handleProcess}) => {
@@ -20,7 +17,7 @@ export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDel
                 </tr>
                 </thead>
                 <tbody>
-                {data.map(row => (<tr>
+                {data.map(row => (<tr key={row.user_id}>
                     <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
                     <td>{row.submit_date}</td>
                     <td><Button onClick={(e) => handleProcess(row.user_id, site, leaseId, true)}>Process</Button></td>
@@ -47,7 +44,7 @@ export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelet
                 <tbody>
                 {
                     data.map(row => (
-                        <tr>
+                        <tr key={row.user_id}>
                             <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
                             <td>{row.submit_date}</td>
                             <td><Button onClick={(e) => handleDeposit(row.user_id, site, leaseId)}>Deposit</Button></td>

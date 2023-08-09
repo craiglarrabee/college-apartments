@@ -2,14 +2,14 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
-import {GetPendingApplications} from "../../../../lib/db/users/application";
+import {GetTenantPendingApplications} from "../../../../lib/db/users/application";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "GET":
-                res.body = await GetPendingApplications(req.query.userId);
+                res.body = await GetTenantPendingApplications(req.query.userId);
                 if (!res.body) {
                     res.status(404).send();
                 }

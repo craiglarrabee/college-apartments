@@ -15,29 +15,25 @@ import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 
 const SITE = process.env.SITE;
 
-const Tenant = ({site, navPage, links, user, tenant, isNewApplication = false}) => {
+const Home = ({site, user, links, navPage}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, reset, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: tenant});
 
     const onSubmit = async (data, event) => {
-        event.preventDefault();
 
         try {
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/tenant`, options);
+            const resp = await fetch(`/api/util/bulk-email-process?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     break;
                 case 204:
-                    reset(data);
-                    if (isNewApplication || tenant?.pending_application) location = `/application?site=${site}`;
+                    break;
             }
         } catch (e) {
             console.log(e);
@@ -50,14 +46,7 @@ const Tenant = ({site, navPage, links, user, tenant, isNewApplication = false}) 
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <div className={classNames("main-content")}>
-                    <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        <TenantForm tenant={tenant} register={register} errors={errors}></TenantForm>
-                        <div style={{width: "100%"}}
-                             className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit"
-                                    disabled={!isNewApplication && (!isDirty || !isValid)}>{isNewApplication || tenant.pending_application ? "Next" : "Save"}</Button>
-                        </div>
-                    </Form>
+                    <Button onClick={onSubmit} >Send</Button>
                 </div>
                 <Footer bg={bg}/>
             </main>
@@ -68,35 +57,18 @@ const Tenant = ({site, navPage, links, user, tenant, isNewApplication = false}) 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     if (!user.isLoggedIn) return {notFound: true};
-    const newApplication = context.query && context.query.hasOwnProperty("newApplication");
     const site = context.query.site || SITE;
-    if (user.isLoggedIn && user.editSite) {
-        context.res.writeHead(302, {Location: `/application?site=${site}`});
-        context.res.end();
-        return {};
-    }
-    const [nav, tenant, leases] = await Promise.all([
-        GetNavLinks(user, site),
-        GetTenant(user.id),
-        GetUserAvailableLeaseRooms(site, user.id)
+    const [nav] = await Promise.all([
+        GetNavLinks(user, site)
     ]);
-
-    if(!leases || leases.length === 0) {
-        context.res.writeHead(302, {Location: `/deposit?site=${site}`});
-        context.res.end();
-        return {};
-    }
-
     return {
         props: {
             site: site,
-            navPage: newApplication || tenant?.pending_application ? "user" : "",
+            user: user,
             links: nav,
-            user: {...user},
-            tenant: {...tenant},
-            isNewApplication: newApplication
+            navPage: "process"
         }
     };
 }, ironOptions);
 
-export default Tenant;
+export default Home;

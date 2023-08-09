@@ -6,7 +6,7 @@ import React from "react";
 import classNames from "classnames";
 import {Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
-import ApplicationFormGroups from "../components/applicationFormGroups";
+import ApplicationForm from "../components/applicationForm";
 import WorkFormGroups from "../components/workFormGroups";
 import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import PageContent from "../components/pageContent";
@@ -16,6 +16,7 @@ import {useForm} from "react-hook-form";
 import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 import CurrentLeases from "../components/currentLeases";
 import {GetTenant} from "../lib/db/users/tenant";
+import ApplicationFormGroups from "../components/ApplicationFormGroups";
 
 const SITE = process.env.SITE;
 
@@ -158,7 +159,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
     contentRows.forEach(row => content[row.name] = row.content);
     emailContenRows.forEach(row => emailContent[row.name] = row.content);
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];

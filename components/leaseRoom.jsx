@@ -69,16 +69,16 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, canEdit}) => {
         return (
             <>
                 <Row>
-                    <Form.Group as={Col} xs={1} style={{paddingRight: "0px"}} controlId={`roomRent${room_type_id}`}>
-                        <Form.Label hidden={true}/>
+                    <Form.Group as={Col} xs={1} style={{paddingRight: "0px"}} controlId={`roomType${room_type_id}`}>
+                        <Form.Label hidden={true}>Room Type</Form.Label>
                         <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} plaintext readOnly type="text" defaultValue={`#${room_type_id}:$`}/>
                     </Form.Group>
                     <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "0px"}} controlId={`roomRent${room_type_id}`}>
-                        <Form.Label hidden={true}/>
+                        <Form.Label hidden={true}>Room Rent</Form.Label>
                         <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} type="text" defaultValue={rent} onChange={rentChanged}/>
                     </Form.Group>
                     <Form.Group as={Col} xs={9} style={{paddingRight: "0px", paddingLeft: "0px"}} controlId={`roomDesc${room_type_id}`}>
-                        <Form.Label hidden={true}/>
+                        <Form.Label hidden={true}>Room Description</Form.Label>
                         <Form.Control type="text" style={{paddingRight: "0px", paddingLeft: "0px"}} defaultValue={desc} onChange={descChanged}/>
                     </Form.Group>
                 </Row>

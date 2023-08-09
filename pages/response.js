@@ -40,7 +40,7 @@ const Home = ({site, page, body, links, canEdit, user, company}) => {
                     alert("An error occurred sending the email.");
                     break;
                 case 204:
-                    alert("Email sent.");
+                    alert("Send sent.");
                     break;
             }
         } catch (e) {

@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import Layout from "./Layout";
+import Layout from "../../components/layout";
 import "@testing-library/jest-dom";
 
 describe("Layout component", () => {

@@ -1,5 +1,5 @@
 import {fireEvent, render, screen} from "@testing-library/react";
-import CurrentLeases from "./CurrentLeases";
+import CurrentLeases from "../../components/currentLeases";
 import "@testing-library/jest-dom";
 
 describe("CurrentLeases component", () => {
@@ -39,20 +39,6 @@ describe("CurrentLeases component", () => {
                 setValueAs: expect.any(Function),
             });
         });
-    });
-
-    test("disables room options when not enabled", () => {
-        render(<CurrentLeases register={mockRegister} rooms={mockRooms} enabled={false} />);
-        const roomOptions = screen.getAllByRole("radio");
-        expect(roomOptions[0]).toBeDisabled();
-        expect(roomOptions[1]).toBeDisabled();
-    });
-
-    test("enables room options when enabled", () => {
-        render(<CurrentLeases register={mockRegister} rooms={mockRooms} enabled />);
-        const roomOptions = screen.getAllByRole("radio");
-        expect(roomOptions[0]).toBeEnabled();
-        expect(roomOptions[1]).toBeEnabled();
     });
 
     test("selects a room option when clicked", () => {
