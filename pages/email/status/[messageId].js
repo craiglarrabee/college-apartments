@@ -54,11 +54,10 @@ const Index = ({site, page, links, user, details}) => {
                             </tr>
                             </thead>
                             <tbody>
-                            {details.filter(row => "success" === row.status).map(row => (<tr key={row.message_id}>
-                                <td><a href={`/${page}/${row.message_id}?site=${site}`}>{row.subject}</a></td>
-                                <td>{row.created}</td>
-                                <td>{row.completed}</td>
-                                <td></td>
+                            {details.filter(row => "success" === row.status).map(row => (<tr key={row.user_id}>
+                                <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                                <td>{row.address}</td>
+                                <td>{row.sent}</td>
                             </tr>))}
                             </tbody>
                         </Table>

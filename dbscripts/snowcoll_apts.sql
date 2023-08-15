@@ -377,7 +377,7 @@ CREATE TABLE IF NOT EXISTS `user_lease` (
   `id` int NOT NULL AUTO_INCREMENT,
   `lease_id` int NOT NULL,
   `user_id` int NOT NULL,
-  `room_options_id` int DEFAULT NULL,
+  `room_type_id` int DEFAULT NULL,
   `lease_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `signature` varchar(100) NOT NULL,
   `lease_discount` float DEFAULT NULL,

@@ -4,14 +4,10 @@ import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
 import classNames from "classnames";
-import {Button, Form} from "react-bootstrap";
+import {Button} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetTenant} from "../lib/db/users/tenant";
-import {useForm} from "react-hook-form";
-import {TenantForm} from "../components/tenantForm";
-import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 
 const SITE = process.env.SITE;
 

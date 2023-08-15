@@ -6,7 +6,6 @@ import React from "react";
 import classNames from "classnames";
 import {Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
-import ApplicationForm from "../components/applicationForm";
 import WorkFormGroups from "../components/workFormGroups";
 import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import PageContent from "../components/pageContent";
@@ -20,7 +19,7 @@ import ApplicationFormGroups from "../components/ApplicationFormGroups";
 
 const SITE = process.env.SITE;
 
-const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, canEdit, user, currentLeases, company, body, tenant}) => {
+const Application = ({site, page, navPage, content, links, canEdit, user, currentLeases, company, body, tenant}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -139,7 +138,7 @@ const Application = ({site, page, navPage, rules, disclaimer, guaranty, links, c
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    if (!user.isLoggedIn) return {notFound: true};
+    if (!user?.isLoggedIn) return {notFound: true};
     const page = "application";
     const site = context.query.site || SITE;
     const content = {};
@@ -172,7 +171,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             site: site,
             page: page,
             navPage: "user",
-            ...content,
+            content: content,
             ...emailContent,
             links: nav,
             canEdit: editing,

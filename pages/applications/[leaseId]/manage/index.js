@@ -150,13 +150,12 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
     };
 
     const welcome = async (data, event) => {
-
         event.preventDefault();
 
         const thisApp = allApplications.filter(app => app.user_id == data.userId)[0];
         const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={header} body={body}
                                             canEdit={false} company={`${company}, LLC`}
-                                            site={data.site} page={page}></WelcomeEmailBody>;
+                                            site={data.site} page={page} semester={app.semester1}></WelcomeEmailBody>;
         const emailBodyString = ReactDomServer.renderToString(emailBody);
 
         try {
@@ -167,7 +166,6 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
             }
 
             const resp = await fetch(`/api/users/${data.userId}/leases/${data.leaseId}?site=${data.site}`, options);
-            //TODO: send welcome email
             switch (resp.status) {
                 case 400:
                     break;

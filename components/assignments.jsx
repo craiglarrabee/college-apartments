@@ -5,7 +5,7 @@ import classNames from "classnames";
 export const UserApartment = ({data}) => {
     return (
         <>
-            <div style={{justifyContent: "center", display: "grid"}} className={classNames("h3")}>{`Apartment ${data[0].apartment_number}`}</div>
+            <div style={{justifyContent: "center", display: "grid"}} className={classNames("h3")}>{`Apartment ${data?.length > 0 && data[0].apartment_number}`}</div>
             <Table>
                 <thead>
                 <tr>

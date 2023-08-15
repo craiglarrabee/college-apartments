@@ -7,7 +7,7 @@ import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetTenant, GetUserLeaseTenant} from "../lib/db/users/tenant";
+import {GetTenant} from "../lib/db/users/tenant";
 import {Button} from "react-bootstrap";
 import {WelcomeEmailBody} from "../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";

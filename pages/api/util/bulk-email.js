@@ -21,22 +21,22 @@ export const bulkEmail = withIronSessionApiRoute(async (req, res) => {
                 let tenants;
                 //first insert the email definition into the db
                 let message_id = crypto.randomUUID();
-                await AddEmailDefinition(message_id, req.body);
+                let resp = await AddEmailDefinition(message_id, req.body);
                 switch (req.body.recipients) {
                     case "All":
-                        tenants = await GetUserLeaseTenants(req.body.site, req.body.year, req.body.semester.toLowerCase());
+                        tenants = await GetUserLeaseTenants(req.body.site, req.body.year, req.body.semester);
                         break;
                     case "Male":
-                        tenants = await GetUserLeaseTenantsByGender(req.body.site, req.body.year, req.body.semester.toLowerCase(), "M");
+                        tenants = await GetUserLeaseTenantsByGender(req.body.site, req.body.semester, "M");
                         break;
                     case "Female":
-                        tenants = await GetUserLeaseTenantsByGender(req.body.site, req.body.year, req.body.semester.toLowerCase(), "F");
+                        tenants = await GetUserLeaseTenantsByGender(req.body.site, req.body.semester, "F");
                         break;
                     case "Tenants":
-                        tenants = await GetUserLeaseTenantsByIdsAndSemester(req.body.site, req.body.year, req.body.semester.toLowerCase(), req.body.ids);
+                        tenants = await GetUserLeaseTenantsByIdsAndSemester(req.body.site, req.body.semester, req.body.ids);
                         break;
                     case "Apartments":
-                        tenants = await GetUserLeaseTenantsByApartments(req.body.site, req.body.year, req.body.semester.toLowerCase(), req.body.ids);
+                        tenants = await GetUserLeaseTenantsByApartments(req.body.site, req.body.semester, req.body.ids);
                         break;
                 }
                 tenants.forEach(tenant => {
@@ -46,7 +46,7 @@ export const bulkEmail = withIronSessionApiRoute(async (req, res) => {
                     }
                     AddEmailRecipient(message_id, data);
                 });
-                res.json({count: tenants.length});
+                res.json({resp: resp});
                 res.status(200).send();
                 return;
             default:

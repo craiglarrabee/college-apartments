@@ -6,8 +6,9 @@ import LeaseDefinitionGroup from "./leaseDefinitionGroup";
 import PageContent from "./pageContent";
 import LeaseRoom from "./leaseRoom";
 
-const LeaseForm = ({navPage, site, userId, leaseId, lease, canEdit, lease_header, accommodations_header, accommodations_body, rent_header,
-                       rent_body, vehicle_header, vehicle_body, lease_body, lease_acceptance, rules, cleaning, repairs, rooms}) => {
+const LeaseForm = ({navPage, site, userId, leaseId, lease, canEdit, lease_header, accommodations_header,
+                       accommodations_body, rent_header, rent_body, vehicle_header, vehicle_body, lease_body,
+                       lease_acceptance, rules, cleaning, repairs, rooms}) => {
     const {register, formState: {errors, isValid, isDirty}, handleSubmit} = useForm({defaultValues: lease});
     const today = new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
     const submitted = lease.lease_date !== null;
@@ -72,7 +73,9 @@ const LeaseForm = ({navPage, site, userId, leaseId, lease, canEdit, lease_header
                     page={navPage}
                     name="rent_header"
                     canEdit={canEdit}/>
-                {rooms.map(room => <LeaseRoom {...room} canEdit={canEdit}/>)}
+                <div style={{display: "flex", flexDirection: "column"}}>
+                    {rooms.map(room => <LeaseRoom {...room} canEdit={canEdit}/>)}
+                </div>
                 <div style={{fontWeight: "bold"}}>I pick room type
                     #{lease.room_type_id ? lease.room_type_id : "__"} ABOVE FOR THE RENT PER SEMESTER SET FORTH
                     less a discount per semester of

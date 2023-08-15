@@ -7,18 +7,28 @@ import {
     GetApplication,
     UpdateApplication
 } from "../../../../../../lib/db/users/application";
-import {AddUserLease, DeleteUserLease} from "../../../../../../lib/db/users/userLease";
-import {CopyTenantForUserLease, SetApartmentNumber, SetTenantSemesters} from "../../../../../../lib/db/users/tenant";
+import {
+    AddUserLease,
+    ChangeUserLeaseRoomType,
+    DeleteUserLease,
+    UpdateUserLease
+} from "../../../../../../lib/db/users/userLease";
+import {CopyTenantForUserLease, SetApartmentNumber, SetTenantSemester} from "../../../../../../lib/db/users/tenant";
+import {UpdateLease} from "../../../../../../lib/db/users/lease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.isLoggedIn) res.status(403).send();
+    if (!req.session.user.manageApartment) res.status(403).send();
     try {
         switch (req.method) {
             case "PUT":
                 if (req.body.apartmentNumber) {
-                    await SetApartmentNumber(req.query.userId, req.query.leaseId, req.body.apartmentNumber);
+                    await Promise.all(
+                        [
+                            SetApartmentNumber(req.query.userId, req.query.leaseId, req.body.apartmentNumber),
+                            ChangeUserLeaseRoomType(req.query.userId, req.query.leaseId, req.body.roomTypeId)
+                        ]);
                 } else {
-                    await SetTenantSemesters(req.query.userId, req.query.leaseId, req.body.fall_year, req.body.spring_year, req.body.summer_year);
+                    await Promise.all(req.body.semesters.map(semester => SetTenantSemester(req.query.userId, req.query.leaseId, semester)));
                 }
                 res.status(204).send();
                 return;

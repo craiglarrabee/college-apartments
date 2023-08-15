@@ -27,7 +27,7 @@ const Lease = ({
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({defaultValues: lease, mode: "onChange"});
+    const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({mode: "onChange"});
 
     const onSubmit = async (data, event) => {
         event.preventDefault();

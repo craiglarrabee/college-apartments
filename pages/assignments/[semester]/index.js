@@ -1,14 +1,14 @@
-import Layout from "../../../../components/layout";
-import Navigation from "../../../../components/navigation";
-import Title from "../../../../components/title";
-import Footer from "../../../../components/footer";
+import Layout from "../../../components/layout";
+import Navigation from "../../../components/navigation";
+import Title from "../../../components/title";
+import Footer from "../../../components/footer";
 import React from "react";
-import {GetNavLinks} from "../../../../lib/db/content/navLinks";
+import {GetNavLinks} from "../../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
-import {ironOptions} from "../../../../lib/session/options";
+import {ironOptions} from "../../../lib/session/options";
 import classNames from "classnames";
-import {GetUserRoomates} from "../../../../lib/db/users/tenant";
-import {UserApartment} from "../../../../components/assignments";
+import {GetUserRoomates} from "../../../lib/db/users/tenant";
+import {UserApartment} from "../../../components/assignments";
 
 const SITE = process.env.SITE;
 
@@ -37,7 +37,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
     const [tenants, nav] = await Promise.all([
-        user && user.isLoggedIn ? GetUserRoomates(user.id, context.query.year, context.query.semester): [],
+        user && user.isLoggedIn ? GetUserRoomates(user.id, context.query.semester.replace("_", " ")): [],
         GetNavLinks(user, site)
     ]);
 

@@ -20,7 +20,8 @@ import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId, header, body, page, company, year, semester}) => {
+const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId, content,
+                  welcomePage, header, body, company, semester}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -28,7 +29,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application, u
     const {register, reset, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: {...tenant, ...application}});
     const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
                                         canEdit={false} company={`${company}, LLC`}
-                                        site={site} page={page} leaseId={leaseId} year={year} semester={semester} ></WelcomeEmailBody>;
+                                        site={site} page={welcomePage} leaseId={leaseId} semester={semester} ></WelcomeEmailBody>;
     const emailBodyString = ReactDomServer.renderToString(emailBody);
     const sendEmail = async () => {
 
@@ -72,7 +73,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application, u
                             <TenantForm tenant={tenant} site={site} userId={userId} />
                         </Tab>
                         <Tab title="Application" eventKey={2}>
-                            <ApplicationForm application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} />
+                            <ApplicationForm {...content} application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} />
                         </Tab>
                     </Tabs>
                 </div>
@@ -86,12 +87,12 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const {userId, leaseId} = context.query;
     const navPage = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
+    const page = "application";
     const welcomePage = "welcome";
     const site = context.query.site || SITE;
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
     const user = context.req.session.user;
-    let year;
-    let semester;
+    let content = {};
 
     if (!user.isLoggedIn) return {notFound: true};
     if (user.isLoggedIn && user.editSite) {
@@ -99,44 +100,39 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const [contentRows, nav, tenant, currentLeases, application] = await Promise.all([
+    const [welcomeRows, contentRows, nav, tenant, currentLeases, application] = await Promise.all([
         GetDynamicContent(site, welcomePage),
+        GetDynamicContent(site, page),
         GetNavLinks(user, site),
         GetUserLeaseTenant(userId, leaseId),
         GetCurrentLeaseRooms(leaseId),
         GetApplication(site, userId, leaseId)
     ]);
 
+    contentRows.forEach(row => content[row.name] = row.content);
     if (application) {
         application.lease_room_type_id = `${application.lease_id}_${application.room_type_id}`;
         application.do_not_share_info = !application.share_info;
     }
     if (tenant) tenant.date_of_birth = tenant.date_of_birth.toISOString().split("T")[0];
-    if (tenant.fall_year) {
-        year = tenant.fall_year;
-        semester = "fall";
-    } else if (tenant.spring_year) {
-        year = tenant.spring_year;
-        semester = "spring";
-    } else if (tenant.summer_year) {
-        year = tenant.summer_year;
-        semester = "summer";
-    }
+    const semester = tenant.semester1.replace(" ", "_");
+
     return {
         props: {
             site: site,
             links: nav,
             user: {...user},
             tenant: {...tenant},
-            ...contentRows,
+            content: content,
+            ...welcomeRows,
             currentLeases: currentLeases,
             application: application,
             navPage: navPage,
-            page: welcomePage,
+            page: page,
+            welcomePage: welcomePage,
             userId: userId,
             leaseId: leaseId,
             company: company,
-            year: year,
             semester: semester
         }
     };

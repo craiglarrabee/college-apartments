@@ -3,7 +3,7 @@ import classNames from "classnames";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 
-export const TenantForm = ({site, userId, tenant}) => {
+export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
 
     const [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? tenant.convicted_crime : false);
     const [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? tenant.charged_crime : false);
@@ -36,6 +36,7 @@ export const TenantForm = ({site, userId, tenant}) => {
                     break;
                 case 204:
                     reset(data);
+                    if (isNewApplication || tenant?.pending_application) location = `/application?site=${site}`;
             }
         } catch (e) {
             console.log(e);
@@ -373,7 +374,7 @@ export const TenantForm = ({site, userId, tenant}) => {
                 <div style={{width: "100%"}}
                      className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                     <Button variant="primary" type="submit"
-                            disabled={!isDirty || !isValid}>Save</Button>
+                            disabled={!isNewApplication && (!isDirty || !isValid)}>{isNewApplication || tenant.pending_application ? "Next" : "Save"}</Button>
                 </div>
             </Form>
 

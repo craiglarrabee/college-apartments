@@ -5,8 +5,9 @@ import WorkFormGroups from "./workFormGroups";
 import {useForm} from "react-hook-form";
 import CurrentLeases from "./currentLeases";
 import ApplicationFormGroups from "./ApplicationFormGroups";
+import PageContent from "./pageContent";
 
-const ApplicationForm = ({navPage, site, userId, leaseId, application, currentLeases}) => {
+const ApplicationForm = ({page, navPage, site, rules, disclaimer, guaranty, links, canEdit, userId, leaseId, application, currentLeases}) => {
     const {register, reset, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: {...application}});
 
     const handleDelete = async() => {
@@ -70,6 +71,18 @@ const ApplicationForm = ({navPage, site, userId, leaseId, application, currentLe
                 {errors && errors.lease_room_type_id && <Form.Text
                     className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
                 <ApplicationFormGroups register={register} errors={errors} />
+                <PageContent
+                    initialContent={rules}
+                    site={site}
+                    page={page}
+                    name="rules"
+                    canEdit={canEdit}/>
+                <PageContent
+                    initialContent={disclaimer}
+                    site={site}
+                    page={page}
+                    name="disclaimer"
+                    canEdit={canEdit}/>
                 <div className={classNames("mb-3", "d-inline-flex")}>
                     <Form.Check
                         className="mb-3" {...register("installments", {setValueAs: value => value !== null ? value.toString() : ""})}
@@ -77,6 +90,12 @@ const ApplicationForm = ({navPage, site, userId, leaseId, application, currentLe
                     <span>
                                 <div>
                                     Check here if you want to pay in installments. <br/>
+                                    <PageContent
+                                        initialContent={guaranty}
+                                        site={site}
+                                        page={page}
+                                        name="guaranty"
+                                        canEdit={canEdit}/>
                                 </div>
                             </span>
                 </div>

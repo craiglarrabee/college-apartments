@@ -123,14 +123,13 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
 
 
 export const WelcomedRow = ({page, site, row, leaseId}) => {
-    const [fallYear, setFallYear] = useState(row.fall_year);
-    const [summerYear, setSummerYear] = useState(row.summer_year);
-    const [springYear, setSpringYear] = useState(row.spring_year);
+    const [semester1Selected, setSemester1Selected] = useState(row.semester1_selected);
+    const [semester2Selected, setSemester2Selected] = useState(row.semester2_selected);
     const {register } = useForm();
 
     useEffect(() => {
-        saveTenantSemesters({fall_year: fallYear, summer_year: summerYear, spring_year: springYear});
-    }, [fallYear, springYear, summerYear]);
+        saveTenantSemesters({semesters: [{value: row.semester1, selected: semester1Selected}, {value: row.semester2, selected: semester2Selected}]});
+    }, [semester1Selected, semester2Selected]);
 
     const saveTenantSemesters = async (data) => {
         try {
@@ -140,7 +139,7 @@ export const WelcomedRow = ({page, site, row, leaseId}) => {
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${row.user_id}/leases/${leaseId}/tenant`, options)
+            const resp = await fetch(`/api/users/${row.user_id}/leases/${leaseId}/tenant`, options);
             switch (resp.status) {
                 case 400:
                     break;
@@ -160,20 +159,15 @@ export const WelcomedRow = ({page, site, row, leaseId}) => {
                 <Form method="post">
                     <Row>
                         <Col>
-                            {row.lease_fall_year ?
+                            {row.semester1 ?
                             <Form.Check
-                                className="mb-3" {...register("fall_year", {onChange: (e) => e.target.checked ? setFallYear(row.lease_fall_year) : setFallYear(null)})}
-                                type="checkbox" id="fall_year" checked={fallYear} label={`Fall ${row.lease_fall_year}`} inline/>
+                                className="mb-3" {...register("semester1", {onChange: (e) => setSemester1Selected(e.target.checked)})}
+                                type="checkbox" id="semester1" checked={semester1Selected} label={row.semester1} inline/>
                                 : <></>}
-                            {row.lease_spring_year ?
+                            {row.semester2 ?
                             <Form.Check
-                                className="mb-3" {...register("spring_year", {onChange: (e) => e.target.checked ? setSpringYear(row.lease_spring_year) : setSpringYear(null)})}
-                                type="checkbox" id="spring_year" checked={springYear} label={`Spring ${row.lease_spring_year}`} inline/>
-                                : <></>}
-                            {row.lease_summer_year ?
-                            <Form.Check
-                                className="mb-3" {...register("summer_year", {onChange: (e) => e.target.checked ? setSummerYear(row.lease_summer_year) : setSummerYear(null)})}
-                                type="checkbox" id="summer_year" checked={summerYear} label={`Summer ${row.lease_summer_year}`} inline/>
+                                className="mb-3" {...register("semester2", {onChange: (e) =>  setSemester2Selected(e.target.checked)})}
+                                type="checkbox" id="semester2" checked={semester2Selected} label={row.semester2} inline/>
                                 : <></>}
                         </Col>
                     </Row>

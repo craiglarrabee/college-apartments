@@ -1,26 +1,27 @@
 import {Col, Form, Row} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 
-const LeaseDefinitionGroup = ({site, start_date, end_date, description, fall_year, summer_year, spring_year, id, register = () => {}}) => {
+const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester1, semester2, id, register = () => {}}) => {
     const [timer, setTimer] = useState(null);
     const [startDate, setStartDate] = useState(start_date);
     const [endDate, setEndDate] = useState(end_date);
     const [leaseDescription, setLeaseDescription] = useState(description);
-    const [fallYear, setFallYear] = useState(fall_year);
-    const [summerYear, setSummerYear] = useState(summer_year);
-    const [springYear, setSpringYear] = useState(spring_year);
+    const [leaseSemesters, setLeaseSemesters] = useState([semester1, semester2]);
 
     const firstYear = startDate ? new Date(startDate).getUTCFullYear() : new Date().getFullYear();
     const secondYear = firstYear + 1;
+    const fallSemester = `Fall ${firstYear}`;
+    const springSemester = `Spring ${secondYear}`;
+    const summerSemester = `Summer ${secondYear}`;
 
     useEffect(() => {
         updateIfReady();
-    }, [endDate, startDate, leaseDescription, fallYear, springYear, summerYear]);
+    }, [endDate, startDate, leaseDescription, leaseSemesters]);
 
     const updateIfReady = async() => {
         clearTimeout(timer);
         const newTimer = setTimeout(async () => {
-            await saveLeaseDefinition({start_date: startDate ? startDate : null, end_date: endDate ? endDate : null, description: leaseDescription, fall_year: fallYear, summer_year: summerYear, spring_year: springYear});
+            await saveLeaseDefinition({start_date: startDate ? startDate : null, end_date: endDate ? endDate : null, description: leaseDescription, semesters: leaseSemesters});
         }, 1500);
         setTimer(newTimer);
     };
@@ -71,21 +72,33 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, fall_yea
                 <Col>
                     <Form.Label>Valid Semesters:&nbsp;</Form.Label>
                     <Form.Check
-                        className="mb-3" {...register("fall_year")} onChange={(e) => {
-                        e.target.checked ? setFallYear(firstYear) : setFallYear(null)
+                        className="mb-3" {...register("fall_semester")} onClick={(e) => {
+                        if (e.target.checked) {
+                            setLeaseSemesters([...leaseSemesters, fallSemester]);
+                        } else {
+                            setLeaseSemesters(leaseSemesters.filter(semester => semester !== fallSemester));
+                        }
                     }}
-                        type="checkbox" id="fall_year" label={`Fall ${firstYear}`} inline/>
+                        checked={leaseSemesters.includes(fallSemester)} disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox" id="fall_semester"  key="fall_semester" label={fallSemester} inline/>
                     <Form.Check
-                        className="mb-3" {...register("spring_year")} onChange={(e) => {
-                        e.target.checked ? setSpringYear(secondYear) : setSpringYear(null)
+                        className="mb-3" {...register("spring_semester")} onClick={(e) => {
+                        if (e.target.checked) {
+                            setLeaseSemesters([...leaseSemesters, springSemester]);
+                        } else {
+                            setLeaseSemesters(leaseSemesters.filter(semester => semester !== springSemester));
+                        }
                     }}
-                        type="checkbox" id="spring_year" label={`Spring ${secondYear}`} inline/>
+                        checked={leaseSemesters.includes(springSemester)} disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox" id="spring_semester"  key="spring_semester" label={springSemester} inline/>
                     {site === "suu" ?
                         <Form.Check
-                            className="mb-3" {...register("summer_year")} onChange={(e) => {
-                            e.target.checked ? setSummerYear(secondYear) : setSummerYear(null)
+                            className="mb-3" {...register("summer_semester")} onClick={(e) => {
+                            if (e.target.checked) {
+                                setLeaseSemesters([summerSemester]);
+                            } else {
+                                setLeaseSemesters([]);
+                            }
                         }}
-                            type="checkbox" id="summer_year" label={`Summer ${secondYear}`} inline/>
+                            checked={leaseSemesters.includes(summerSemester)} disabled={leaseSemesters.length > 0 && !leaseSemesters.includes(summerSemester)} type="checkbox" key="summer_semester" id="summer_semester" label={summerSemester} inline/>
                         : null}
                 </Col>
             </Row>

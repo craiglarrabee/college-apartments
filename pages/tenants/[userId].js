@@ -13,14 +13,17 @@ import {TenantForm} from "../../components/tenantForm";
 import ApplicationForm from "../../components/applicationForm";
 import {GetTenantApplications} from "../../lib/db/users/application";
 import {GetCurrentLeaseRooms} from "../../lib/db/users/roomType";
-import {GetTenantUserLeases} from "../../lib/db/users/userLease";
+import {GetPotentialTenantUserLeases, GetTenantUserLeases} from "../../lib/db/users/userLease";
 import LeaseForm from "../../components/leaseForm";
 import {GetDynamicContent} from "../../lib/db/content/dynamicContent";
 import {GetTenantBulkEmails} from "../../lib/db/users/bulkEmail";
+import {GetLeases} from "../../lib/db/users/lease";
 
 const SITE = process.env.SITE;
 
-const Home = ({site, navPage, links, user, tenant, currentLeasesMap, applications, userId, leases, leaseContentMap, emails}) => {
+const Home = ({site, navPage, links, user, tenant, currentLeasesMap,
+                  applications, userId, leases, leaseContentMap,
+                  emails, applicationContent}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -46,7 +49,8 @@ const Home = ({site, navPage, links, user, tenant, currentLeasesMap, application
                                                          userId={userId}
                                                          leaseId={application.lease_id}
                                                          navPage={navPage}
-                                                         currentLeases={currentLeases}/>
+                                                         currentLeases={currentLeases}
+                                                         {...applicationContent} />
                                     </Tab>);
                             })}
                             </Tabs>
@@ -54,20 +58,21 @@ const Home = ({site, navPage, links, user, tenant, currentLeasesMap, application
                         <Tab title="Leases" eventKey={2}>
                             <Tabs>
                                 {leases.map(lease => {
-                                    const contentRows = leaseContentMap.filter(record => lease.lease_id === record.leaseId)[0].content;
+                                    const leaseContent = leaseContentMap.filter(record => lease.lease_id === record.leaseId)[0];
+                                    const contentRows = leaseContent.content;
                                     const content = {};
                                     contentRows.forEach(row => content[row.name] = row.content);
                                     return (
-                                    <Tab title={`${lease.label} Lease`} eventKey={lease.lease_id}>
-                                        <LeaseForm lease={lease}
-                                                   site={site}
-                                                   userId={userId}
-                                                   leaseId={lease.lease_id}
-                                                   navPage={navPage}
-                                                   rooms={[]}
-                                                   {...content}
-                                        />
-                                    </Tab>
+                                        <Tab title={`${lease.label} Lease`} eventKey={lease.lease_id}>
+                                            <LeaseForm lease={lease}
+                                                       site={site}
+                                                       userId={userId}
+                                                       leaseId={lease.lease_id}
+                                                       navPage={navPage}
+                                                       rooms={leaseContent.rooms}
+                                                       {...content}
+                                            />
+                                        </Tab>
                                     )})}
                             </Tabs>
                         </Tab>
@@ -111,6 +116,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const welcomePage = "welcome";
     const site = context.query.site || SITE;
     const user = context.req.session.user;
+    let applicationContent = {};
 
     if (!user.isLoggedIn) return {notFound: true};
     if (user.isLoggedIn && user.editSite) {
@@ -118,15 +124,17 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const [nav, tenant, applications, leases, emails] = await Promise.all([
+    const [nav, tenant, applications, leases, emails, applicationContentRows] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(userId),
         GetTenantApplications(userId),
         GetTenantUserLeases(userId),
-        GetTenantBulkEmails(userId)
+        GetTenantBulkEmails(userId),
+        GetDynamicContent(site, "application"),
     ]);
+    applicationContentRows.forEach(row => applicationContent[row.name] = row.content);
     const currentLeasesMap = await Promise.all(applications.map(async application => {return {leaseId: application.lease_id, currentLeases: await GetCurrentLeaseRooms(application.lease_id)}}));
-    const leaseContentMap = await Promise.all(leases.map(async lease => {return {leaseId: lease.lease_id, content: await GetDynamicContent(site, `leases/${lease.lease_id}`)}}));
+    const leaseContentMap = await Promise.all(leases.map(async lease => {return {leaseId: lease.lease_id, content: await GetDynamicContent(site, `leases/${lease.lease_id}`), rooms: (await GetCurrentLeaseRooms(lease.lease_id))[0].rooms}}));
     applications.forEach(application => {
         application.lease_room_type_id = `${application.lease_id}_${application.room_type_id}`;
         application.do_not_share_info = !application.share_info;
@@ -145,7 +153,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             currentLeasesMap: currentLeasesMap,
             leases: leases,
             leaseContentMap: leaseContentMap,
-            emails: emails
+            emails: emails,
+            applicationContent: applicationContent
         }
     };
 }, ironOptions);

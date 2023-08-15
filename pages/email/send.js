@@ -10,29 +10,24 @@ import {Alert, Button, Col, Form, Row, Tab, Tabs} from "react-bootstrap";
 import Image from "next/image";
 import {useForm} from "react-hook-form";
 import classNames from "classnames";
-import {GetActiveSemesterApartments, GetActiveSemesters, GetActiveSemesterTenantNames} from "../../lib/db/users/userLease";
+import {
+    GetActiveSemesterApartments,
+    GetActiveSemesters,
+    GetActiveSemesterTenantNames
+} from "../../lib/db/users/userLease";
 import {BulkEmailOptions} from "../../components/bulkEmailOptions";
-import async from "async";
 
 const SITE = process.env.SITE;
 
-const Send = ({site, page, links, user, company, semesters, tenants, apartments}) => {
+const Send = ({site, page, links, user, semesters, tenants, apartments}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
     const from = `${site}@uca.snowcollegeapartments.com`;
-    const [semester, setSemester] = useState();
-    const [year, setYear] = useState();
     const {register, formState: {isDirty, errors, isValid}, handleSubmit} = useForm({mode: "all"});
     const [message, setMessage] = useState();
-    const [fullSemester, setFullSemester] = useState();
+    const [semester, setSemester] = useState();
 
-    const handleSemester = (semester) => {
-        let arr = semester.split(" ");
-        setSemester(arr[0]);
-        setYear(arr[1]);
-        setFullSemester(semester);
-    }
     const sendBulkEmail = async (data, event) => {
         event.preventDefault();
 
@@ -43,10 +38,8 @@ const Send = ({site, page, links, user, company, semesters, tenants, apartments}
                 recipients: data.recipients,
                 ids: "Tenants" === data.recipients ? data.selected_recipients : data.selected_apartments,
                 site: site,
-                semester: semester,
-                year: year,
                 body: data.body,
-                fullSemester: fullSemester
+                semester: semester
             };
 
             const options = {
@@ -109,7 +102,7 @@ const Send = ({site, page, links, user, company, semesters, tenants, apartments}
                     <Tabs>
                         {semesters.map((item) =>
                             <Tab title={item.semester} eventKey={item.semester.replace(" ", "_")}
-                                 onClick={() => handleSemester(item.semester)}>
+                                 onClick={() => setSemester(item.semester)}>
                                 <BulkEmailOptions register={register} errors={errors}
                                                   tenants={tenants.filter(tenant => tenant.semester === item.semester)}
                                                   apartments={apartments.filter(apartment => apartment.semester === item.semester)}
@@ -133,9 +126,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = "email/send";
         const site = context.query.site || SITE;
-        const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
-
-        if (!user.admin.includes(site)) return {notFound: true};
+        if (!user.manageApartment || !user.admin.includes(site)) {
+            res.status(403).send();
+            return;
+        }
         const [nav, tenants, semesters, apartments] = await Promise.all([
             GetNavLinks(user, site),
             GetActiveSemesterTenantNames(site),
@@ -145,7 +139,6 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
 
         return {
             props: {
-                company: company,
                 site: site,
                 page: page,
                 links: nav,
