@@ -4,7 +4,7 @@ import {CSS} from "@dnd-kit/utilities";
 import {useState} from "react";
 import {WindowDash, WindowFullscreen} from "react-bootstrap-icons";
 
-export const Apartment = ({id, children, data, tenants, key}) => {
+export const Apartment = ({id, data, tenants, key, children}) => {
     const {isOver, setNodeRef, active} = useDroppable({
         id: id,
         data: data

@@ -69,10 +69,10 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application, u
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
-                        <Tab title="Personal Info" eventKey={1}>
+                        <Tab title="Personal Info" eventKey={1} key={1}>
                             <TenantForm tenant={tenant} site={site} userId={userId} />
                         </Tab>
-                        <Tab title="Application" eventKey={2}>
+                        <Tab title="Application" eventKey={2} key={2}>
                             <ApplicationForm {...content} application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} />
                         </Tab>
                     </Tabs>

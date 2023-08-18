@@ -24,7 +24,7 @@ const Index = ({site, page, links, user, semesters, emails}) => {
             <main>
                     <Tabs>
                         {semesters.map((item) =>
-                            <Tab style={{minHeight: "390px"}} title={item.semester} eventKey={item.semester.replace(" ", "_")} >
+                            <Tab style={{minHeight: "390px"}} title={item.semester} eventKey={item.semester.replace(" ", "_")} key={item.semester.replace(" ", "_")} >
                                 <Table>
                                     <thead>
                                     <tr>

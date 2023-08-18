@@ -98,7 +98,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants}) 
             <main>
                 <Tabs>
                     {roomTypes.map(type =>
-                        <Tab eventKey={type.id} title={`${type.location} ${type.room_type}`}
+                        <Tab eventKey={type.id} key={type.id} title={`${type.location} ${type.room_type}`}
                              onClick={() => setRoomType(type.id)}>
                             <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}
                                         onDragOver={handleDragOver}>
@@ -124,7 +124,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, tenants}) 
                                                                spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[apartment.apartment_number].reduce((partialSum, a) => partialSum + a.spots, 0)
                                                            }}>
                                                     {assignments[apartment.apartment_number].map(tenant =>
-                                                        <Tenant id={tenant.user_id} >
+                                                        <Tenant key={tenant.user_id} id={tenant.user_id} >
                                                             <TenantCard visible={activeId !== tenant.user_id}
                                                                         tenant={tenant}
                                                                         backgroundColor={type.id === tenant.base_type_id ? roomTypeColor : (!tenant.base_type_id ? previousColor : otherTypeColor)}/>

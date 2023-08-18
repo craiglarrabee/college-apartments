@@ -24,7 +24,7 @@ const Index = ({site, page, links, user, details}) => {
                 <div className="h4">Bulk email sent on {details[0].created} with subject: <strong>{details[0].subject}</strong></div>
                 <div className="h4">Status: <strong>{details[0].completed ? "Complete" : "In process"}</strong></div>
                 <Tabs>
-                    <Tab style={{minHeight: "350px"}} title="Failures" eventKey={"failures"}>
+                    <Tab style={{minHeight: "350px"}} title="Failures" eventKey={"failures"} key={"failures"}>
                         <Table >
                             <thead>
                             <tr>
@@ -44,7 +44,7 @@ const Index = ({site, page, links, user, details}) => {
                             </tbody>
                         </Table>
                     </Tab>
-                    <Tab style={{minHeight: "350px"}} title="Successes" eventKey={"successes"}>
+                    <Tab style={{minHeight: "350px"}} title="Successes" eventKey={"successes"} key={"successes"}>
                         <Table >
                             <thead>
                             <tr>

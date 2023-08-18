@@ -35,15 +35,15 @@ const Home = ({site, navPage, links, user, tenant, currentLeasesMap,
             <main>
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={0}>
-                        <Tab title="Personal Info" eventKey={0}>
+                        <Tab title="Personal Info" eventKey={0} key={0}>
                                 <TenantForm tenant={tenant} site={site} userId={userId} />
                         </Tab>
-                        <Tab title="Applications" eventKey={1}>
+                        <Tab title="Applications" eventKey={1} key={1}>
                             <Tabs>
                             {applications.map(application => {
                                 const currentLeases = currentLeasesMap.filter(record => application.lease_id === record.leaseId)[0].currentLeases;
                                 return (
-                                    <Tab title={`${application.label} Application`} eventKey={application.lease_id}>
+                                    <Tab title={`${application.label} Application`} eventKey={application.lease_id} key={application.lease_id}>
                                         <ApplicationForm application={application}
                                                          site={site}
                                                          userId={userId}
@@ -55,7 +55,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeasesMap,
                             })}
                             </Tabs>
                         </Tab>
-                        <Tab title="Leases" eventKey={2}>
+                        <Tab title="Leases" eventKey={2} key={2}>
                             <Tabs>
                                 {leases.map(lease => {
                                     const leaseContent = leaseContentMap.filter(record => lease.lease_id === record.leaseId)[0];
@@ -63,7 +63,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeasesMap,
                                     const content = {};
                                     contentRows.forEach(row => content[row.name] = row.content);
                                     return (
-                                        <Tab title={`${lease.label} Lease`} eventKey={lease.lease_id}>
+                                        <Tab title={`${lease.label} Lease`} eventKey={lease.lease_id} key={lease.lease_id}>
                                             <LeaseForm lease={lease}
                                                        site={site}
                                                        userId={userId}
@@ -76,10 +76,10 @@ const Home = ({site, navPage, links, user, tenant, currentLeasesMap,
                                     )})}
                             </Tabs>
                         </Tab>
-                        <Tab title="Bulk Emails" eventKey={3}>
+                        <Tab title="Bulk Emails" eventKey={3} key={3}>
                             <Tabs>
                                 {emails.map(email =>
-                                <Tab title={email.semester} eventKey={email.semester.replace(" ", "_")} >
+                                <Tab title={email.semester} eventKey={email.semester.replace(" ", "_")} key={email.semester.replace(" ", "_")} >
                                     <Table>
                                         <thead>
                                         <tr>

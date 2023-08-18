@@ -101,7 +101,7 @@ const Send = ({site, page, links, user, semesters, tenants, apartments}) => {
                     </div>
                     <Tabs>
                         {semesters.map((item) =>
-                            <Tab title={item.semester} eventKey={item.semester.replace(" ", "_")}
+                            <Tab title={item.semester} eventKey={item.semester.replace(" ", "_")} key={item.semester.replace(" ", "_")}
                                  onClick={() => setSemester(item.semester)}>
                                 <BulkEmailOptions register={register} errors={errors}
                                                   tenants={tenants.filter(tenant => tenant.semester === item.semester)}
