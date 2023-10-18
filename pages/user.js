@@ -2,7 +2,7 @@ import Layout from "../components/layout";
 import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
-import React, {useState} from "react";
+import React from "react";
 import classNames from "classnames";
 import {Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
@@ -60,8 +60,9 @@ const Home = ({site, page, links, canEdit, user}) => {
                     break;
                 case 200:
                 case 204:
+                    console.error("redirecting to tenant due to user form submission");
                     await fetch("/api/login", options);
-                    location = "/tenant?newApplication";
+                    location = `/tenant?newApplication&site=${site}&form`;
             }
 
         } catch (e) {
@@ -70,41 +71,52 @@ const Home = ({site, page, links, canEdit, user}) => {
     };
 
     return (
-        <Layout user={user} >
+        <Layout user={user}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")} style={{width: "100%"}}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        <div className="h4">User Information:</div>
+                        <div className="h4">To apply, please create a username and password:</div>
                         <Form.Group className="mb-3" controlId="username">
                             <Form.Label visuallyHidden={true}>Username</Form.Label>
-                            <Form.Control className={errors && errors.username && classNames("border-danger")} {...register("username", {
+                            <Form.Control
+                                className={errors && errors.username && classNames("border-danger")} {...register("username", {
                                 required: {value: true, message: "Username is required."},
                                 validate: checkUsername
                             })} type="text" placeholder="username"/>
-                            {errors && errors.username && <Form.Text className={classNames("text-danger")}>{errors && errors.username.message}</Form.Text>}
-                            {errors && errors.username && errors && errors.username.type === "validate" && <Form.Text className={classNames("text-danger")}>Username is not available.</Form.Text>}
+                            {errors && errors.username && <Form.Text
+                                className={classNames("text-danger")}>{errors && errors.username.message}</Form.Text>}
+                            {errors && errors.username && errors && errors.username.type === "validate" &&
+                                <Form.Text className={classNames("text-danger")}>Username is not available.</Form.Text>}
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="password">
                             <Form.Label visuallyHidden={true}>Password</Form.Label>
-                            <Form.Control className={errors && errors.password && classNames("border-danger")} {...register("password", {
+                            <Form.Control
+                                className={errors && errors.password && classNames("border-danger")} {...register("password", {
                                 required: {value: true, message: "Password is required."},
                                 pattern: {
                                     value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
-                                    message: "Password must be between 8 and 100 chars, and contain: a number, a lower-case character, an upper-case character, a special character"}
-                            })} type="password" placeholder="password" />
-                            {errors && errors.password && <Form.Text className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
+                                    message: "Password must be between 8 and 100 chars, and contain: a number, a lower-case character, an upper-case character, a special character"
+                                }
+                            })} type="password" placeholder="password"/>
+                            {errors && errors.password && <Form.Text
+                                className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="confirm_password">
                             <Form.Label visuallyHidden={true}>Confirm Password</Form.Label>
-                            <Form.Control className={errors && errors.confirm_password && errors && errors.confirm_password.message !=="" && classNames("border-danger")} {...register("confirm_password", {
+                            <Form.Control
+                                className={errors && errors.confirm_password && errors && errors.confirm_password.message !== "" && classNames("border-danger")} {...register("confirm_password", {
                                 required: true,
-                                validate: (value, formValues) => {return value === formValues.password;}
+                                validate: (value, formValues) => {
+                                    return value === formValues.password;
+                                }
                             })} type="password" placeholder="confirm password"/>
-                            {errors && errors.confirm_password && <Form.Text className={classNames("text-danger")}>Must match Password.</Form.Text>}
+                            {errors && errors.confirm_password &&
+                                <Form.Text className={classNames("text-danger")}>Must match Password.</Form.Text>}
                         </Form.Group>
-                        <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                        <div style={{width: "100%"}}
+                             className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                             <Button variant="primary" type="submit" disabled={!isDirty}>Next</Button>
                         </div>
                     </Form>
@@ -118,8 +130,9 @@ const Home = ({site, page, links, canEdit, user}) => {
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const site = context.query.site || SITE;
-    if (user && user.isLoggedIn) {
-        context.res.writeHead(302, {Location: `/tenant?newApplication&site=${site}`});
+    if (user?.isLoggedIn) {
+        console.error("redirecting to tenant");
+        context.res.writeHead(302, {Location: `/tenant?newApplication&site=${site}&${new Date().getTime()}`});
         context.res.end();
         return {};
     }

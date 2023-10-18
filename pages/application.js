@@ -2,9 +2,9 @@ import Layout from "../components/layout";
 import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
-import React from "react";
+import React, {useState} from "react";
 import classNames from "classnames";
-import {Button, Form} from "react-bootstrap";
+import {Alert, Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import WorkFormGroups from "../components/workFormGroups";
 import {GetDynamicContent} from "../lib/db/content/dynamicContent";
@@ -19,41 +19,12 @@ import ApplicationFormGroups from "../components/ApplicationFormGroups";
 
 const SITE = process.env.SITE;
 
-const Application = ({site, page, navPage, content, links, canEdit, user, currentLeases, company, body, tenant}) => {
+const Application = ({site, page, navPage, rules, previous_rental, esa_packet, disclaimer, guaranty, links, canEdit, user, currentLeases, company, tenant}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
-    const from = `${site}@snowcollegeapartments.com`;
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm(tenant);
-
-    const sendEmail = async (emailAddress) => {
-
-        try {
-            const payload = {
-                from: from,
-                subject: `Welcome to ${company}`,
-                address: emailAddress,
-                body: body
-            };
-
-            const options = {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(payload),
-            }
-
-            const resp = await fetch(`/api/util/email`, options);
-            switch (resp.status) {
-                case 400:
-                    break;
-                case 204:
-                    break;
-            }
-        } catch (e) {
-            alert(`An error occurred sending the welcome email. ${e.message}`);
-            console.log(e);
-        }
-    }
+    const [applicationError, setApplicationError] = useState();
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
@@ -73,9 +44,9 @@ const Application = ({site, page, navPage, content, links, canEdit, user, curren
             const resp = await fetch(`/api/users/${user.id}/leases/${data.lease_id}/application`, options)
             switch (resp.status) {
                 case 400:
+                    setApplicationError("There was an error processing your application. Please try again.");
                     break;
                 case 204:
-                    await sendEmail(data.email);
                     location = `/deposit?site=${site}`;
             }
         } catch (e) {
@@ -84,21 +55,24 @@ const Application = ({site, page, navPage, content, links, canEdit, user, curren
     }
 
     return (
-        <Layout user={user} >
+        <Layout user={user} wide={false} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
+                {applicationError &&
+                <Alert variant={"danger"} onClick={() => setApplicationError(null)}>{applicationError}</Alert>
+                }
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
                         <Form.Group controlId="email">
                             <Form.Control {...register("email")} type="hidden" value={tenant.email}/>
                         </Form.Group>
-                        {site === "suu" ? <WorkFormGroups register={register}  errors={errors} /> : null}
+                        {site === "suu" ? <WorkFormGroups canChangeApplication={true} register={register}  errors={errors} /> : null}
                         <div className="h4">Room Type:</div>
                         <br/>
-                        {currentLeases.map(lease => <CurrentLeases {...lease} register={register} />)}
+                        {currentLeases.map(lease => <CurrentLeases canChangeApplication={true} {...lease} register={register} />)}
                         {errors && errors.lease_room_type_id && <Form.Text className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
-                        <ApplicationFormGroups register={register} errors={errors} />
+                        <ApplicationFormGroups canChangeApplication={true} register={register} errors={errors} esa_packet={esa_packet} previousRentalLabel={previous_rental} site={site} canEdit={canEdit}/>
                         <PageContent
                             initialContent={rules}
                             site={site}
@@ -142,24 +116,22 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = "application";
     const site = context.query.site || SITE;
     const content = {};
-    const emailContent = {};
     const editing = !!user && !!user.editSite;
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
-    const [contentRows, emailContenRows, nav, currentRooms, tenant] = await Promise.all([
+    const [contentRows, nav, currentRooms, tenant] = await Promise.all([
         GetDynamicContent(site, page),
-        GetDynamicContent(site, "response"),
         GetNavLinks(user, site),
-        GetUserAvailableLeaseRooms(site, user.id),
-        GetTenant(user.id)
+        GetUserAvailableLeaseRooms(site, editing ? "" : user.id),
+        GetTenant(site, user.id)
     ]);
 
     if(!currentRooms || currentRooms.length === 0) {
+        console.error("redirecting to deposit due to no current rooms");
         context.res.writeHead(302, {Location: `/deposit?site=${site}`});
         context.res.end();
         return {};
     }
     contentRows.forEach(row => content[row.name] = row.content);
-    emailContenRows.forEach(row => emailContent[row.name] = row.content);
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
     currentLeases = currentLeases.map(lease => {
         let rooms = currentRooms.filter(room => room.lease_id === lease);
@@ -171,8 +143,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             site: site,
             page: page,
             navPage: "user",
-            content: content,
-            ...emailContent,
+            ...content,
             links: nav,
             canEdit: editing,
             user: {...user},

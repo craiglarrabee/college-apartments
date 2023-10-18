@@ -18,7 +18,7 @@ export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDel
                 </thead>
                 <tbody>
                 {data.map(row => (<tr key={row.user_id}>
-                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
                     <td>{row.submit_date}</td>
                     <td><Button onClick={(e) => handleProcess(row.user_id, site, leaseId, true)}>Process</Button></td>
                     <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId)}>Delete</Button></td>
@@ -45,7 +45,7 @@ export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelet
                 {
                     data.map(row => (
                         <tr key={row.user_id}>
-                            <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                            <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
                             <td>{row.submit_date}</td>
                             <td><Button onClick={(e) => handleDeposit(row.user_id, site, leaseId)}>Deposit</Button></td>
                             <td><Button
@@ -72,7 +72,7 @@ export const DepositReceivedApplicationList = ({data, page, site, leaseId}) => {
                 </thead>
                 <tbody>
                 {data.map(row => (<tr>
-                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
                     <td>{row.deposit_date}</td>
                 </tr>))}
                 </tbody>
@@ -87,7 +87,7 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
     addResetHook(row.user_id, reset);
     return (
         <tr>
-            <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+            <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
             <td>{row.apartment_number}</td>
             <td>
                 <Form onSubmit={handleSubmit(handleWelcome)} method="post">
@@ -122,13 +122,14 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
 };
 
 
-export const WelcomedRow = ({page, site, row, leaseId}) => {
+export const WelcomedRow = ({page, site, row, leaseId, handleDelete}) => {
     const [semester1Selected, setSemester1Selected] = useState(row.semester1_selected);
     const [semester2Selected, setSemester2Selected] = useState(row.semester2_selected);
     const {register } = useForm();
 
     useEffect(() => {
         saveTenantSemesters({semesters: [{value: row.semester1, selected: semester1Selected}, {value: row.semester2, selected: semester2Selected}]});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [semester1Selected, semester2Selected]);
 
     const saveTenantSemesters = async (data) => {
@@ -153,7 +154,7 @@ export const WelcomedRow = ({page, site, row, leaseId}) => {
 
     return (
         <tr>
-            <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+            <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
             <td>{row.lease_date}</td>
             <td>
                 <Form method="post">
@@ -170,6 +171,8 @@ export const WelcomedRow = ({page, site, row, leaseId}) => {
                                 type="checkbox" id="semester2" checked={semester2Selected} label={row.semester2} inline/>
                                 : <></>}
                         </Col>
+                        {handleDelete && <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId)}>Delete</Button></td>}
+
                     </Row>
                 </Form>
             </td>
@@ -206,7 +209,7 @@ export const AssignedApplicationList = ({
         </>
     );
 };
-export const WelcomedApplicationList = ({data, page, site, leaseId}) => {
+export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete}) => {
     return (
         <>
             <Table>
@@ -219,13 +222,13 @@ export const WelcomedApplicationList = ({data, page, site, leaseId}) => {
                 </thead>
                 <tbody>
                 {data.map(row => (
-                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} />))}
+                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleDelete={handleDelete} />))}
                 </tbody>
             </Table>
         </>
     );
 };
-export const SignedLeaseList = ({data, page, site, leaseId}) => {
+export const SignedLeaseList = ({data, page, site, leaseId }) => {
     return (
         <>
             <Table>

@@ -2,24 +2,19 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
-import {
-    AddApplication,
-    GetApplication,
-    UpdateApplication
-} from "../../../../../../lib/db/users/application";
-import {
-    AddUserLease,
-    ChangeUserLeaseRoomType,
-    DeleteUserLease,
-    UpdateUserLease
-} from "../../../../../../lib/db/users/userLease";
+import {ChangeUserLeaseRoomType, DeleteUserLease} from "../../../../../../lib/db/users/userLease";
 import {CopyTenantForUserLease, SetApartmentNumber, SetTenantSemester} from "../../../../../../lib/db/users/tenant";
-import {UpdateLease} from "../../../../../../lib/db/users/lease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.manageApartment) res.status(403).send();
     try {
         switch (req.method) {
+            case "POST":
+                await Promise.all([
+                    CopyTenantForUserLease(req.query.userId, req.query.leaseId),
+                ]);
+                res.status(204).send();
+                return;
             case "PUT":
                 if (req.body.apartmentNumber) {
                     await Promise.all(

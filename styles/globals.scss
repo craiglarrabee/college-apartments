@@ -1,5 +1,5 @@
 $primary: #5FAFD2;
-$sidebar-menu-width-expanded: 250px;
+$sidebar-menu-width-expanded: 265px;
 $app-max-width: 950px;
 $body-bg: white;
 $nav-link-font-size: 16pt;
@@ -214,10 +214,6 @@ table.api {
   &:hover {
     color: $navbar-dark-color;
   }
-}
-
-.form-check-label {
-  white-space: nowrap;
 }
 
 span.sub-brand {

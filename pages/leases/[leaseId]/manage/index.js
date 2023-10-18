@@ -20,6 +20,29 @@ const Lease = ({site, page, links, user, leaseId, leases}) => {
     const [pendingLeases, setPendingLeases] = useState(leases.filter(lease => !lease.signed_date));
     const [signedLeases, setSignedLeases] = useState(leases.filter(lease => lease.signed_date));
 
+
+    const deleteApplication = async (userId, site, leaseId) => {
+        try {
+            const options = {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"}
+            }
+
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
+            switch (resp.status) {
+                case 400:
+                    break;
+                case 204:
+                    // now remove from the applications on this page components
+                    setPendingLeases(pendingLeases.filter(app => app.user_id !== userId));
+                    setSignedLeases(signedLeases.filter(app => app.user_id !== userId));
+                    break;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
     return (
         <Layout user={user}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
@@ -28,7 +51,7 @@ const Lease = ({site, page, links, user, leaseId, leases}) => {
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={1}>
                         <Tab eventKey={1} title="Welcomed">
-                            <WelcomedApplicationList data={pendingLeases} page={page} site={site} leaseId={leaseId} />
+                            <WelcomedApplicationList data={pendingLeases} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} />
                         </Tab>
                         <Tab eventKey={2} title="Signed">
                             <SignedLeaseList data={signedLeases} page={page} site={site} leaseId={leaseId} />
@@ -45,7 +68,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
-    if (!user.admin.includes(site) && !user.manageApartment) {
+    if (!user.manage.includes(site)) {
         return {notFound: true};
     }
     const editing = !!user && !!user.editSite;

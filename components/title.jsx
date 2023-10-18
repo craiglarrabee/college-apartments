@@ -23,13 +23,13 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false}) => {
             try {
                 const JSONdata = JSON.stringify({editSite: canEdit});
                 // API endpoint where we send form data.
-                const endpoint = "/api/maintain"
+                const endpoint = `/api/maintain?site=${site}`;
 
                 // Form the request for sending data to the server.
                 const options = {
                     // The method is POST because we are sending data.
                     method: "POST",
-                    // Tell the server we"re sending JSON.
+                    // Tell the server we're sending JSON.
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -47,7 +47,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false}) => {
     const handleManageApartment = async () => {
         if (user.isLoggedIn) {
             try {
-                const endpoint = "/api/manage"
+                const endpoint = `/api/manage?site=${site}`
                 const options = {
                     method: "POST",
                     headers: {
@@ -102,7 +102,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false}) => {
                 },
             };
 
-            const resp = await fetch("/api/logout", options);
+            const resp = await fetch(`/api/logout?site=${site}`, options);
             const user = await resp.json();
             setNewUser(user);
             location = `/index?site=${site}`;
@@ -128,11 +128,11 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false}) => {
                                 <NavDropdown.Item onClick={handleViewSite}>View Site</NavDropdown.Item> : <></>}
                             {user.admin && user.admin.includes(site) && !user.editSite ?
                                 <NavDropdown.Item onClick={handleEditSite}>Manage Site</NavDropdown.Item> : <></>}
-                            {user.admin && user.admin.includes(site) && !user.manageApartment ?
+                            {user.manage && user.manage.includes(site) && !user.manageApartment ?
                                 <NavDropdown.Item onClick={handleManageApartment}>Manage Apartments</NavDropdown.Item> : <></>}
-                            {!editSite ? <NavDropdown.Item href={"/tenant"} hidden={!user.isLoggedIn}>Manage
+                            {!editSite ? <NavDropdown.Item href={`/tenant?site=${site}`} hidden={!user.isLoggedIn}>Manage
                                 Profile</NavDropdown.Item> : <></>}
-                            {!editSite ? <NavDropdown.Item href={"/password"} hidden={!user.isLoggedIn}>Change
+                            {!editSite ? <NavDropdown.Item href={`/password?site=${site}`} hidden={!user.isLoggedIn}>Change
                                 Password</NavDropdown.Item> : <></>}
                             <NavDropdown.Item onClick={handleUserAction}>{actionText}</NavDropdown.Item>
                         </NavDropdown>

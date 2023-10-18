@@ -31,7 +31,7 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    if (!user.isLoggedIn) return {notFound: true};
+    if (!user?.isLoggedIn) return {notFound: true};
     const page = "deposit";
     const site = context.query.site || SITE;
     const content = {};

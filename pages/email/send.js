@@ -126,7 +126,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = "email/send";
         const site = context.query.site || SITE;
-        if (!user.manageApartment || !user.admin.includes(site)) {
+        if (!user.manage.includes(site)) {
             res.status(403).send();
             return;
         }

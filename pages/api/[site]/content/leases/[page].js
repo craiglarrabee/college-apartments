@@ -10,8 +10,8 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "PUT":
-                if (!req.session.user.admin) {
-                    res.status(403).send();
+                if (!req.session.user.admin.includes(req.query.site)) {
+                    res.status(404).send();
                     return;
                 }
                 await UpdateDynamicContent(req.query.site, dbPage, req.body);

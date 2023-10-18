@@ -12,7 +12,7 @@ import {CSVLink} from "react-csv";
 
 const SITE = process.env.SITE;
 
-const Email = ({site, page, links, user, semesters, tenants}) => {
+const Export = ({site, page, links, user, semesters, tenants}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
@@ -69,4 +69,4 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     }
     , ironOptions);
 
-export default Email;
+export default Export;

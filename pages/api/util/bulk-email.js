@@ -10,7 +10,7 @@ import {AddEmailDefinition, AddEmailRecipient} from "../../../lib/db/users/bulkE
 import {crypto} from "next/dist/compiled/@edge-runtime/primitives/crypto";
 
 export const bulkEmail = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.admin.includes(req.body.site) || !req.session.user.manageApartment) {
+    if (!req.session.user.manage.includes(req.body.site)) {
         res.status(403).send();
         return;
     }

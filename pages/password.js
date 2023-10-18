@@ -40,7 +40,7 @@ const Home = ({site, page, links, user}) => {
                     break;
                 case 200:
                 case 204:
-                    location = "/index";
+                    location = `/index?site=${site}`;
             }
 
         } catch (e) {
@@ -82,7 +82,7 @@ const Home = ({site, page, links, user}) => {
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     if (!user || !user.isLoggedIn) {
-        context.res.writeHead(302, {Location: "/index.js"});
+        context.res.writeHead(302, {Location: `/index.js?site=${site}`});
         context.res.end();
         return {};
     }

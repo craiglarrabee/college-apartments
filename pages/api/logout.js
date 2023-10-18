@@ -7,7 +7,11 @@ const logout = withIronSessionApiRoute(async (req, res) => {
         id: "",
         isLoggedIn: false,
         firstName: "",
-        admin: false
+        editSite: false,
+        email: "",
+        username: "",
+        admin: [],
+        manage: []
     };
 
     res.json(user);

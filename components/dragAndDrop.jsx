@@ -3,22 +3,23 @@ import classNames from "classnames";
 import {CSS} from "@dnd-kit/utilities";
 import {useState} from "react";
 import {WindowDash, WindowFullscreen} from "react-bootstrap-icons";
+import roomTypes from "./roomTypes";
 
-export const Apartment = ({id, data, tenants, key, children}) => {
+export const Apartment = ({apartmentNumber, id, data, tenants, children, roomType}) => {
     const {isOver, setNodeRef, active} = useDroppable({
         id: id,
         data: data
     });
-    let tenant = tenants.filter(tenant => tenant.user_id === active?.id)[0];
+    let tenant = tenants.find(tenant => tenant.user_id === active?.id);
 
     const style = {
         opacity: isOver && data.spots > tenant.spots ? 1 : 0.6
     };
 
     return (
-        <div key={key} ref={setNodeRef} style={style} className={classNames("droppable")}>
+        <div ref={setNodeRef} style={style} className={classNames("droppable")}>
             <div style={{width: "100%", backgroundColor: "lightgrey", borderRadius: "6px"}}>
-                <span style={{paddingLeft: "2px", textAlign: "left"}}>{id}</span>
+                <span style={{paddingLeft: "2px", textAlign: "left"}}>{`${apartmentNumber} `}</span><span style={{fontWeight: "bold"}}>{`(${roomType})`}</span>
                 <span style={{paddingRight: "2px", float: "right"}}>{`${data.spots} spots left`}</span>
             </div>
             {children}
@@ -26,8 +27,9 @@ export const Apartment = ({id, data, tenants, key, children}) => {
     )
 };
 
-export const UnassignedTenants = ({children, droppableId, additionalStyle, title, key}) => {
-    const {isOver, setNodeRef} = useDroppable({id: droppableId});
+export const UnassignedTenants = ({children, apartmentNumber, additionalStyle, title, roomTypeId}) => {
+    const id = `${apartmentNumber}_${roomTypeId}`;
+    const {isOver, setNodeRef} = useDroppable({data: {apartmentNumber: apartmentNumber, roomTypeId: roomTypeId}, id: id});
     const [showTenants, setShowTenants] = useState(true);
 
     const style = {
@@ -44,7 +46,7 @@ export const UnassignedTenants = ({children, droppableId, additionalStyle, title
     };
 
     return (
-        <div key={key} style={style} className={classNames("d-flex", "flex-row", "flex-wrap")} ref={setNodeRef} >
+        <div style={style} className={classNames("d-flex", "flex-row", "flex-wrap")} ref={setNodeRef} >
             <div style={{width: "100%", display: "flex"}}>
                 <span style={{textAlign: "center", width: "90%", fontWeight: "bolder", fontSize: "large"}}>{title}</span>
                 <span style={{textAlign: "right", width: "10%"}} >{showTenants ? <WindowDash onClick={() => setShowTenants(false)}/> : <WindowFullscreen onClick={() => setShowTenants(true)}/>}</span>
@@ -58,10 +60,10 @@ export const UnassignedTenants = ({children, droppableId, additionalStyle, title
     );
 };
 
-export const Tenant = ({id, data, children, key}) => {
+export const Tenant = ({userId, data, children}) => {
 
     const {attributes, listeners, setNodeRef, transform} = useDraggable({
-        id: id,
+        id: userId,
         data: data
     });
     const style = {
@@ -69,7 +71,7 @@ export const Tenant = ({id, data, children, key}) => {
     };
 
     return (
-        <div key={key} ref={setNodeRef} style={style} {...listeners} {...attributes} value={id}>{children}</div>
+        <div key={userId} ref={setNodeRef} style={style} {...listeners} {...attributes} >{children}</div>
     );
 };
 
@@ -79,8 +81,10 @@ export const TenantCard = ({tenant, children, visible, backgroundColor}) => {
         <button className={classNames("draggable")} style={{borderWidth: visible ? "1px" : "0px", opacity: visible ? "1.0" : "0.0", backgroundColor: backgroundColor}} >
             <div style={{width: "530px", visibility: visible ? "visible" : "hidden"}}>
                 {`${tenant.spots === 2 ? "*" : ""} ${tenant.room_type ? tenant.room_type + " - " : ""}${tenant.first_name} ${tenant.last_name} | ${new Date().getFullYear() - new Date(tenant.date_of_birth).getFullYear()} | ${tenant.gender === "M" ? "Male" : "Female"} | ${tenant.school_year || ""} | ${tenant.submit_date || ""}`}<br/>
-                {roomates}{roomates ? <br/> : ""}
-                {tenant.roomate_desc}
+                {roomates && <><span style={{fontWeight: "bold"}}>desired roommates: </span>{roomates}<br/></>}
+                {tenant.roomate_desc && <><span style={{fontWeight: "bold"}}>roommates: </span>{tenant.roomate_desc}<br/></>}
+                {tenant.likes_dislikes && <><span style={{fontWeight: "bold"}}>likes: </span>{tenant.likes_dislikes}<br/></>}
+                {tenant.room_rent && <><span style={{fontWeight: "bold"}}>applied: </span>{tenant.room_desc} (${tenant.room_rent})</>}
                 {children}
             </div>
         </button>

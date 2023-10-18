@@ -6,7 +6,7 @@ const manage = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "POST":
-                if (req.session.user.admin) {
+                if (req.session.user.manage.includes(req.query.site)) {
                     req.session.user.manageApartment = true;
                     req.session.user.editSite = false;
                 } else {

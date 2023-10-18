@@ -9,7 +9,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "GET":
-                res.body = await GetTenant(req.query.userId);
+                res.body = await GetTenant(req.query.site, req.query.userId);
                 res.status(200).send();
             case "POST":
                 await AddTenant(req.query.userId, req.body);

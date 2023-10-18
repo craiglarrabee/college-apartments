@@ -1,5 +1,5 @@
-import {Button, Col, Form, Row} from "react-bootstrap";
-import React from "react";
+import {Alert, Button, Col, Form, Row} from "react-bootstrap";
+import React, {useState} from "react";
 import classNames from "classnames";
 import WorkFormGroups from "./workFormGroups";
 import {useForm} from "react-hook-form";
@@ -7,10 +7,34 @@ import CurrentLeases from "./currentLeases";
 import ApplicationFormGroups from "./ApplicationFormGroups";
 import PageContent from "./pageContent";
 
-const ApplicationForm = ({page, navPage, site, rules, disclaimer, guaranty, links, canEdit, userId, leaseId, application, currentLeases}) => {
-    const {register, reset, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: {...application}});
+const ApplicationForm = ({
+                             isTenant,
+                             page,
+                             navPage,
+                             site,
+                             rules,
+                             previousRentalLabel,
+                             esa_packet,
+                             disclaimer,
+                             guaranty,
+                             links,
+                             canEdit,
+                             userId,
+                             leaseId,
+                             application,
+                             currentLeases
+                         }) => {
+    const {
+        register,
+        reset,
+        formState: {isValid, isDirty, errors},
+        handleSubmit
+    } = useForm({defaultValues: {...application}});
+    const [error, setError] = useState();
+    const [processed, setProcessed] = useState(application.processed);
+    const canChangeApplication = !isTenant || !application.processed;
 
-    const handleDelete = async() => {
+    const handleDelete = async () => {
         try {
             const options = {
                 method: "DELETE",
@@ -20,9 +44,34 @@ const ApplicationForm = ({page, navPage, site, rules, disclaimer, guaranty, link
             const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
             switch (resp.status) {
                 case 400:
+                    setError(`An error occured deleting the application. Please try again. ${JSON.stringify(await resp.json())}`);
                     break;
                 case 204:
                     location = `/${navPage}?site=${site}`;
+                    break;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    const handleSetProcessedStatus = async (processed) => {
+
+        try {
+            const options = {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({processed: processed}),
+            }
+
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
+            switch (resp.status) {
+                case 400:
+                    setError(`An error occurred updating the application. Please try again. ${JSON.stringify(await resp.json())}`);
+                    break;
+                case 204:
+                    setProcessed(processed);
+                    break;
             }
         } catch (e) {
             console.log(e);
@@ -36,14 +85,10 @@ const ApplicationForm = ({page, navPage, site, rules, disclaimer, guaranty, link
         data.lease_id = ids[0];
         data.room_type_id = ids[1];
         data.share_info = data.do_not_share_info === "1" ? "0" : "1";
-        data.processed = !data.processed;
 
-        //if modifications have been made, we POST and just update the application
-        //otherwise we PUT which will complete the existing
-        const method = isDirty ? "POST" : "PUT";
         try {
             const options = {
-                method: method,
+                method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(data),
             }
@@ -51,9 +96,11 @@ const ApplicationForm = ({page, navPage, site, rules, disclaimer, guaranty, link
             const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
             switch (resp.status) {
                 case 400:
+                    setError(`An error occurred updating the application. Please try again. ${JSON.stringify(await resp.json())}`);
                     break;
                 case 204:
                     location = `/${navPage}?site=${site}`;
+                    break;
             }
         } catch (e) {
             console.log(e);
@@ -63,14 +110,19 @@ const ApplicationForm = ({page, navPage, site, rules, disclaimer, guaranty, link
     return (
         <>
             <Form onSubmit={handleSubmit(onSubmitApplication)} method="post">
+                {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
                 {site === "suu" ?
-                    <WorkFormGroups register={register} application={application} errors={errors}/> : null}
+                    <WorkFormGroups register={register} application={application} errors={errors}
+                                    canChangeApplication={canChangeApplication}/> : null}
                 <div className="h4">Room Type:</div>
                 <br/>
-                {currentLeases.map(lease => <CurrentLeases {...lease} register={register} enabled={application === undefined || application === null || application.lease_id === lease.leaseId} />)}
+                {currentLeases.map(lease => <CurrentLeases canChangeApplication={canChangeApplication} {...lease}
+                                                           register={register}
+                                                           enabled={application === undefined || application === null || application.lease_id === lease.leaseId}/>)}
                 {errors && errors.lease_room_type_id && <Form.Text
                     className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
-                <ApplicationFormGroups register={register} errors={errors} />
+                <ApplicationFormGroups canChangeApplication={canChangeApplication} register={register} errors={errors}
+                                       previousRentalLabel={previousRentalLabel} esa_packet={esa_packet} site={site} canEdit={canEdit} application={application}/>
                 <PageContent
                     initialContent={rules}
                     site={site}
@@ -85,6 +137,7 @@ const ApplicationForm = ({page, navPage, site, rules, disclaimer, guaranty, link
                     canEdit={canEdit}/>
                 <div className={classNames("mb-3", "d-inline-flex")}>
                     <Form.Check
+                        disabled={!canChangeApplication}
                         className="mb-3" {...register("installments", {setValueAs: value => value !== null ? value.toString() : ""})}
                         type="checkbox" id="installments" value="1"/>
                     <span>
@@ -99,11 +152,20 @@ const ApplicationForm = ({page, navPage, site, rules, disclaimer, guaranty, link
                                 </div>
                             </span>
                 </div>
-                <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                    <Button variant="primary" type="submit"
-                            style={{margin: "5px"}}>{isDirty ? "Save" : application.processed ? "Mark Unprocessed" : "Mark Processed"}</Button>
-                    <Button variant="primary" onClick={handleDelete} style={{margin: "5px"}}>{"Delete"}</Button>
-                </div>
+                {canChangeApplication &&
+                    <div style={{width: "100%"}}
+                         className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                        {isDirty || isTenant ?
+                            <Button variant="primary" disabled={!isDirty} type="submit"
+                                    style={{margin: "5px"}}>{"Save"}</Button> :
+                            <Button variant="primary"
+                                    onClick={() => handleSetProcessedStatus(!processed)}>{processed ? "Mark Unprocessed" : "Mark Processed"}</Button>
+                        }
+                        {!isTenant &&
+                            <Button variant="primary" onClick={handleDelete} style={{margin: "5px"}}>{"Delete"}</Button>
+                        }
+                    </div>
+                }
             </Form>
         </>
     );

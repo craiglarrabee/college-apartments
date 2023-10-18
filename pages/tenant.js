@@ -34,21 +34,23 @@ const Tenant = ({site, navPage, links, user, tenant, isNewApplication = false}) 
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    if (!user.isLoggedIn) return {notFound: true};
+    if (!user?.isLoggedIn) return {notFound: true};
     const newApplication = context.query && context.query.hasOwnProperty("newApplication");
     const site = context.query.site || SITE;
     if (user.isLoggedIn && user.editSite) {
-        context.res.writeHead(302, {Location: `/application?site=${site}`});
+        console.error("redirecting to application");
+        context.res.writeHead(302, {Location: `/application?site=${site}&${new Date().getTime()}`});
         context.res.end();
         return {};
     }
     const [nav, tenant, leases] = await Promise.all([
         GetNavLinks(user, site),
-        GetTenant(user.id),
+        GetTenant(site, user.id),
         GetUserAvailableLeaseRooms(site, user.id)
     ]);
 
-    if(!leases || leases.length === 0) {
+    if(newApplication && (!leases || leases.length === 0)) {
+        console.error("redirecting to deposit from tenant due to no leases");
         context.res.writeHead(302, {Location: `/deposit?site=${site}`});
         context.res.end();
         return {};

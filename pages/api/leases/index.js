@@ -8,7 +8,7 @@ import {ironOptions} from "../../../lib/session/options";
 import {AddLeaseRooms, CopyLeaseRooms} from "../../../lib/db/users/roomType";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.admin) {
+    if (!req.session.user.admin.includes(req.query.site)) {
         res.status(403).send();
         return;
     }

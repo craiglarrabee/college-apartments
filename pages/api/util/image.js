@@ -4,7 +4,7 @@ import fs from "fs";
 
 
 const image = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.admin) {
+    if (!req.session.user.admin.includes(req.query.site)) {
         res.status(403).send();
         return;
     }

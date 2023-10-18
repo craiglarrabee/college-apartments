@@ -8,55 +8,55 @@ import ApplicationForm from "../../components/applicationForm";
 describe("ApplicationForm component", () => {
   describe("rendering", () => {
     it("should render the Preferences label", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const preferencesLabel = screen.getByText("Preferences:");
       expect(preferencesLabel).toBeInTheDocument();
     });
 
     it("should render the Preferred Roommate label", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const roommateLabel = screen.getByLabelText("Preferred Roommate");
       expect(roommateLabel).toBeInTheDocument();
     });
 
     it("should render the roomate2 input", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const roommate2Input = screen.getByLabelText("Preferred Roommate 2");
       expect(roommate2Input).toBeInTheDocument();
     });
 
     it("should render the roomate3 input", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const roommate3Input = screen.getByLabelText("Preferred Roommate 3");
       expect(roommate3Input).toBeInTheDocument();
     });
 
     it("should render the roomate4 input", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const roommate4Input = screen.getByLabelText("Preferred Roommate 4");
       expect(roommate4Input).toBeInTheDocument();
     });
 
     it("should render the roomate5 input", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const roommate5Input = screen.getByLabelText("Preferred Roommate 5");
       expect(roommate5Input).toBeInTheDocument();
     });
 
     it("should render the Likes and Dislikes label", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const likesDislikesLabel = screen.getByLabelText("Likes and Dislikes");
       expect(likesDislikesLabel).toBeInTheDocument();
     });
 
     it("should render the 'Please do not share my information' checkbox", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const shareInfoCheckbox = screen.getByLabelText("Please do not share my information.");
       expect(shareInfoCheckbox).toBeInTheDocument();
     });
 
     it("should render the Roommate Description label", () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const roommateDescLabel = screen.getByLabelText("Roommate Description");
       expect(roommateDescLabel).toBeInTheDocument();
     });
@@ -73,7 +73,7 @@ describe("ApplicationForm component", () => {
     });
 
     it("should not validate the 'Preferred Roommate' field when typing less than or equal to 256 characters", async () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const roommateInput = screen.getByLabelText("Preferred Roommate");
       await userEvent.type(roommateInput, "a".repeat(256));
       const errorMessage = screen.queryByText("Too long.");
@@ -81,7 +81,7 @@ describe("ApplicationForm component", () => {
     });
 
     it("should select the 'Please do not share my information' checkbox when clicking it", async () => {
-      render(<ApplicationForm />);
+      render(<ApplicationForm currentLeases={[]} application={{processed: false}} />);
       const shareInfoCheckbox = screen.getByLabelText("Please do not share my information.");
       expect(shareInfoCheckbox.checked).toBe(false);
       await fireEvent.click(shareInfoCheckbox);

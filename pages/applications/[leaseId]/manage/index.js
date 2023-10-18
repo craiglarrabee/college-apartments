@@ -7,7 +7,7 @@ import {GetNavLinks} from "../../../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
-import {Tab, Tabs} from "react-bootstrap";
+import {Alert, Tab, Tabs} from "react-bootstrap";
 import {
     AssignedApplicationList,
     DepositReceivedApplicationList,
@@ -37,9 +37,41 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
     const [depositReceivedApplications, setDepositReceivedApplications] = useState(allApplications.filter(app => app.deposit_date && !app.apartment_number));
     const [assignedApplications, setAssignedApplications] = useState(allApplications.filter(app => app.apartment_number && !app.lease_date));
     const [welcomedApplications, setWelcomedApplications] = useState(allApplications.filter(app => app.lease_date));
+    const [error, setError] = useState();
+    const [success, setSuccess] = useState();
     const from = `${site}@snowcollegeapartments.com`;
-    const sendEmail = async (emailAddress, emailBodyString) => {
 
+    const sendResponseEmail = async (emailAddress) => {
+        try {
+            const payload = {
+                from: from,
+                subject: `Welcome to ${company}`,
+                address: emailAddress,
+                body: body
+            };
+
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+            }
+
+            const resp = await fetch(`/api/util/email`, options);
+            switch (resp.status) {
+                case 400:
+                    setError("An error occurred sending the application response email.");
+                    break;
+                case 204:
+                    setSuccess(`Application response email sent.`);
+                    break;
+            }
+        } catch (e) {
+            setError(`An error occurred sending the application response email. ${e.message}`);
+            console.log(e);
+        }
+    }
+
+    const sendWelcomeEmail = async (emailAddress, emailBodyString) => {
         try {
             const payload = {
                 from: from,
@@ -57,19 +89,20 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
             const resp = await fetch(`/api/util/email`, options);
             switch (resp.status) {
                 case 400:
-                    alert("An error occurred sending the welcome email.");
+                    setError("An error occurred sending the welcome email.");
                     break;
                 case 204:
-                    alert("Welcome email sent.");
+                    setSuccess("Welcome email sent.");
                     break;
             }
         } catch (e) {
-            alert(`An error occurred sending the welcome email. ${e.message}`);
+            setError(`An error occurred sending the welcome email. ${e.message}`);
             console.log(e);
         }
     }
 
     const processApplication = async (userId, site, leaseId, processed) => {
+        const thisApp = allApplications.find(app => app.user_id == userId);
         try {
             const options = {
                 method: "PUT",
@@ -89,6 +122,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
                     setAssignedApplications(newApplications.filter(app => app.apartment_number));
+                    processed && await sendResponseEmail(thisApp.email)
                     break;
             }
         } catch (e) {
@@ -113,7 +147,8 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     setUnprocessedApplications(allApplications.filter(app => app.processed === 0));
                     setProcessedApplications(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(allApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(newApplications.filter(app => app.apartment_number));
+                    setAssignedApplications(allApplications.filter(app => app.apartment_number));
+                    setWelcomedApplications(allApplications.filter(app => app.lease_date));
                     break;
             }
         } catch (e) {
@@ -152,10 +187,10 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
     const welcome = async (data, event) => {
         event.preventDefault();
 
-        const thisApp = allApplications.filter(app => app.user_id == data.userId)[0];
+        const thisApp = allApplications.find(app => app.user_id == data.userId);
         const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={header} body={body}
                                             canEdit={false} company={`${company}, LLC`}
-                                            site={data.site} page={page} semester={app.semester1}></WelcomeEmailBody>;
+                                            site={data.site} page={page} semester={thisApp.semester1}></WelcomeEmailBody>;
         const emailBodyString = ReactDomServer.renderToString(emailBody);
 
         try {
@@ -177,9 +212,10 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
                     setAssignedApplications(newApplications.filter(app => app.apartment_number));
+                    setWelcomedApplications(newApplications.filter(app => app.lease_date));
                     delete resetHooks[data.userId];
                     Object.values(resetHooks).forEach(hook => hook());
-                    await sendEmail(thisApp.email, emailBodyString);
+                    await sendWelcomeEmail(thisApp.email, emailBodyString);
                     break;
             }
         } catch (e) {
@@ -194,21 +230,23 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 <div className={classNames("main-content")}>
+                    {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
+                    {success && <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
                     <Tabs defaultActiveKey={1} >
-                        <Tab eventKey={1} title="Unprocessed">
+                        <Tab eventKey={1} title={`Unprocessed (${unprocessedApplications.length})`}>
                             <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleProcess={processApplication} />
                         </Tab>
-                        <Tab eventKey={2} title="Processed">
+                        <Tab eventKey={2} title={`Processed (${processedApplications.length})`}>
                             <ProcessedApplicationList data={processedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleDeposit={receiveDeposit} handleProcess={processApplication}/>
                         </Tab>
-                        <Tab eventKey={3} title="Deposit Received">
+                        <Tab eventKey={3} title={`Deposit Received (${depositReceivedApplications.length})`}>
                             <DepositReceivedApplicationList data={depositReceivedApplications} page={page} leaseId={leaseId} site={site} />
                         </Tab>
-                        <Tab eventKey={4} title="Assignment Made">
+                        <Tab eventKey={4} title={`Assignment Made (${assignedApplications.length})`}>
                             <AssignedApplicationList data={assignedApplications} page={page} leaseId={leaseId} site={site} handleWelcome={welcome} addResetHook={addResetHook} header={header} company={company} body={body} />
                         </Tab>
-                        <Tab eventKey={5} title="Welcomed">
-                            <WelcomedApplicationList data={welcomedApplications} page={page} leaseId={leaseId} site={site} header={header} company={company} body={body} />
+                        <Tab eventKey={5} title={`Welcomed (${welcomedApplications.length})`}>
+                            <WelcomedApplicationList data={welcomedApplications} page={page} leaseId={leaseId} site={site} header={header} company={company} body={body} handleDelete={deleteApplication}/>
                         </Tab>
                     </Tabs>
                 </div>
@@ -224,17 +262,20 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = context.query.site || SITE;
     const welcomePage = "welcome";
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
-    if (!user.admin.includes(site) && !user.manageApartment) {
+    if (!user.manage.includes(site)) {
         return {notFound: true};
     }
     const editing = !!user && !!user.editSite;
-    const [contentRows, nav, applications] = await Promise.all([
+    const [contentRows, nav, applications, emailContentRows] = await Promise.all([
         GetDynamicContent(site, welcomePage),
         GetNavLinks(user, site),
-        GetApplications(site, context.query.leaseId)
+        GetApplications(site, context.query.leaseId),
+        GetDynamicContent(site, "response"),
     ]);
     let content = {};
+    const emailContent = [];
     contentRows.forEach(row => content[row.name] = row.content);
+    emailContentRows.forEach(row => emailContent[row.name] = row.content);
 
     return {
         props: {
@@ -243,6 +284,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             page: page,
             links: nav,
             ...content,
+            ...emailContent,
             canEdit: editing,
             user: {...user},
             applications: [...applications],

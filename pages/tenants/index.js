@@ -74,9 +74,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = "tenants";
         const site = context.query.site || SITE;
-        if (!user.manageApartment || !user.admin.includes(site)) {
-            res.status(403).send();
-            return;
+        if (!user?.isLoggedIn) return {notFound: true};
+        if (!user?.manageApartments) {
+            context.res.writeHead(302, {Location: `/tenants/${user.id}?site=${site}`});
+            context.res.end();
+            return {};
         }
         const [nav] = await Promise.all([
             GetNavLinks(user, site)

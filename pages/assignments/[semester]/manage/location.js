@@ -12,21 +12,22 @@ import {GetPreviousLeaseTenants, GetUserLeaseTenants} from "../../../../lib/db/u
 import {Apartment, Tenant, TenantCard, UnassignedTenants} from "../../../../components/dragAndDrop";
 import classNames from "classnames";
 import {DndContext, DragOverlay} from "@dnd-kit/core";
-import {GetBaseRoomTypes, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/users/roomType";
+import {GetLocations, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/users/roomType";
 import RoomTypes from "../../../../components/roomTypes";
 
 const SITE = process.env.SITE;
 
-const Assignments = ({site, page, links, user, apartments, roomTypes, semester, tenants, currentLeaseRoomTypes}) => {
+const Assignments = ({site, page, links, user, apartments, locations, tenants, currentLeaseRoomTypes}) => {
     const bg = "black";
     const variant = "dark";
     const brandUrl = "http://www.utahcollegeapartments.com";
     const [activeId, setActiveId] = useState(null);
-    const [activeTabKey, setActiveTabKey] = useState(roomTypes[0].id);
+    const [activeTabKey, setActiveTabKey] = useState(locations[0].location);
     const [showRoomTypes, setShowRoomTypes] = useState(false);
     const [error, setError] = useState();
     const [selectedTenantId, setSelectedTenantId] = useState();
     const [selectedApartmentNumber, setSelectedApartmentNumber] = useState();
+    const [selectedRoomType, setSelectedRoomType] = useState();
     const roomTypeColor = "#134F5C50";
     const otherTypeColor = "#00F0F050";
     const previousColor = "#25852550"
@@ -36,12 +37,12 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
         const assignments = apartments.reduce((obj, item) => {
             return {
                 ...obj,
-                [item.apartment_number]: tenants.filter(tenant => tenant.apartment_number === item.apartment_number)
+                [`${item.apartment_number}_${item.base_type_id}`]: tenants.filter(tenant => tenant.apartment_number === item.apartment_number && tenant.base_type_id === item.base_type_id)
             }
         }, {});
 
-        assignments.unassigned_type = tenants.filter(tenant => tenant.base_type_id === activeTabKey && !tenant.apartment_number);
-        assignments.unassigned_others = tenants.filter(tenant => tenant.base_type_id && tenant.base_type_id !== activeTabKey && !tenant.apartment_number);
+        assignments.unassigned_type = tenants.filter(tenant => tenant.location === activeTabKey && !tenant.apartment_number);
+        assignments.unassigned_others = tenants.filter(tenant => tenant.location && tenant.location !== activeTabKey && !tenant.apartment_number);
         assignments.unassigned_previous = tenants.filter(tenant => tenant.user_id != tenant.created_by_user_id && !tenant.apartment_number);
 
         return assignments;
@@ -54,8 +55,11 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
     };
 
     const handleDragEnd = async ({active, over}) => {
+        if (!over) {
+            return;
+        }
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
-        if (!tenant.spots && tenant.user_id != tenant.created_by_user_id && over.data?.current?.roomTypeId) {
+        if (!tenant.spots && tenant.user_id != tenant.created_by_user_id && over?.data?.current?.roomTypeId) {
             setShowRoomTypes(true);
             setSelectedTenantId(active.id);
             setActiveId(null);
@@ -64,7 +68,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
         if (tenant.user_id != tenant.created_by_user_id && !over.data?.current?.roomTypeId) {
             deletePreviousTenantData(tenant.user_id, tenant.lease_id);
         }
-        if (!await updateApartmentNumber(tenant, tenant.lease_id, over.id, over.data?.current?.roomTypeId || tenant.room_type_id)) {
+        if (!await updateApartmentNumber(tenant, tenant.lease_id, over?.data?.current?.apartmentNumber, over?.data?.current?.roomTypeId || tenant.room_type_id)) {
             return;
         }
         setActiveId(null);
@@ -72,20 +76,27 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
 
     const handleDragOver = async ({active, over}) => {
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
-        if (!over || over.data.current?.spots < tenant.spots) {
+        if (!over ||
+            !over.data.current ||
+            over.data.current?.spots < tenant.spots ||
+            (tenant.location === over.data.current.location &&
+                (tenant.room_type === "Private" && over.data.current?.roomType === "Shared") ||
+                    tenant.room_type === "Shared" && over.data.current?.roomType === "Private")
+            ) {
             return;
         }
-        setTenantAssignment(tenant, over.id);
-        setSelectedApartmentNumber(over.id);
+        setTenantAssignment(tenant, over.data.current.apartmentNumber, over.data.current.roomTypeId);
+        setSelectedApartmentNumber(over.data.current.apartmentNumber);
+        setSelectedRoomType(over.data.current.room_type);
     };
 
-    const setTenantAssignment = (tenant, apartment_number) => {
+    const setTenantAssignment = (tenant, apartment_number, room_type_id) => {
         let newAssignments = {...assignments};
         if (tenant.apartment_number) {
-            newAssignments[tenant.apartment_number] = newAssignments[tenant.apartment_number].filter(assignment => assignment.user_id !== tenant.user_id);
+            newAssignments[`${tenant.apartment_number}_${tenant.base_type_id}`] = newAssignments[`${tenant.apartment_number}_${tenant.base_type_id}`].filter(assignment => assignment.user_id !== tenant.user_id);
         }
-        tenant.apartment_number = ["unassigned_type", "unassigned_others", "unassigned_previous"].includes(apartment_number) ? null : apartment_number;
-        newAssignments[apartment_number].push(tenant);
+        tenant.apartment_number = "unassigned" === apartment_number ? null : apartment_number;
+        newAssignments[`${apartment_number}_${room_type_id}`].push(tenant);
         setAssignments(newAssignments);
     }
 
@@ -101,7 +112,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
         delete tenant.spots;
         delete tenant.lease_id;
         delete tenant.room_type;
-        setTenantAssignment(tenant, "unassigned_previous");
+        setTenantAssignment(tenant, "unassigned", "previous");
     };
 
     const setPreviousTenantData = async (data) => {
@@ -144,6 +155,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
             deletePreviousTenantData(data.user_id, data.lease_id);
         }
         setSelectedApartmentNumber(null);
+        setSelectedRoomType(null);
     };
 
     const updateApartmentNumber = async (tenant, leaseId, id, roomTypeId) => {
@@ -176,10 +188,9 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
                 {error && <Alert variant={"danger"} dismissible onClose={() => setError(null)}>{error}</Alert>}
-                <Tabs activeKey={activeTabKey} onSelect={(e) => setActiveTabKey(parseInt(e))}>
-                    {roomTypes.map(type =>
-                        <Tab eventKey={type.id} key={type.id} title={type.label}>
-                            <div>{type.room_desc} (${type.room_rent})</div>
+                <Tabs activeKey={activeTabKey} onSelect={(e) => setActiveTabKey(e)}>
+                    {locations.map(location =>
+                        <Tab eventKey={location.location} key={location.location} title={location.location}>
                             <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}
                                         onDragOver={handleDragOver}>
                                 <div style={{width: "100%"}} className={classNames("d-flex")}>
@@ -194,21 +205,26 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                                     }}
                                          className={classNames("d-flex", "flex-row", "flex-wrap")}>
                                         {apartments
-                                            .filter(apartment => apartment.room_type_id === type.id)
+                                            .filter(apartment => apartment.location === activeTabKey)
                                             .map(apartment =>
-                                                <Apartment key={apartment.apartment_number}
+                                                <Apartment key={`${apartment.apartment_number}_${apartment.room_type_id}`}
+                                                           apartmentNumber={apartment.apartment_number}
                                                            roomType={apartment.room_type}
-                                                           id={apartment.apartment_number}
+                                                           id={`${apartment.apartment_number}_${apartment.room_type_id}`}
                                                            tenants={tenants}
                                                            data={{
+                                                               apartmentNumber: apartment.apartment_number,
                                                                roomTypeId: apartment.room_type_id,
-                                                               spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[apartment.apartment_number].reduce((partialSum, a) => partialSum + a.spots, 0)
+                                                               roomType: apartment.room_type,
+                                                               baseTypeId: apartment.base_type_id,
+                                                               location: apartment.location,
+                                                               spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[`${apartment.apartment_number}_${apartment.room_type_id}`].reduce((partialSum, a) => partialSum + a.spots, 0)
                                                            }}>
-                                                    {assignments[apartment.apartment_number].map(tenant =>
+                                                    {assignments[`${apartment.apartment_number}_${apartment.room_type_id}`].filter(it => it.base_type_id === apartment.room_type_id).map(tenant =>
                                                         <Tenant key={tenant.user_id} userId={tenant.user_id}>
                                                             <TenantCard visible={activeId !== tenant.user_id}
                                                                         tenant={tenant}
-                                                                        backgroundColor={type.id === tenant.base_type_id && tenant.created_by_user_id == tenant.user_id ? roomTypeColor : (tenant.user_id != tenant.created_by_user_id ? previousColor : otherTypeColor)}/>
+                                                                        backgroundColor={activeTabKey === tenant.location && tenant.created_by_user_id == tenant.user_id ? roomTypeColor : (tenant.user_id != tenant.created_by_user_id ? previousColor : otherTypeColor)}/>
                                                         </Tenant>)}
                                                 </Apartment>
                                             )}
@@ -227,9 +243,9 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                                         <UnassignedTenants apartmentNumber="unassigned"
                                                            roomTypeId="type"
                                                            additionalStyle={{backgroundColor: roomTypeColor}}
-                                                           title="Tenants applied with matching room type">
+                                                           title={`Tenants applied to ${activeTabKey}`}>
                                             {tenants
-                                                .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.base_type_id === type.id && !tenant.apartment_number)
+                                                .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.location === activeTabKey && !tenant.apartment_number)
                                                 .map(tenant =>
                                                     <Tenant key={tenant.user_id} userId={tenant.user_id} data="current">
                                                         <TenantCard visible={activeId !== tenant.user_id}
@@ -240,9 +256,9 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                                         <UnassignedTenants apartmentNumber="unassigned"
                                                            roomTypeId="others"
                                                            additionalStyle={{backgroundColor: otherTypeColor}}
-                                                           title="Tenants applied with other room type">
+                                                           title="Tenants applied to different location">
                                             {tenants
-                                                .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.base_type_id && tenant.base_type_id !== type.id && !tenant.apartment_number)
+                                                .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.location !== activeTabKey && !tenant.apartment_number)
                                                 .map(tenant =>
                                                     <Tenant key={tenant.user_id} userId={tenant.user_id} data="current">
                                                         <TenantCard visible={activeId !== tenant.user_id}
@@ -269,7 +285,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                                         {activeId ? tenants
                                                 .filter(tenant => tenant.user_id === activeId)
                                                 .map(tenant => <TenantCard visible={true} tenant={tenant}
-                                                                           backgroundColor={type.id === tenant.base_type_id ? roomTypeColor : (!tenant.base_type_id ? previousColor : otherTypeColor)}/>)
+                                                                           backgroundColor={activeTabKey === tenant.location ? roomTypeColor : (tenant.user_id != tenant.created_by_user_id ? previousColor : otherTypeColor)}/>)
                                             : null}
                                     </DragOverlay>
                                 </div>
@@ -279,7 +295,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                 </Tabs>
                 {showRoomTypes &&
                     <RoomTypes
-                        selectedRoomType={activeTabKey}
+                        selectedRoomType={selectedRoomType}
                         site={site}
                         roomTypes={currentLeaseRoomTypes}
                         show={showRoomTypes} close={() => setShowRoomTypes(false)}
@@ -298,20 +314,15 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
-    if (site === "suu") {
-        //suu manages assignments by location rather than by room type - redirect to assignments/{sem}/manage/location
-        context.res.writeHead(302, {Location: `/${page}/location?site=${site}`});
-        context.res.end();
-        return {};
-    }
-    if (!user.manage.includes(site) || !user.manageApartment) {
+
+    if (!user.manage.includes(site)) {
         return {notFound: true};
     }
     const semester = context.query.semester.replace("_", " ");
 
-    let [nav, roomTypes, apartments, tenants, previousTenants, currentLeaseRooms] = await Promise.all([
+    let [nav, locations, apartments, tenants, previousTenants, currentLeaseRooms] = await Promise.all([
         GetNavLinks(user, site),
-        GetBaseRoomTypes(site, semester),
+        GetLocations(site, semester),
         GetApartments(site),
         GetUserLeaseTenants(site, semester),
         GetPreviousLeaseTenants(site, semester),
@@ -324,7 +335,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             page: page,
             links: nav,
             apartments: [...apartments],
-            roomTypes: [...roomTypes],
+            locations: [...locations],
             tenants: [...tenants],
             user: {...user},
             semester: semester,

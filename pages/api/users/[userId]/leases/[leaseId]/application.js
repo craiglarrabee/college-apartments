@@ -3,7 +3,8 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
 import {AddApplication, DeleteApplication, ProcessApplication} from "../../../../../../lib/db/users/application";
-import {CopyTenantForUserLease, DeleteUserLeaseTenant} from "../../../../../../lib/db/users/tenant";
+import {CopyTenantForUserLease} from "../../../../../../lib/db/users/tenant";
+import {DeleteUserLease} from "../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.isLoggedIn) res.status(403).send();
@@ -20,7 +21,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 return;
             case "DELETE":
                 await Promise.all([DeleteApplication(req.query.userId, req.query.leaseId),
-                    DeleteUserLeaseTenant(req.query.userId, req.query.leaseId)]);
+                    DeleteUserLease(req.query.userId, req.query.leaseId)]);
                 res.status(204).send();
                 return;
             default:

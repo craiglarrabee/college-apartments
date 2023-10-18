@@ -2,11 +2,13 @@ import {Col, Form, Row} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 
 const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester1, semester2, id, register = () => {}}) => {
-    const [timer, setTimer] = useState(null);
+    const startSemesters = [];
+    if (semester1) startSemesters.push(semester1);
+    if (semester2) startSemesters.push(semester2);
     const [startDate, setStartDate] = useState(start_date);
     const [endDate, setEndDate] = useState(end_date);
     const [leaseDescription, setLeaseDescription] = useState(description);
-    const [leaseSemesters, setLeaseSemesters] = useState([semester1, semester2]);
+    const [leaseSemesters, setLeaseSemesters] = useState(startSemesters);
 
     const firstYear = startDate ? new Date(startDate).getUTCFullYear() : new Date().getFullYear();
     const secondYear = firstYear + 1;
@@ -15,16 +17,14 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
     const summerSemester = `Summer ${secondYear}`;
 
     useEffect(() => {
-        updateIfReady();
-    }, [endDate, startDate, leaseDescription, leaseSemesters]);
-
-    const updateIfReady = async() => {
-        clearTimeout(timer);
-        const newTimer = setTimeout(async () => {
+        const timer = setTimeout(async () => {
             await saveLeaseDefinition({start_date: startDate ? startDate : null, end_date: endDate ? endDate : null, description: leaseDescription, semesters: leaseSemesters});
         }, 1500);
-        setTimer(newTimer);
-    };
+
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [endDate, startDate, leaseDescription, leaseSemesters]);
+
 
     const saveLeaseDefinition = async (data) => {
         try {
@@ -72,7 +72,7 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
                 <Col>
                     <Form.Label>Valid Semesters:&nbsp;</Form.Label>
                     <Form.Check
-                        className="mb-3" {...register("fall_semester")} onClick={(e) => {
+                        className="mb-3" {...register("fall_semester")} onChange={(e) => {
                         if (e.target.checked) {
                             setLeaseSemesters([...leaseSemesters, fallSemester]);
                         } else {
@@ -81,7 +81,7 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
                     }}
                         checked={leaseSemesters.includes(fallSemester)} disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox" id="fall_semester"  key="fall_semester" label={fallSemester} inline/>
                     <Form.Check
-                        className="mb-3" {...register("spring_semester")} onClick={(e) => {
+                        className="mb-3" {...register("spring_semester")} onChange={(e) => {
                         if (e.target.checked) {
                             setLeaseSemesters([...leaseSemesters, springSemester]);
                         } else {
@@ -91,7 +91,7 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
                         checked={leaseSemesters.includes(springSemester)} disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox" id="spring_semester"  key="spring_semester" label={springSemester} inline/>
                     {site === "suu" ?
                         <Form.Check
-                            className="mb-3" {...register("summer_semester")} onClick={(e) => {
+                            className="mb-3" {...register("summer_semester")} onChange={(e) => {
                             if (e.target.checked) {
                                 setLeaseSemesters([summerSemester]);
                             } else {

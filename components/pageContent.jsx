@@ -82,7 +82,7 @@ export const Editor = ({show, handleClose, title, site, page, name, initialConte
             maxHeight: "600px",
             toolbarAdaptive: false,
             buttons: ["undo", "redo",
-                "font", "fontSize", "paragraph",
+                "font", "fontSize", "brush", "paragraph",
                 "bold", "underline", "italic", "strikethrough", "subscript", "superscript",
                 "outdent", "indent",
                 "align", "ul", "ol", "lineHeight",

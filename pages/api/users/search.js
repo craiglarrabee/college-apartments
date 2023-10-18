@@ -5,7 +5,7 @@ import {ironOptions} from "../../../lib/session/options";
 import {AddTenant, GetTenant, SearchTenantByName} from "../../../lib/db/users/tenant";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.admin.includes(req.query.site) || !req.session.user.manageApartment) res.status(403).send();
+    if (!req.session.user.manage.includes(req.query.site)) res.status(403).send();
     try {
         switch (req.method) {
             case "GET":
