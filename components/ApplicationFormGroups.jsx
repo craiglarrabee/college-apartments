@@ -39,7 +39,7 @@ const ApplicationFormGroups = ({
             {site !== "suu" ? <></> :
                 <>
                     <div className={classNames("d-inline-flex")}>
-                        <div>I'd like to receive text communication from Stadium Way/College Way Apartments.&nbsp;</div>
+                        <div>I&apos;d like to receive text communication from Stadium Way/College Way Apartments.&nbsp;</div>
                         <Form.Check disabled={!canChangeApplication}
                                     className={errors && errors.sms_enrolled && classNames("border-danger")} {...register("sms_enrolled", {
                             required: "This is required.",
