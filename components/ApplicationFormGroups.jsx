@@ -36,6 +36,25 @@ const ApplicationFormGroups = ({
                 </Form.Group>
             </Row>
             <div className="h4">Preferences:</div>
+            {site !== "suu" ? <></> :
+                <>
+                    <div className={classNames("d-inline-flex")}>
+                        <div>I'd like to receive text communication from Stadium Way/College Way Apartments.&nbsp;</div>
+                        <Form.Check disabled={!canChangeApplication}
+                                    className={errors && errors.sms_enrolled && classNames("border-danger")} {...register("sms_enrolled", {
+                            required: "This is required.",
+                            setValueAs: value => value !== null ? value.toString() : ""
+                        })} title="sms_enrolled_true" type="radio" id="sms_enrolled_true" inline label="Yes" value="1"/>
+                        <Form.Check disabled={!canChangeApplication}
+                                    className={errors && errors.sms_enrolled && classNames("border-danger")} {...register("sms_enrolled", {
+                            required: "This is required.",
+                            setValueAs: value => value !== null ? value.toString() : ""
+                        })} title="sms_enrolled_false" type="radio" id="sms_enrolled_false" inline label="No"
+                                    value="0"/>
+                    </div>
+                    &nbsp;<br/>
+                </>
+            }
             <div className={classNames("d-inline-flex")}>
                 <div>Do you have an ESA?&nbsp;</div>
                 <Form.Check disabled={!canChangeApplication}
