@@ -2,7 +2,7 @@ import {Col, Form, FormCheck} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 
-export const BulkEmailOptions = ({tenants, apartments, register = () => {}, errors}) => {
+export const BulkEmailOptions = ({tenants, apartments, register = () => {}, errors, ...restOfProps }) => {
 
     let [allChecked, setAllChecked] = useState(false);
     let [maleChecked, setMaleChecked] = useState(false);

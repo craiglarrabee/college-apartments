@@ -1,7 +1,19 @@
 import {Col, Form, Row} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 
-const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester1, semester2, id, register = () => {}}) => {
+const LeaseDefinitionGroup = ({
+                                  site,
+                                  deposit_amount,
+                                  start_date,
+                                  end_date,
+                                  description,
+                                  semester1,
+                                  semester2,
+                                  id,
+                                  register = () => {
+                                  },
+                                  ...restOfProps
+                              }) => {
     const startSemesters = [];
     if (semester1) startSemesters.push(semester1);
     if (semester2) startSemesters.push(semester2);
@@ -9,6 +21,7 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
     const [endDate, setEndDate] = useState(end_date);
     const [leaseDescription, setLeaseDescription] = useState(description);
     const [leaseSemesters, setLeaseSemesters] = useState(startSemesters);
+    const [depositAmount, setDepositAmount] = useState(deposit_amount || "50");
 
     const firstYear = startDate ? new Date(startDate).getUTCFullYear() : new Date().getFullYear();
     const secondYear = firstYear + 1;
@@ -18,12 +31,18 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
 
     useEffect(() => {
         const timer = setTimeout(async () => {
-            await saveLeaseDefinition({start_date: startDate ? startDate : null, end_date: endDate ? endDate : null, description: leaseDescription, semesters: leaseSemesters});
+            await saveLeaseDefinition({
+                start_date: startDate ? startDate : null,
+                end_date: endDate ? endDate : null,
+                description: leaseDescription,
+                semesters: leaseSemesters,
+                deposit_amount: depositAmount
+            });
         }, 1500);
 
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [endDate, startDate, leaseDescription, leaseSemesters]);
+    }, [endDate, startDate, leaseDescription, leaseSemesters, depositAmount]);
 
 
     const saveLeaseDefinition = async (data) => {
@@ -34,7 +53,7 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/leases/${id}`, options)
+            const resp = await fetch(`/api/leases/${id}?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -79,7 +98,9 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
                             setLeaseSemesters(leaseSemesters.filter(semester => semester !== fallSemester));
                         }
                     }}
-                        checked={leaseSemesters.includes(fallSemester)} disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox" id="fall_semester"  key="fall_semester" label={fallSemester} inline/>
+                        checked={leaseSemesters.includes(fallSemester)}
+                        disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox"
+                        id="fall_semester" key="fall_semester" label={fallSemester} inline/>
                     <Form.Check
                         className="mb-3" {...register("spring_semester")} onChange={(e) => {
                         if (e.target.checked) {
@@ -88,7 +109,9 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
                             setLeaseSemesters(leaseSemesters.filter(semester => semester !== springSemester));
                         }
                     }}
-                        checked={leaseSemesters.includes(springSemester)} disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox" id="spring_semester"  key="spring_semester" label={springSemester} inline/>
+                        checked={leaseSemesters.includes(springSemester)}
+                        disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox"
+                        id="spring_semester" key="spring_semester" label={springSemester} inline/>
                     {site === "suu" ?
                         <Form.Check
                             className="mb-3" {...register("summer_semester")} onChange={(e) => {
@@ -98,9 +121,21 @@ const LeaseDefinitionGroup = ({site, start_date, end_date, description, semester
                                 setLeaseSemesters([]);
                             }
                         }}
-                            checked={leaseSemesters.includes(summerSemester)} disabled={leaseSemesters.length > 0 && !leaseSemesters.includes(summerSemester)} type="checkbox" key="summer_semester" id="summer_semester" label={summerSemester} inline/>
+                            checked={leaseSemesters.includes(summerSemester)}
+                            disabled={leaseSemesters.length > 0 && !leaseSemesters.includes(summerSemester)}
+                            type="checkbox" key="summer_semester" id="summer_semester" label={summerSemester} inline/>
                         : null}
                 </Col>
+            </Row>
+            <Row>
+                <Form.Group xs={6} as={Row} controlId="depositAmount" style={{width: "100%"}}>
+                    <Form.Label column>Deposit&nbsp;Amount&nbsp;$</Form.Label>
+                    <Col xs={2}>
+                        <Form.Control {...register("depositAmount", {required: true, maxLength: 3})}
+                                      onChange={(e) => setDepositAmount(e.target.value)} type="number"
+                                      value={depositAmount}/>
+                    </Col>
+                </Form.Group>
             </Row>
         </>
     );

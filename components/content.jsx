@@ -1,18 +1,26 @@
 import React, {useState} from "react";
 import classNames from "classnames";
 import PageContent from "./pageContent";
-import {Alert, Button, Carousel, Form, Modal} from "react-bootstrap";
+import {Alert, Button, Carousel, Form, Modal, Spinner} from "react-bootstrap";
 import {Trash} from "react-bootstrap-icons";
 import {useForm} from "react-hook-form";
 import FileResizer from "react-image-file-resizer";
 import Router from "next/router";
+import ReactPlayer from "react-player";
 
-const Content = ({site, page, top, bottom, images, canEdit}) => {
+const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
+    images = images?.map(image => {
+        return {name: image, value: restOfProps[image]}
+    });
+    if (!images) images = [];
+    if (canEdit && !images.length) {
+        images.push({name: "empty", value:null});
+    }
+
     const [showUploader, setShowUploader] = useState(false);
     const [pageImages, setPageImages] = useState(images);
     const handleAddImage = () => {
         setShowUploader(true);
-        console.log("here");
     };
 
     const handleDeleteImage = async (site, page, fileName) => {
@@ -26,7 +34,7 @@ const Content = ({site, page, top, bottom, images, canEdit}) => {
             const resp = await fetch(`/api/util/image?fileName=${fileName}&site=${site}&page=${page}`, options);
             switch (resp.status) {
                 case 204:
-                    setPageImages(pageImages.filter(image => image !== fileName));
+                    setPageImages(pageImages.filter(image => image.name !== fileName));
                     return;
                 case 400:
                 default:
@@ -62,7 +70,7 @@ const Content = ({site, page, top, bottom, images, canEdit}) => {
                                         +
                                     </Button>
                                     <Button role="edit" variant="primary-outline" size="lg"
-                                            onClick={() => handleDeleteImage(site, page, image)}>
+                                            onClick={() => handleDeleteImage(site, page, image.name)}>
                                         <Trash/>
                                     </Button>
                                 </div> : null;
@@ -70,14 +78,31 @@ const Content = ({site, page, top, bottom, images, canEdit}) => {
                             return (
                                 <Carousel.Item role="carousel-item" key={i}>
                                     {buttons}
-                                    <img role="carousel-image" src={`/upload/images/${site}/${page}/${image}`} alt={image}
-                                         width={"560px"} />
+                                    {
+                                        // all images on this site are converted to jpg
+                                        // everything else in thes folders are videos
+
+                                        image.name !== null ?
+                                            <img role="carousel-image" src={`/upload/images/${site}/${page}/${image.name}`}
+                                                 alt={image.name}
+                                                 width={"720px"}/> :
+                                            <></>
+                                    }
+                                    <Carousel.Caption>
+                                        <PageContent
+                                            initialContent={image.value}
+                                            site={site}
+                                            page={page}
+                                            name={image.name}
+                                            canEdit={canEdit}/>
+                                    </Carousel.Caption>
+                                    <div style={{height: "90px"}}></div>
                                 </Carousel.Item>
                             );
                         }
                     )}
                 </Carousel> : null}
-            <Uploader show={showUploader} handleClose={handleCloseUploader} title="Choose image to image" site={site}
+            <Uploader show={showUploader} handleClose={handleCloseUploader} title="Choose image to upload" site={site}
                       page={page}/>
             {bottom ? <PageContent
                 initialContent={bottom}
@@ -92,12 +117,39 @@ const Content = ({site, page, top, bottom, images, canEdit}) => {
 function Uploader({handleClose, title, show, site, page}) {
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({mode: "onChange"});
     const [file, setFile] = useState();
+    const [showSpinner, setShowSpinner] = useState(false);
 
     const handleFileChange = async (event) => {
         setFile(event.target.files[0]);
     }
 
-    const uploadFile = async (data, uri, fileName, fileType) => {
+    const uploadVideo = async (data) => {
+        const formData = new FormData();
+        formData.append(data.image[0].name, data.image[0]);
+        try {
+            const options = {
+                // The method is POST because we are sending data.
+                method: "POST",
+                body: formData,
+            }
+            const resp = await fetch(`/api/util/video?site=${site}&page=${page}`, options);
+            switch (resp.status) {
+                case 204:
+                    setShowSpinner(false);
+                    handleClose();
+                    return;
+                case 400:
+                default:
+                    setShowSpinner(false);
+                    errors.images = {message: resp.body};
+                    break;
+            }
+
+        } catch (e) {
+            console.log(e);
+        }
+    };
+    const uploadImage = async (data, uri, fileName, fileType) => {
         try {
             const options = {
                 // The method is POST because we are sending data.
@@ -106,15 +158,18 @@ function Uploader({handleClose, title, show, site, page}) {
                     "Content-Type": fileType,
                     "Content-Length": uri.size
                 },
-                body: uri,
+                body: uri || formData,
             }
             const resp = await fetch(`/api/util/image?fileName=${fileName}&site=${site}&page=${page}`, options);
             switch (resp.status) {
                 case 204:
+                    setShowSpinner(false);
                     handleClose();
                     return;
                 case 400:
                 default:
+                    setShowSpinner(false);
+                    errors.images = {message: resp.body};
                     break;
             }
 
@@ -131,7 +186,12 @@ function Uploader({handleClose, title, show, site, page}) {
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
-        resizeFile(data, uploadFile);
+        setShowSpinner(true);
+        if (file.type.toLowerCase().startsWith("image")) {
+            resizeFile(data, uploadImage);
+        } else {
+            uploadVideo(data);
+        }
     };
 
     return (
@@ -153,17 +213,20 @@ function Uploader({handleClose, title, show, site, page}) {
                         <Form.Label visuallyHidden={true}>Image</Form.Label>
                         <Form.Control {...register("image", {
                             validate: {
-                                // lessThan10MB: files => files && files[0]?.size < 102400 || "Max filesize is 100KB",
+                                lessThan10MB: files => files && files[0]?.size < 20971520 || "Max filesize is 20MB",
                                 acceptedFormats: files => !files ||
                                     ["image/jpeg", "image/png", "image/gif", "image/svg"].includes(
                                         files[0]?.type
                                     ) || "Only image files allowed",
                             }, onChange: handleFileChange
-                        })} type="file" accept="image/*" placeholder="image" maxLength={1024}/>
+                        })} type="file" accept={["image/*"]} placeholder="image" maxLength={1024}/>
                     </Form.Group>
                     <div style={{width: "100%"}}
                          className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                        <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Upload</Button>
+                        {showSpinner ?
+                            <Spinner variant="primary"></Spinner> :
+                            <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Upload</Button>
+                        }
                     </div>
                 </Form>
             </Modal.Body>

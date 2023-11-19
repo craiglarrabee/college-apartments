@@ -2,7 +2,7 @@ import {Form, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 
-const WorkFormGroups = ({register = () => {}, errors, canChangeApplication}) => {
+const WorkFormGroups = ({register = () => {}, errors, canChangeApplication, ...restOfProps }) => {
     let [hideExperience, sethideExperience] = useState(true);
 
     const handleShowExperience = () => sethideExperience(false);
@@ -12,7 +12,7 @@ const WorkFormGroups = ({register = () => {}, errors, canChangeApplication}) => 
         <>
             <div className="h4">Work Opportunities:</div>
             <div className={classNames("d-inline-flex")}>
-                <div>Are you interested in doing maintenance work on the apartment this summer and during the school year for wages?&nbsp;</div>
+                <div className="required">Are you interested in doing maintenance work on the apartment this summer and during the school year for wages?&nbsp;</div>
                 <Form.Check disabled={!canChangeApplication} className={errors && errors.maint_experience && classNames("border-danger")} {...register("maint_work", {
                     required: "This is required.",
                     setValueAs: value => value !== null ? value.toString() : ""
@@ -28,7 +28,7 @@ const WorkFormGroups = ({register = () => {}, errors, canChangeApplication}) => 
             {hideExperience ||
             <Row>
                 <Form.Group className="mb-3" controlId="maint_experience" hidden={hideExperience}>
-                    <Form.Label visuallyHidden={true}>Maintenance Experience</Form.Label>
+                    <Form.Label visuallyHidden={true} className="required">Maintenance Experience</Form.Label>
                     <Form.Control disabled={!canChangeApplication} className={errors && errors.maint_experience && classNames("border-danger")} {...register("maint_experience", {
                         required: {
                             value: !hideExperience,
@@ -39,7 +39,7 @@ const WorkFormGroups = ({register = () => {}, errors, canChangeApplication}) => 
                 </Form.Group>
             </Row> }
             <div className={classNames("d-inline-flex")}>
-                <div>Are you interested in cleaning apartments during semester breaks for wages?&nbsp;</div>
+                <div className="required">Are you interested in cleaning apartments during semester breaks for wages?&nbsp;</div>
                 <Form.Check disabled={!canChangeApplication} className={errors && errors.maint_experience && classNames("border-danger")} {...register("clean_work", {
                     required: "This is required.",
                     setValueAs: value => value !== null ? value.toString() : ""

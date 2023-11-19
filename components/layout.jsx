@@ -1,7 +1,9 @@
 import React from "react";
 import classNames from "classnames";
+import useBodyClass from "../lib/db/content/body";
 
-const Layout = ({children, user, wide}) => {
+const Layout = ({children, user, wide, site, ...restOfProps }) => {
+    useBodyClass(site);
     return (
         <div>
             <div className={classNames(

@@ -1,10 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import {withIronSessionApiRoute} from "iron-session/next";
-import {ironOptions} from "../../../../../../lib/session/options";
-import {AddApplication, DeleteApplication, ProcessApplication} from "../../../../../../lib/db/users/application";
-import {CopyTenantForUserLease} from "../../../../../../lib/db/users/tenant";
-import {DeleteUserLease} from "../../../../../../lib/db/users/userLease";
+import {ironOptions} from "../../../../../../../lib/session/options";
+import {AddApplication, DeleteApplication, ProcessApplication} from "../../../../../../../lib/db/users/application";
+import {CopyTenantForUserLease} from "../../../../../../../lib/db/users/tenant";
+import {DeleteUserLease} from "../../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.isLoggedIn) res.status(403).send();
@@ -20,8 +20,8 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 res.status(204).send();
                 return;
             case "DELETE":
-                await Promise.all([DeleteApplication(req.query.userId, req.query.leaseId),
-                    DeleteUserLease(req.query.userId, req.query.leaseId)]);
+                await Promise.all([DeleteApplication(req.query.userId, req.query.leaseId, req.query.roomTypeId),
+                    DeleteUserLease(req.query.userId, req.query.leaseId, req.query.roomTypeId)]);
                 res.status(204).send();
                 return;
             default:

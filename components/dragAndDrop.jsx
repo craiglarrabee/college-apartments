@@ -3,9 +3,8 @@ import classNames from "classnames";
 import {CSS} from "@dnd-kit/utilities";
 import {useState} from "react";
 import {WindowDash, WindowFullscreen} from "react-bootstrap-icons";
-import roomTypes from "./roomTypes";
 
-export const Apartment = ({apartmentNumber, id, data, tenants, children, roomType}) => {
+export const Apartment = ({apartmentNumber, id, data, tenants, children, roomType, ...restOfProps }) => {
     const {isOver, setNodeRef, active} = useDroppable({
         id: id,
         data: data
@@ -19,7 +18,8 @@ export const Apartment = ({apartmentNumber, id, data, tenants, children, roomTyp
     return (
         <div ref={setNodeRef} style={style} className={classNames("droppable")}>
             <div style={{width: "100%", backgroundColor: "lightgrey", borderRadius: "6px"}}>
-                <span style={{paddingLeft: "2px", textAlign: "left"}}>{`${apartmentNumber} `}</span><span style={{fontWeight: "bold"}}>{`(${roomType})`}</span>
+                <span style={{paddingLeft: "2px", textAlign: "left"}}>{`${apartmentNumber} `}</span>
+                <span style={{fontWeight: "bold"}}>{`(${roomType})`}</span>
                 <span style={{paddingRight: "2px", float: "right"}}>{`${data.spots} spots left`}</span>
             </div>
             {children}
@@ -27,9 +27,9 @@ export const Apartment = ({apartmentNumber, id, data, tenants, children, roomTyp
     )
 };
 
-export const UnassignedTenants = ({children, apartmentNumber, additionalStyle, title, roomTypeId}) => {
-    const id = `${apartmentNumber}_${roomTypeId}`;
-    const {isOver, setNodeRef} = useDroppable({data: {apartmentNumber: apartmentNumber, roomTypeId: roomTypeId}, id: id});
+export const UnassignedTenants = ({children, apartmentNumber, additionalStyle, title, roomType, ...restOfProps }) => {
+    const id = `${apartmentNumber}_${roomType}`;
+    const {isOver, setNodeRef} = useDroppable({data: {apartmentNumber: apartmentNumber, roomType: roomType}, id: id});
     const [showTenants, setShowTenants] = useState(true);
 
     const style = {
@@ -60,7 +60,7 @@ export const UnassignedTenants = ({children, apartmentNumber, additionalStyle, t
     );
 };
 
-export const Tenant = ({userId, data, children}) => {
+export const Tenant = ({userId, data, children, ...restOfProps }) => {
 
     const {attributes, listeners, setNodeRef, transform} = useDraggable({
         id: userId,
@@ -75,7 +75,7 @@ export const Tenant = ({userId, data, children}) => {
     );
 };
 
-export const TenantCard = ({tenant, children, visible, backgroundColor}) => {
+export const TenantCard = ({tenant, children, visible, backgroundColor, ...restOfProps }) => {
     const roomates = buildRoomateList(tenant);
     return (
         <button className={classNames("draggable")} style={{borderWidth: visible ? "1px" : "0px", opacity: visible ? "1.0" : "0.0", backgroundColor: backgroundColor}} >

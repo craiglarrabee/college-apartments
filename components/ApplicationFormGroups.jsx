@@ -12,7 +12,7 @@ const ApplicationFormGroups = ({
                                    site,
                                    canEdit,
                                    application
-                               }) => {
+                               , ...restOfProps }) => {
     let [hideEsa, setHideEsa] = useState(!application?.esa);
 
     const handleShowEsa = () => setHideEsa(false);
@@ -39,7 +39,7 @@ const ApplicationFormGroups = ({
             {site !== "suu" ? <></> :
                 <>
                     <div className={classNames("d-inline-flex")}>
-                        <div>I&apos;d like to receive text communication from Stadium Way/College Way Apartments.&nbsp;</div>
+                        <div className="required">I&apos;d like to receive text communication from Stadium Way/College Way Apartments.&nbsp;</div>
                         <Form.Check disabled={!canChangeApplication}
                                     className={errors && errors.sms_enrolled && classNames("border-danger")} {...register("sms_enrolled", {
                             required: "This is required.",
@@ -56,7 +56,7 @@ const ApplicationFormGroups = ({
                 </>
             }
             <div className={classNames("d-inline-flex")}>
-                <div>Do you have an ESA?&nbsp;</div>
+                <div className="required">Do you have an ESA?&nbsp;</div>
                 <Form.Check disabled={!canChangeApplication}
                             className={errors && errors.esa && classNames("border-danger")} {...register("esa", {
                     required: "This is required.",
@@ -167,7 +167,7 @@ const ApplicationFormGroups = ({
             </Row>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="school_year">
-                    <Form.Label>School Year</Form.Label>
+                    <Form.Label className="required">School Year</Form.Label>
                     <Form.Select disabled={!canChangeApplication}  {...register("school_year", {
                         required: {
                             value: true,

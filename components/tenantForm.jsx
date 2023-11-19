@@ -3,7 +3,7 @@ import classNames from "classnames";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 
-export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
+export const TenantForm = ({site, userId, tenant, isNewApplication, ...restOfProps }) => {
 
     const [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? tenant.convicted_crime : false);
     const [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? tenant.charged_crime : false);
@@ -36,7 +36,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                     break;
                 case 204:
                     reset(data);
-                    if (isNewApplication || tenant?.pending_application) location = `/application?site=${site}`;
+                    if (isNewApplication) location = `/application?site=${site}`;
             }
         } catch (e) {
             console.log(e);
@@ -49,7 +49,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 <div className="h4">Personal Information:</div>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="first_name">
-                        <Form.Label>First Name</Form.Label>
+                        <Form.Label className="required">First Name</Form.Label>
                         <Form.Control
                             className={errors && errors.first_name && classNames("border-danger")} {...register("first_name", {
                             required: {value: true, message: "First Name is required"},
@@ -67,7 +67,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                             className={classNames("text-danger")}>{errors && errors.middle_name.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="last_name">
-                        <Form.Label>Last Name</Form.Label>
+                        <Form.Label className="required">Last Name</Form.Label>
                         <Form.Control
                             className={errors && errors.last_name && classNames("border-danger")} {...register("last_name", {
                             required: {
@@ -81,7 +81,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 </Row>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="gender" required>
-                        <Form.Label>Gender</Form.Label>
+                        <Form.Label className="required">Gender</Form.Label>
                         <Form.Select {...register("gender")}>
                             <option value="M">Male</option>
                             <option value="F">Female</option>
@@ -91,7 +91,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                                 className={classNames("text-danger")}>{errors && errors.gender.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="date_of_birth">
-                        <Form.Label>Birthdate</Form.Label>
+                        <Form.Label className="required">Birthdate</Form.Label>
                         <Form.Control
                             className={errors && errors.date_of_birth && classNames("border-danger")} {...register("date_of_birth", {
                             required: {value: true, message: "Birthdate is required."},
@@ -104,7 +104,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                                 birthdate.</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="last_4_social">
-                        <Form.Label>Last 4 Social Security #</Form.Label>
+                        <Form.Label className="required">Last 4 Social Security #</Form.Label>
                         <Form.Control
                             className={errors && errors.last_4_social && classNames("border-danger")} {...register("last_4_social", {
                             required: {
@@ -121,7 +121,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 </Row>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="cell_phone">
-                        <Form.Label>Cell Phone</Form.Label>
+                        <Form.Label className="required">Cell Phone</Form.Label>
                         <Form.Control
                             className={errors && errors.cell_phone && classNames("border-danger")} {...register("cell_phone", {
                             required: {
@@ -143,7 +143,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                             className={classNames("text-danger")}>{errors && errors.cell_phone2.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="home_phone">
-                        <Form.Label>Home Phone</Form.Label>
+                        <Form.Label className="required">Home Phone</Form.Label>
                         <Form.Control
                             className={errors && errors.home_phone && classNames("border-danger")} {...register("home_phone", {})}
                             type="tel"
@@ -154,7 +154,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 </Row>
                 <Row>
                     <Form.Group as={Col} xs={6} className="mb-3" controlId="email">
-                        <Form.Label>Email</Form.Label>
+                        <Form.Label className="required">Email</Form.Label>
                         <Form.Control
                             className={errors && errors.email && classNames("border-danger")} {...register("email", {
                             required: {value: true, message: "Email is required."},
@@ -186,7 +186,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                     </Form.Group>
                 </Row>
                 <div className="d-inline-flex">
-                    <div>Have you ever been convicted of a crime?&nbsp;</div>
+                    <div className="required">Have you ever been convicted of a crime?&nbsp;</div>
                     <Form.Group controlId={"convicted_crime"}>
                         <Form.Check className="mb-3" onClick={handleConvicted} {...register("convicted_crime", {
                             required: true,
@@ -200,7 +200,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 </div>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="convicted_explain" hidden={!convictedCrime}>
-                        <Form.Label>Explain</Form.Label>
+                        <Form.Label className="required">Explain</Form.Label>
                         <Form.Control
                             className={errors && errors.convicted_explain && classNames("border-danger")} {...register("convicted_explain",
                             {
@@ -212,7 +212,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                     </Form.Group>
                 </Row>
                 <div className="d-inline-flex">
-                    <div>Have you ever been charged with a crime?&nbsp;</div>
+                    <div className="required">Have you ever been charged with a crime?&nbsp;</div>
                     <Form.Check className="mb-3" onClick={handleCharged} {...register("charged_crime", {
                         required: true,
                         setValueAs: value => value !== null ? value.toString() : ""
@@ -224,7 +224,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 </div>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="charged_explain" hidden={!chargedCrime}>
-                        <Form.Label>Explain</Form.Label>
+                        <Form.Label className="required">Explain</Form.Label>
                         <Form.Control
                             className={errors && errors.charged_explain && classNames("border-danger")} {...register("charged_explain", {
                             required: {
@@ -240,7 +240,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 <div className="h4">Address:</div>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="street">
-                        <Form.Label>Street Address</Form.Label>
+                        <Form.Label className="required">Street Address</Form.Label>
                         <Form.Control
                             className={errors && errors.street && classNames("border-danger")} {...register("street", {
                             required: {
@@ -255,7 +255,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 </Row>
                 <Row>
                     <Form.Group as={Col} xs={6} className="mb-3" controlId="city">
-                        <Form.Label>City</Form.Label>
+                        <Form.Label className="required">City</Form.Label>
                         <Form.Control
                             className={errors && errors.city && classNames("border-danger")} {...register("city", {
                             required: {
@@ -268,7 +268,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                                 className={classNames("text-danger")}>{errors && errors.city.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="state">
-                        <Form.Label>State</Form.Label>
+                        <Form.Label className="required">State</Form.Label>
                         <Form.Control
                             className={errors && errors.state && classNames("border-danger")} {...register("state", {
                             required: {
@@ -281,7 +281,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                                 className={classNames("text-danger")}>{errors && errors.state.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="zip">
-                        <Form.Label>Zip Code</Form.Label>
+                        <Form.Label className="required">Zip Code</Form.Label>
                         <Form.Control
                             className={errors && errors.zip && classNames("border-danger")} {...register("zip", {
                             required: {
@@ -296,7 +296,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 <div className="h4">Parent/Guardian Info:</div>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="parent_name">
-                        <Form.Label>Parent Name</Form.Label>
+                        <Form.Label className="required">Parent Name</Form.Label>
                         <Form.Control
                             className={errors && errors.parent_name && classNames("border-danger")} {...register("parent_name", {
                             required: {
@@ -308,7 +308,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                             className={classNames("text-danger")}>{errors && errors.parent_name.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="parent_phone">
-                        <Form.Label>Parent Phone</Form.Label>
+                        <Form.Label className="required">Parent Phone</Form.Label>
                         <Form.Control
                             className={errors && errors.parent_phone && classNames("border-danger")} {...register("parent_phone", {
                             required: {
@@ -322,7 +322,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 </Row>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="parent_street">
-                        <Form.Label>Parent Street Address</Form.Label>
+                        <Form.Label className="required">Parent Street Address</Form.Label>
                         <Form.Control
                             className={errors && errors.parent_street && classNames("border-danger")} {...register("parent_street", {
                             required: {
@@ -337,7 +337,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 </Row>
                 <Row>
                     <Form.Group as={Col} xs={6} className="mb-3" controlId="parent_city">
-                        <Form.Label>Parent City</Form.Label>
+                        <Form.Label className="required">Parent City</Form.Label>
                         <Form.Control
                             className={errors && errors.parent_city && classNames("border-danger")} {...register("parent_city", {
                             required: {
@@ -349,7 +349,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                             className={classNames("text-danger")}>{errors && errors.parent_city.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="parent_state">
-                        <Form.Label>Parent State</Form.Label>
+                        <Form.Label className="required">Parent State</Form.Label>
                         <Form.Control
                             className={errors && errors.parent_state && classNames("border-danger")} {...register("parent_state", {
                             required: {
@@ -361,7 +361,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                             className={classNames("text-danger")}>{errors && errors.parent_state.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="parent_zip">
-                        <Form.Label>Parent Zip Code</Form.Label>
+                        <Form.Label className="required">Parent Zip Code</Form.Label>
                         <Form.Control
                             className={errors && errors.parent_zip && classNames("border-danger")} {...register("parent_zip", {
                             required: {
@@ -376,7 +376,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication}) => {
                 <div style={{width: "100%"}}
                      className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                     <Button variant="primary" type="submit"
-                            disabled={!isNewApplication && (!isDirty || !isValid)}>{isNewApplication || tenant.pending_application ? "Next" : "Save"}</Button>
+                            disabled={!isNewApplication && (!isDirty || !isValid)}>{isNewApplication ? "Next" : "Save"}</Button>
                 </div>
             </Form>
 

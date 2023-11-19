@@ -21,16 +21,17 @@ import ReactDomServer from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
+
 let resetHooks = {};
 
 const addResetHook = (userId, hook) => {
     resetHooks[userId] = hook;
 }
 
-const Applications = ({leaseId, site, page, links, user, applications, header, body, company}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+const Applications = ({leaseId, site, page, links, user, applications, header, body, company, ...restOfProps }) => {
     const [allApplications, setAllApplications] = useState(applications);
     const [unprocessedApplications, setUnprocessedApplications] = useState(allApplications.filter(app => app.processed === 0));
     const [processedApplications, setProcessedApplications] = useState(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
@@ -56,7 +57,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                 body: JSON.stringify(payload),
             }
 
-            const resp = await fetch(`/api/util/email`, options);
+            const resp = await fetch(`/api/util/email?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     setError("An error occurred sending the application response email.");
@@ -86,7 +87,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                 body: JSON.stringify(payload),
             }
 
-            const resp = await fetch(`/api/util/email`, options);
+            const resp = await fetch(`/api/util/email?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     setError("An error occurred sending the welcome email.");
@@ -130,20 +131,20 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
         }
     };
 
-    const deleteApplication = async (userId, site, leaseId) => {
+    const deleteApplication = async (userId, site, leaseId, roomTypeId) => {
         try {
             const options = {
                 method: "DELETE",
                 headers: {"Content-Type": "application/json"}
             }
 
-            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${roomTypeId}`, options)
             switch (resp.status) {
                 case 400:
                     break;
                 case 204:
                     // now remove from the applications on this page components
-                    setAllApplications(allApplications.filter(app => app.user_id !== userId))
+                    setAllApplications(allApplications.filter(app => !(app.user_id === userId && app.lease_id === leaseId && app.room_type_id === roomTypeId)))
                     setUnprocessedApplications(allApplications.filter(app => app.processed === 0));
                     setProcessedApplications(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(allApplications.filter(app => app.deposit_date && !app.apartment_number));
@@ -225,7 +226,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
     };
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

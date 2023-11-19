@@ -2,9 +2,13 @@ $primary: #5FAFD2;
 $sidebar-menu-width-expanded: 265px;
 $app-max-width: 950px;
 $body-bg: white;
+$bg: #f8f9fa;
 $nav-link-font-size: 16pt;
 $nav-link-font-weight: 1000;
 $sidebar-menu-dark-color: $primary;
+$sidebar-menu-light-color: $primary;
+$sidebar-menu-light-active-color: gray;
+$sidebar-menu-dark-active-color: white;
 $sidebar-menu-nav-link-padding-y: 1px;
 @import "~bootstrap/scss/bootstrap";
 @import "react-bootstrap-sidebar-menu/dist/sidebar-menu.scss";
@@ -13,17 +17,14 @@ html,
 body,
 #root,
 
-
-
 #myCarousel {margin-left: 40px; margin-right: 80px;}
 
 .carousel-control {
   top: 50%;
 }
 .carousel-inner {
-  margin-left: 50px;
+  margin-left: 55px;
   margin-right: 50px;
-  width: 85%;
 }
 .carousel-control-prev, .carousel-control-next {
   background: none;
@@ -34,6 +35,17 @@ body,
 body {
   display: flex;
   justify-content: center;
+}
+
+li.text-success:before {
+  content: "✓\00a0\00a0\00a0";
+}
+
+li.text-danger:before {
+  content: "X\00a0\00a0\00a0";
+}
+
+body.snow {
   background-image: url("../public/images/collage.jpg");
 }
 
@@ -46,6 +58,12 @@ form div {
   padding-right: .2rem;
 }
 
+
+.required::before {
+  content: "*";
+  color: $danger;
+}
+
 .custom-content, .custom-content table, .custom-content > div {
   width: 100%
 }
@@ -54,7 +72,7 @@ form div {
   background-color: $body-bg;
   min-height: 650px;
   align-self: flex-start;
-  border-right: black solid 50px;
+  border-right: $bg solid 50px;
   width: 100%;
 }
 
@@ -65,7 +83,7 @@ main {
 
 .main-footer {
   align-self: flex-end;
-  color: $navbar-dark-color;
+  color: $navbar-light-color;
   font-weight: bold;
   height: 50px;
   width: 100%;
@@ -73,7 +91,7 @@ main {
 }
 
 .user-main-wrapper {
-  max-width: 950px;
+  max-width: 1150px;
 }
 
 .admin-main-wrapper {

@@ -12,11 +12,12 @@ import classNames from "classnames";
 import {GetLeases} from "../../lib/db/users/lease";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Leases = ({site, links, page, user, leases}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Leases = ({site, links, page, user, leases, ...restOfProps }) => {
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
     const createLease = async (data, event) => {
@@ -30,7 +31,7 @@ const Leases = ({site, links, page, user, leases}) => {
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/leases`, options)
+            const resp = await fetch(`/api/leases?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -45,7 +46,7 @@ const Leases = ({site, links, page, user, leases}) => {
     }
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

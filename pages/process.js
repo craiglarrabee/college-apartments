@@ -10,11 +10,12 @@ import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Home = ({site, user, links, navPage}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Home = ({site, user, links, navPage, ...restOfProps }) => {
 
     const onSubmit = async (data, event) => {
 
@@ -37,7 +38,7 @@ const Home = ({site, user, links, navPage}) => {
     }
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>

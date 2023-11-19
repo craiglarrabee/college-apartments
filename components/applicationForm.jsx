@@ -22,8 +22,9 @@ const ApplicationForm = ({
                              userId,
                              leaseId,
                              application,
-                             currentLeases
-                         }) => {
+                             currentLeases,
+                             roomTypeId
+                         , ...restOfProps }) => {
     const {
         register,
         reset,
@@ -41,7 +42,7 @@ const ApplicationForm = ({
                 headers: {"Content-Type": "application/json"}
             }
 
-            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${roomTypeId}`, options)
             switch (resp.status) {
                 case 400:
                     setError(`An error occured deleting the application. Please try again. ${JSON.stringify(await resp.json())}`);

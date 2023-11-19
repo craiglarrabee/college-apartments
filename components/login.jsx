@@ -4,7 +4,7 @@ import classNames from "classnames";
 import {useForm} from "react-hook-form";
 import Router from "next/router";
 
-const Login = ({show, close, setNewUser, site}) => {
+const Login = ({show, close, setNewUser, site, ...restOfProps }) => {
     const [loginError, setLoginError] = useState(false);
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
@@ -34,7 +34,7 @@ const Login = ({show, close, setNewUser, site}) => {
                 // Body of the request is the JSON data we created above.
                 body: JSONdata,
             }
-            const resp = await fetch("/api/login", options);
+            const resp = await fetch(`/api/login?site=${site}`, options);
             switch (resp.status) {
                 case 200:
                     setLoginError(false);

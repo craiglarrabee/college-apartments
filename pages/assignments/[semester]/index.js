@@ -11,13 +11,14 @@ import {GetUserRoomates} from "../../../lib/db/users/tenant";
 import {UserApartment} from "../../../components/assignments";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Lease = ({site, page, tenants, links, user}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Lease = ({site, page, tenants, links, user, ...restOfProps }) => {
     return (
-        <Layout user={user} wide={true} >
+        <Layout site={site}  user={user} wide={true} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} startWithLogin={!user.isLoggedIn} />
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page="index"/>
             <main>

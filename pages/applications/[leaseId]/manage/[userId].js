@@ -16,14 +16,15 @@ import {GetApplication} from "../../../../lib/db/users/application";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId, content}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId, content, ...restOfProps }) => {
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
@@ -33,7 +34,7 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application, u
                             <TenantForm tenant={tenant} site={site} userId={userId} />
                         </Tab>
                         <Tab title="Application" eventKey={2} key={2}>
-                            <ApplicationForm {...content} application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} />
+                            <ApplicationForm {...content} application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} roomTypeId={tenant.room_type_id} />
                         </Tab>
                     </Tabs>
                 </div>

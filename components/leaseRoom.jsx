@@ -2,7 +2,7 @@ import {Col, Form, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 
-const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, canEdit}) => {
+const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit, ...restOfProps }) => {
     const [timer, setTimer] = useState(null);
     const [rent, setRent] = useState(room_rent);
     const [desc, setDesc] = useState(room_desc);
@@ -15,7 +15,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, canEdit}) => {
                 body: JSON.stringify({room_rent: value}),
             };
 
-            const resp = await fetch(`/api/leases/${lease_id}/rooms/${room_type_id}`, options);
+            const resp = await fetch(`/api/leases/${lease_id}/rooms/${room_type_id}?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     break;
@@ -35,7 +35,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, canEdit}) => {
                 body: JSON.stringify({room_desc: value}),
             };
 
-            const resp = await fetch(`/api/rooms/${room_type_id}`, options);
+            const resp = await fetch(`/api/rooms/${room_type_id}?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     break;
@@ -75,7 +75,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, canEdit}) => {
                     </Form.Group>
                     <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "0px"}} controlId={`roomRent${room_type_id}`}>
                         <Form.Label hidden={true}>Room Rent</Form.Label>
-                        <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} type="text" defaultValue={rent} onChange={rentChanged}/>
+                        <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} type="1" defaultValue={rent} onChange={rentChanged}/>
                     </Form.Group>
                     <Form.Group as={Col} xs={9} style={{paddingRight: "0px", paddingLeft: "0px"}} controlId={`roomDesc${room_type_id}`}>
                         <Form.Label hidden={true}>Room Description</Form.Label>

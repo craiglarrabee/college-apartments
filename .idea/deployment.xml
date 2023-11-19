@@ -15,6 +15,7 @@
             <excludedPath local="true" path="$PROJECT_DIR$/testgpt.config.json" />
             <excludedPath local="true" path="$PROJECT_DIR$/__tests__" />
             <excludedPath local="true" path="$PROJECT_DIR$/.idea" />
+            <excludedPath local="true" path="$PROJECT_DIR$/upload" />
           </excludedPaths>
         </serverdata>
       </paths>

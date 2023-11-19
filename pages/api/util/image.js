@@ -1,6 +1,7 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../lib/session/options";
 import fs from "fs";
+import {DeleteDynamicContent} from "../../../lib/db/content/dynamicContent";
 
 
 const image = withIronSessionApiRoute(async (req, res) => {
@@ -18,6 +19,7 @@ const image = withIronSessionApiRoute(async (req, res) => {
                 return;
             case "DELETE":
                 fs.rmSync(`./upload/images/${req.query.site}/${req.query.page}/${req.query.fileName}`);
+                DeleteDynamicContent(req.query.site, req.query.page, req.query.fileName);
                 res.status(204).send();
                 return;
            default:

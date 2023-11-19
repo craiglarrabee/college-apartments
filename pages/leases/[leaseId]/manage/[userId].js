@@ -13,14 +13,15 @@ import {GetUserLease} from "../../../../lib/db/users/userLease";
 import LeaseForm from "../../../../components/leaseForm";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Lease = ({site, navPage, lease, links, user, userId, rooms, content}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Lease = ({site, navPage, lease, links, user, userId, rooms, content, ...restOfProps }) => {
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>

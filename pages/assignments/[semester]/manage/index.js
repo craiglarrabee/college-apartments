@@ -16,11 +16,12 @@ import {GetBaseRoomTypes, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib
 import RoomTypes from "../../../../components/roomTypes";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Assignments = ({site, page, links, user, apartments, roomTypes, semester, tenants, currentLeaseRoomTypes}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Assignments = ({site, page, links, user, apartments, roomTypes, semester, tenants, currentLeaseRoomTypes, ...restOfProps }) => {
     const [activeId, setActiveId] = useState(null);
     const [activeTabKey, setActiveTabKey] = useState(roomTypes[0].id);
     const [showRoomTypes, setShowRoomTypes] = useState(false);
@@ -53,7 +54,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
         setActiveId(event.active.id);
     };
 
-    const handleDragEnd = async ({active, over}) => {
+    const handleDragEnd = async ({active, over, ...restOfProps }) => {
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
         if (!tenant.spots && tenant.user_id != tenant.created_by_user_id && over.data?.current?.roomTypeId) {
             setShowRoomTypes(true);
@@ -70,7 +71,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
         setActiveId(null);
     };
 
-    const handleDragOver = async ({active, over}) => {
+    const handleDragOver = async ({active, over, ...restOfProps }) => {
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
         if (!over || over.data.current?.spots < tenant.spots) {
             return;
@@ -97,7 +98,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
             },
         }
         let tenant = tenants.find(tenant => tenant.user_id === parseInt(userId));
-        await fetch(`/api/users/${userId}/leases/${leaseId}/application`, options);
+        await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${room_type_id}`, options);
         delete tenant.spots;
         delete tenant.lease_id;
         delete tenant.room_type;
@@ -154,7 +155,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({apartmentNumber: id, roomTypeId: roomTypeId}),
             }
-            const resp = await fetch(`/api/users/${tenant.user_id}/leases/${leaseId}/tenant`, options);
+            const resp = await fetch(`/api/users/${tenant.user_id}/leases/${leaseId}/tenant?site=${site}`, options);
             switch (resp.status) {
                 case 204:
                     return true;
@@ -171,7 +172,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
     };
 
     return (
-        <Layout user={user} wide={true}>
+        <Layout site={site}  user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

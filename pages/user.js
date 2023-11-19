@@ -2,7 +2,7 @@ import Layout from "../components/layout";
 import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
-import React from "react";
+import React, {useState} from "react";
 import classNames from "classnames";
 import {Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
@@ -11,13 +11,15 @@ import {ironOptions} from "../lib/session/options";
 import {useForm} from "react-hook-form";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Home = ({site, page, links, canEdit, user}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Home = ({site, page, links, canEdit, user, ...restOfProps }) => {
 
     const {register, formState: {isDirty, errors}, handleSubmit} = useForm();
+    const [pwd, setPwd] = useState("");
 
     const checkUsername = async (value) => {
         try {
@@ -27,7 +29,7 @@ const Home = ({site, page, links, canEdit, user}) => {
                     "Content-Type": "application/json",
                 },
             }
-            const resp = await fetch(`api/users/${value}`, options)
+            const resp = await fetch(`api/users/${value}?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -54,14 +56,14 @@ const Home = ({site, page, links, canEdit, user}) => {
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch("api/users", options)
+            const resp = await fetch(`api/users?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     break;
                 case 200:
                 case 204:
                     console.error("redirecting to tenant due to user form submission");
-                    await fetch("/api/login", options);
+                    await fetch(`/api/login?site=${site}`, options);
                     location = `/tenant?newApplication&site=${site}&form`;
             }
 
@@ -71,7 +73,7 @@ const Home = ({site, page, links, canEdit, user}) => {
     };
 
     return (
-        <Layout user={user}>
+        <Layout site={site}  user={user}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
@@ -97,16 +99,25 @@ const Home = ({site, page, links, canEdit, user}) => {
                                 required: {value: true, message: "Password is required."},
                                 pattern: {
                                     value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
-                                    message: "Password must be between 8 and 100 chars, and contain: a number, a lower-case character, an upper-case character, a special character"
                                 }
-                            })} type="password" placeholder="password"/>
+                            })} type="password" placeholder="password" onChange={(e) => setPwd(e.currentTarget.value)}/>
                             {errors && errors.password && <Form.Text
                                 className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
+                            <Form.Text>
+                                <div>Password must contain:</div>
+                                <ul style={{listStyleType: "none"}}>
+                                    <li className={pwd.length > 8 && pwd.length < 101 ? "text-success" : "text-danger"}>Between 8 and 100 chars </li>
+                                    <li className={pwd.match(/.*\d/) ? "text-success" : "text-danger"} >At least one number</li>
+                                    <li className={pwd.match(/.*[a-z]/) ? "text-success" : "text-danger"} >At least one lower-case character</li>
+                                    <li className={pwd.match(/.*[A-Z]/) ? "text-success" : "text-danger"} >At least one upper-case character</li>
+                                    <li className={pwd.match(/.*[@$!%*?&]/) ? "text-success" : "text-danger"} >At least one special character</li>
+                                </ul>
+                            </Form.Text>
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="confirm_password">
                             <Form.Label visuallyHidden={true}>Confirm Password</Form.Label>
                             <Form.Control
-                                className={errors && errors.confirm_password && errors && errors.confirm_password.message !== "" && classNames("border-danger")} {...register("confirm_password", {
+                                className={errors && errors.confirm_password  && classNames("border-danger")} {...register("confirm_password", {
                                 required: true,
                                 validate: (value, formValues) => {
                                     return value === formValues.password;

@@ -11,18 +11,17 @@ import {ironOptions} from "../lib/session/options";
 import {GetDynamicImageContent} from "../lib/db/content/dynamicImageContent";
 
 const SITE = process.env.SITE;
-
-const Home = ({site, page, top, bottom, links, images, canEdit, user}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
+const Home = ({site, page, top, bottom, links, images, canEdit, user, ...restOfProps }) => {
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
             <main>
-                <Content top={top} site={site} page={page} bottom={bottom} images={images} canEdit={canEdit} />
+                <Content top={top} site={site} page={page} bottom={bottom} images={images} canEdit={canEdit} restOfProps={restOfProps} />
                 <Footer bg={bg}/>
             </main>
         </Layout>

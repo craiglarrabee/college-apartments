@@ -102,7 +102,7 @@ describe("Navigation component", () => {
         );
 
         expect(getByAltText("UtahCollegeApartments")).toBeInTheDocument();
-        expect(getByAltText("UtahCollegeApartments").getAttribute("src")).toContain("logo.gif")
+        expect(getByAltText("UtahCollegeApartments").getAttribute("src")).toContain("logo-dark.gif")
     });
 });
 

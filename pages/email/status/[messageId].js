@@ -10,14 +10,15 @@ import {Tab, Table, Tabs} from "react-bootstrap";
 import {GetBulkEmailDetails} from "../../../lib/db/users/bulkEmail";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Index = ({site, page, links, user, details}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Index = ({site, page, links, user, details, ...restOfProps }) => {
 
     return (
-        <Layout user={user} wide={true}>
+        <Layout site={site}  user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

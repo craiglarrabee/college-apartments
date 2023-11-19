@@ -18,11 +18,12 @@ import {GetTenant} from "../lib/db/users/tenant";
 import ApplicationFormGroups from "../components/ApplicationFormGroups";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Application = ({site, page, navPage, rules, previous_rental, esa_packet, disclaimer, guaranty, links, canEdit, user, currentLeases, company, tenant}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Application = ({site, page, navPage, rules, previous_rental, esa_packet, disclaimer, guaranty, links, canEdit, user, currentLeases, company, tenant, ...restOfProps }) => {
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm(tenant);
     const [applicationError, setApplicationError] = useState();
 
@@ -41,7 +42,7 @@ const Application = ({site, page, navPage, rules, previous_rental, esa_packet, d
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/leases/${data.lease_id}/application`, options)
+            const resp = await fetch(`/api/users/${user.id}/leases/${data.lease_id}/application?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     setApplicationError("There was an error processing your application. Please try again.");
@@ -55,7 +56,7 @@ const Application = ({site, page, navPage, rules, previous_rental, esa_packet, d
     }
 
     return (
-        <Layout user={user} wide={false} >
+        <Layout site={site}  user={user} wide={false} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>

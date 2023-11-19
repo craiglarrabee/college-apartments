@@ -10,11 +10,12 @@ import {Alert, Tab, Table, Tabs} from "react-bootstrap";
 import SearchBar from "../../components/searchbar";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Tenants = ({site, page, links, user}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Tenants = ({site, page, links, user, ...restOfProps }) => {
     const [tenants, setTenants] = useState([]);
     const [searchString, setSearchString] = useState();
     const [message, setMessage] = useState();
@@ -52,7 +53,7 @@ const Tenants = ({site, page, links, user}) => {
     }
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
@@ -75,7 +76,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const page = "tenants";
         const site = context.query.site || SITE;
         if (!user?.isLoggedIn) return {notFound: true};
-        if (!user?.manageApartments) {
+        if (!user?.manageApartment) {
             context.res.writeHead(302, {Location: `/tenants/${user.id}?site=${site}`});
             context.res.end();
             return {};

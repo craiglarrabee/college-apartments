@@ -4,7 +4,7 @@ import React, {useEffect, useState} from "react";
 import classNames from "classnames";
 
 
-export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDelete, handleProcess}) => {
+export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDelete, handleProcess, ...restOfProps }) => {
     return (
         <>
             <Table>
@@ -21,14 +21,14 @@ export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDel
                     <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
                     <td>{row.submit_date}</td>
                     <td><Button onClick={(e) => handleProcess(row.user_id, site, leaseId, true)}>Process</Button></td>
-                    <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId)}>Delete</Button></td>
+                    <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></td>
                 </tr>))}
                 </tbody>
             </Table>
         </>
     );
 };
-export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelete, handleDeposit, handleProcess}) => {
+export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelete, handleDeposit, handleProcess, ...restOfProps }) => {
 
     return (
         <>
@@ -51,7 +51,7 @@ export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelet
                             <td><Button
                                 onClick={(e) => handleProcess(row.user_id, site, leaseId, false)}>Unprocess</Button>
                             </td>
-                            <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId)}>Delete</Button></td>
+                            <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></td>
                         </tr>
                     ))
                 }
@@ -60,7 +60,7 @@ export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelet
         </>
     );
 };
-export const DepositReceivedApplicationList = ({data, page, site, leaseId}) => {
+export const DepositReceivedApplicationList = ({data, page, site, leaseId, ...restOfProps }) => {
     return (
         <>
             <Table>
@@ -82,7 +82,7 @@ export const DepositReceivedApplicationList = ({data, page, site, leaseId}) => {
 };
 
 
-export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHook}) => {
+export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHook, ...restOfProps }) => {
     const {register, formState: {errors}, handleSubmit, reset} = useForm();
     addResetHook(row.user_id, reset);
     return (
@@ -122,7 +122,7 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
 };
 
 
-export const WelcomedRow = ({page, site, row, leaseId, handleDelete}) => {
+export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfProps }) => {
     const [semester1Selected, setSemester1Selected] = useState(row.semester1_selected);
     const [semester2Selected, setSemester2Selected] = useState(row.semester2_selected);
     const {register } = useForm();
@@ -140,7 +140,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete}) => {
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${row.user_id}/leases/${leaseId}/tenant`, options);
+            const resp = await fetch(`/api/users/${row.user_id}/leases/${leaseId}/tenant?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     break;
@@ -171,7 +171,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete}) => {
                                 type="checkbox" id="semester2" checked={semester2Selected} label={row.semester2} inline/>
                                 : <></>}
                         </Col>
-                        {handleDelete && <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId)}>Delete</Button></td>}
+                        {handleDelete && <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></td>}
 
                     </Row>
                 </Form>
@@ -187,7 +187,7 @@ export const AssignedApplicationList = ({
                                             leaseId,
                                             handleWelcome,
                                             addResetHook
-                                        }) => {
+                                        , ...restOfProps }) => {
 
     return (
         <>
@@ -209,7 +209,7 @@ export const AssignedApplicationList = ({
         </>
     );
 };
-export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete}) => {
+export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete, ...restOfProps }) => {
     return (
         <>
             <Table>
@@ -228,7 +228,7 @@ export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete
         </>
     );
 };
-export const SignedLeaseList = ({data, page, site, leaseId }) => {
+export const SignedLeaseList = ({data, page, site, leaseId , ...restOfProps }) => {
     return (
         <>
             <Table>

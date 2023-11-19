@@ -1,7 +1,7 @@
 import PageContent from "./pageContent";
 import React from "react";
 
-export const WelcomeEmailBody = function ({company, tenant, header, site, page, canEdit, body, leaseId, semester}) {
+export const WelcomeEmailBody = function ({company, tenant, header, site, page, canEdit, body, leaseId, semester, userId}) {
 
     const today = new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
 
@@ -27,7 +27,7 @@ export const WelcomeEmailBody = function ({company, tenant, header, site, page, 
                     href={`https://uca.snowcollegeapartments.com/leases/${leaseId}?site=${site}`}>Lease</a><br/>
                 <br/>
                 Follow this link to view your <a
-                    href={`https://uca.snowcollegeapartments.com/assignments/${semester}?site=${site}`}>room assignment
+                    href={`https://uca.snowcollegeapartments.com/tenants/${userId}?tab=Roommates&site=${site}`}>room assignment
                     and roomates</a><br/>
             </div>
         </>

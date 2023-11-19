@@ -12,11 +12,12 @@ import {SentLeaseList, SignedLeaseList, WelcomedApplicationList} from "../../../
 import {GetUserLeases} from "../../../../lib/db/users/userLease";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Lease = ({site, page, links, user, leaseId, leases}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Lease = ({site, page, links, user, leaseId, leases, ...restOfProps }) => {
     const [pendingLeases, setPendingLeases] = useState(leases.filter(lease => !lease.signed_date));
     const [signedLeases, setSignedLeases] = useState(leases.filter(lease => lease.signed_date));
 
@@ -28,7 +29,7 @@ const Lease = ({site, page, links, user, leaseId, leases}) => {
                 headers: {"Content-Type": "application/json"}
             }
 
-            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${room_type_id}`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -44,7 +45,7 @@ const Lease = ({site, page, links, user, leaseId, leases}) => {
     };
 
     return (
-        <Layout user={user}>
+        <Layout site={site}  user={user}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

@@ -3,9 +3,8 @@ import classNames from "classnames";
 import {Person} from "react-bootstrap-icons";
 import Login from "./login";
 import {useState} from "react";
-import Router from "next/router";
 
-const Title = ({bg, variant, initialUser, site, startWithLogin = false}) => {
+const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restOfProps }) => {
     const [showLogin, setShowLogin] = useState(startWithLogin);
     const [actionText, setActionText] = useState(initialUser.isLoggedIn ? "Sign out" : "Sign In");
     const [user, setUser] = useState(initialUser);
@@ -65,7 +64,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false}) => {
     const handleViewSite = async () => {
         if (user.isLoggedIn) {
             try {
-                const endpoint = "/api/view"
+                const endpoint = `/api/view?site=${site}`
                 const options = {
                     method: "POST",
                     headers: {
@@ -112,7 +111,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false}) => {
     };
 
     return (
-        <Navbar style={{display: "block"}} expand={true} bg={bg} variant={variant}>
+        <Navbar style={{display: "block", borderTopRightRadius: "50px"}} expand={true} bg={bg} variant={variant}>
             <Navbar.Brand>presents: <span
                 className={classNames("h3", "sub-brand")}>{site === "snow" ? "Park Place Apartments @ Snow College" : "Stadium Way & College Way @ SUU"}</span></Navbar.Brand>
             <Navbar.Brand style={{width: "100%"}}>
@@ -130,7 +129,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false}) => {
                                 <NavDropdown.Item onClick={handleEditSite}>Manage Site</NavDropdown.Item> : <></>}
                             {user.manage && user.manage.includes(site) && !user.manageApartment ?
                                 <NavDropdown.Item onClick={handleManageApartment}>Manage Apartments</NavDropdown.Item> : <></>}
-                            {!editSite ? <NavDropdown.Item href={`/tenant?site=${site}`} hidden={!user.isLoggedIn}>Manage
+                            {!editSite ? <NavDropdown.Item href={`/tenants/${user.id}?site=${site}`} hidden={!user.isLoggedIn}>Manage
                                 Profile</NavDropdown.Item> : <></>}
                             {!editSite ? <NavDropdown.Item href={`/password?site=${site}`} hidden={!user.isLoggedIn}>Change
                                 Password</NavDropdown.Item> : <></>}

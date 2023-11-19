@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 
 const JoditEditor = dynamic(() => import("jodit-react"), {ssr: false});
 
-export const PageContent = ({site, page, name, canEdit, initialContent}) => {
+export const PageContent = ({site, page, name, canEdit, initialContent, ...restOfProps }) => {
     const [showEditor, setShowEditor] = useState(false);
     const [content, setContent] = useState(initialContent);
 
@@ -44,7 +44,7 @@ export const PageContent = ({site, page, name, canEdit, initialContent}) => {
     }
 };
 
-export const Editor = ({show, handleClose, title, site, page, name, initialContent, setEditableText}) => {
+export const Editor = ({show, handleClose, title, site, page, name, initialContent, setEditableText, ...restOfProps }) => {
     const [content, setContent] = useState(initialContent);
     const [error, setError] = useState();
     const json = {

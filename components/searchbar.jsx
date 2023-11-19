@@ -1,7 +1,7 @@
 import {Button, Col, Container, Form, Row} from "react-bootstrap";
 import React from "react";
 
-export const SearchBar = ({click, change}) => {
+export const SearchBar = ({click, change, ...restOfProps }) => {
     const handleKeypress = e => {
         if (e.keyCode === 13) {
             click();

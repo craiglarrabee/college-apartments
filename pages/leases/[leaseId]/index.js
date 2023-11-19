@@ -18,15 +18,16 @@ import LeaseRoom from "../../../components/leaseRoom";
 import {GetUserLease} from "../../../lib/db/users/userLease";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
+
 
 const Lease = ({
                    site, page, lease_header, accommodations_header, accommodations_body, rent_header,
                    rent_body, vehicle_header, vehicle_body, lease, signed,
                    lease_body, lease_acceptance, rules, cleaning, repairs, links, canEdit, user, rooms
-               }) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+               , ...restOfProps }) => {
     const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({mode: "onChange"});
 
     const onSubmit = async (data, event) => {
@@ -39,7 +40,7 @@ const Lease = ({
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/leases/${lease.lease_id}`, options)
+            const resp = await fetch(`/api/users/${user.id}/leases/${lease.lease_id}?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -53,7 +54,7 @@ const Lease = ({
     }
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} startWithLogin={!user.isLoggedIn} />
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
@@ -94,7 +95,7 @@ const Lease = ({
                             page={page}
                             name="rent_header"
                             canEdit={canEdit}/>
-                        {rooms.map(room => <LeaseRoom {...room} canEdit={canEdit}/>)}
+                        {rooms.map(room => <LeaseRoom {...room} canEdit={canEdit} site={site}/>)}
                         <div style={{fontWeight: "bold"}}>I pick room type
                             #{lease.room_type_id ? lease.room_type_id : "__"} ABOVE FOR THE RENT PER SEMESTER SET FORTH
                             less a discount per semester of

@@ -13,15 +13,16 @@ import {WelcomeEmailBody} from "../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Home = ({site, page, header, body, links, canEdit, user, company, tenant}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Home = ({site, page, header, body, links, canEdit, user, company, tenant, ...restOfProps }) => {
     const from = `${site}@uca.snowcollegeapartments.com`;
     const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
                                         canEdit={false} company={`${company}, LLC`}
-                                        site={site} page={page}></WelcomeEmailBody>;
+                                        site={site} page={page} userId={user.id}> </WelcomeEmailBody>;
     const emailBodyString = ReactDomServer.renderToString(emailBody);
     const sendEmail = async () => {
 
@@ -39,7 +40,7 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant})
                 body: JSON.stringify(payload),
             }
 
-            const resp = await fetch(`/api/util/email`, options);
+            const resp = await fetch(`/api/util/email?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     alert("An error occurred sending the email.");
@@ -55,7 +56,7 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant})
     }
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

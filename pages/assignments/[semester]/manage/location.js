@@ -16,11 +16,22 @@ import {GetLocations, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/
 import RoomTypes from "../../../../components/roomTypes";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Assignments = ({site, page, links, user, apartments, locations, tenants, currentLeaseRoomTypes}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Assignments = ({
+                         site,
+                         page,
+                         links,
+                         user,
+                         apartments,
+                         locations,
+                         tenants,
+                         currentLeaseRoomTypes,
+                         ...restOfProps
+                     }) => {
     const [activeId, setActiveId] = useState(null);
     const [activeTabKey, setActiveTabKey] = useState(locations[0].location);
     const [showRoomTypes, setShowRoomTypes] = useState(false);
@@ -37,7 +48,7 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
         const assignments = apartments.reduce((obj, item) => {
             return {
                 ...obj,
-                [`${item.apartment_number}_${item.base_type_id}`]: tenants.filter(tenant => tenant.apartment_number === item.apartment_number && tenant.base_type_id === item.base_type_id)
+                [`${item.apartment_number}_${item.room_type}`]: tenants.filter(tenant => tenant.apartment_number === item.apartment_number && tenant.base_room_type === item.room_type)
             }
         }, {});
 
@@ -76,27 +87,29 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
 
     const handleDragOver = async ({active, over}) => {
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
+
         if (!over ||
             !over.data.current ||
-            over.data.current?.spots < tenant.spots ||
-            (tenant.location === over.data.current.location &&
-                (tenant.room_type === "Private" && over.data.current?.roomType === "Shared") ||
-                    tenant.room_type === "Shared" && over.data.current?.roomType === "Private")
-            ) {
+            over?.data?.current?.spots < tenant.spots ||
+            (/*tenant.location === over.data.current.location &&*/
+                ((tenant.base_room_type === "Private" && over.data.current?.roomType === "Shared") ||
+                    (tenant.base_room_type === "Shared" && over.data.current?.roomType === "Private")))
+        ) {
             return;
         }
-        setTenantAssignment(tenant, over.data.current.apartmentNumber, over.data.current.roomTypeId);
+
+        setTenantAssignment(tenant, over.data.current.apartmentNumber, over.data.current.roomType);
         setSelectedApartmentNumber(over.data.current.apartmentNumber);
         setSelectedRoomType(over.data.current.room_type);
     };
 
-    const setTenantAssignment = (tenant, apartment_number, room_type_id) => {
+    const setTenantAssignment = (tenant, apartment_number, room_type) => {
         let newAssignments = {...assignments};
         if (tenant.apartment_number) {
-            newAssignments[`${tenant.apartment_number}_${tenant.base_type_id}`] = newAssignments[`${tenant.apartment_number}_${tenant.base_type_id}`].filter(assignment => assignment.user_id !== tenant.user_id);
+            newAssignments[`${tenant.apartment_number}_${tenant.base_room_type ? tenant.base_room_type : room_type}`] = newAssignments[`${tenant.apartment_number}_${tenant.base_room_type ? tenant.base_room_type : room_type}`]?.filter(assignment => assignment.user_id !== tenant.user_id);
         }
-        tenant.apartment_number = "unassigned" === apartment_number ? null : apartment_number;
-        newAssignments[`${apartment_number}_${room_type_id}`].push(tenant);
+        tenant.apartment_number = apartment_number === "unassigned" ? null : apartment_number;
+        newAssignments[`${apartment_number}_${room_type}`].push(tenant);
         setAssignments(newAssignments);
     }
 
@@ -108,10 +121,11 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
             },
         }
         let tenant = tenants.find(tenant => tenant.user_id === parseInt(userId));
-        await fetch(`/api/users/${userId}/leases/${leaseId}/application`, options);
+        await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${room_type_id}`, options);
         delete tenant.spots;
         delete tenant.lease_id;
         delete tenant.room_type;
+        delete tenant.base_room_type;
         setTenantAssignment(tenant, "unassigned", "previous");
     };
 
@@ -166,7 +180,7 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({apartmentNumber: id, roomTypeId: roomTypeId}),
             }
-            const resp = await fetch(`/api/users/${tenant.user_id}/leases/${leaseId}/tenant`, options);
+            const resp = await fetch(`/api/users/${tenant.user_id}/leases/${leaseId}/tenant?site=${site}`, options);
             switch (resp.status) {
                 case 204:
                     return true;
@@ -183,7 +197,7 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
     };
 
     return (
-        <Layout user={user} wide={true}>
+        <Layout site={site} user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
@@ -207,20 +221,21 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
                                         {apartments
                                             .filter(apartment => apartment.location === activeTabKey)
                                             .map(apartment =>
-                                                <Apartment key={`${apartment.apartment_number}_${apartment.room_type_id}`}
-                                                           apartmentNumber={apartment.apartment_number}
-                                                           roomType={apartment.room_type}
-                                                           id={`${apartment.apartment_number}_${apartment.room_type_id}`}
-                                                           tenants={tenants}
-                                                           data={{
-                                                               apartmentNumber: apartment.apartment_number,
-                                                               roomTypeId: apartment.room_type_id,
-                                                               roomType: apartment.room_type,
-                                                               baseTypeId: apartment.base_type_id,
-                                                               location: apartment.location,
-                                                               spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[`${apartment.apartment_number}_${apartment.room_type_id}`].reduce((partialSum, a) => partialSum + a.spots, 0)
-                                                           }}>
-                                                    {assignments[`${apartment.apartment_number}_${apartment.room_type_id}`].filter(it => it.base_type_id === apartment.room_type_id).map(tenant =>
+                                                <Apartment
+                                                    key={`${apartment.apartment_number}_${apartment.room_type_id}`}
+                                                    apartmentNumber={apartment.apartment_number}
+                                                    roomType={apartment.room_type}
+                                                    id={`${apartment.apartment_number}_${apartment.room_type_id}`}
+                                                    tenants={tenants}
+                                                    data={{
+                                                        apartmentNumber: apartment.apartment_number,
+                                                        roomTypeId: apartment.room_type_id,
+                                                        roomType: apartment.room_type,
+                                                        baseTypeId: apartment.base_type_id,
+                                                        location: apartment.location,
+                                                        spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[`${apartment.apartment_number}_${apartment.room_type}`].reduce((partialSum, a) => partialSum + a.spots, 0)
+                                                    }}>
+                                                    {assignments[`${apartment.apartment_number}_${apartment.room_type}`].map(tenant =>
                                                         <Tenant key={tenant.user_id} userId={tenant.user_id}>
                                                             <TenantCard visible={activeId !== tenant.user_id}
                                                                         tenant={tenant}
@@ -241,7 +256,7 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
                                         flexDirection: "column"
                                     }}>
                                         <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomTypeId="type"
+                                                           roomType="type"
                                                            additionalStyle={{backgroundColor: roomTypeColor}}
                                                            title={`Tenants applied to ${activeTabKey}`}>
                                             {tenants
@@ -254,7 +269,7 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
                                                 )}
                                         </UnassignedTenants>
                                         <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomTypeId="others"
+                                                           roomType="others"
                                                            additionalStyle={{backgroundColor: otherTypeColor}}
                                                            title="Tenants applied to different location">
                                             {tenants
@@ -267,7 +282,7 @@ const Assignments = ({site, page, links, user, apartments, locations, tenants, c
                                                 )}
                                         </UnassignedTenants>
                                         <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomTypeId="previous"
+                                                           roomType="previous"
                                                            additionalStyle={{backgroundColor: previousColor}}
                                                            title="Previous tenants">
                                             {tenants

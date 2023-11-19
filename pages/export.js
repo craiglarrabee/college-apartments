@@ -11,14 +11,15 @@ import {GetActiveSemesters, GetActiveSemesterTenants} from "../lib/db/users/user
 import {CSVLink} from "react-csv";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Export = ({site, page, links, user, semesters, tenants}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Export = ({site, page, links, user, semesters, tenants, ...restOfProps }) => {
 
     return (
-        <Layout user={user}>
+        <Layout site={site}  user={user}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

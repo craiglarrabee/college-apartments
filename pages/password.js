@@ -11,11 +11,12 @@ import {ironOptions} from "../lib/session/options";
 import {useForm} from "react-hook-form";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Home = ({site, page, links, user}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Home = ({site, page, links, user, ...restOfProps }) => {
 
     const {register, formState: {isValid, isDirty}, handleSubmit} = useForm();
 
@@ -34,7 +35,7 @@ const Home = ({site, page, links, user}) => {
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`api/users/${user.id}/password`, options)
+            const resp = await fetch(`api/users/${user.id}/password?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     break;
@@ -49,7 +50,7 @@ const Home = ({site, page, links, user}) => {
     }
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>

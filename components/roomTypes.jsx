@@ -6,7 +6,7 @@ import Router from "next/router";
 import CurrentLeases from "./currentLeases";
 import semester from "../pages/assignments/[semester]";
 
-const RoomTypes = ({show, close, setTenantRoomType, userId, roomTypes, selectedRoomType, selectedLocation, apartment_number}) => {
+const RoomTypes = ({show, close, setTenantRoomType, userId, roomTypes, selectedRoomType, selectedLocation, apartment_number, ...restOfProps }) => {
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
     const handleClose = () => {

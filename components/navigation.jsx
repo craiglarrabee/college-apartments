@@ -2,7 +2,7 @@ import SidebarMenu, {SidebarMenuBrand, SidebarMenuCollapse, SidebarMenuFooter, S
 import Image from "next/image";
 import classNames from "classnames";
 
-const Navigation = ({bg, variant, brandUrl, links, page, site}) => {
+const Navigation = ({bg, variant, brandUrl, links, page, site, ...restOfProps }) => {
     const navLinks = buildNavLinks(links, "", site);
 
     return (
@@ -20,7 +20,7 @@ const Navigation = ({bg, variant, brandUrl, links, page, site}) => {
                 <SidebarMenu.Header>
                     <SidebarMenuNavIcon>&nbsp;&nbsp;&nbsp;&nbsp;</SidebarMenuNavIcon>
                     <SidebarMenu.Brand className={classNames("navbar-dark", "h4")}
-                                       href={brandUrl}>UtahCollegeApartments</SidebarMenu.Brand>
+                                       href={"http://www.utahcollegeapartments.com"}>UtahCollegeApartments</SidebarMenu.Brand>
                 </SidebarMenu.Header>
                 <SidebarMenu.Body>
                     <SidebarMenu.Nav>
@@ -28,8 +28,8 @@ const Navigation = ({bg, variant, brandUrl, links, page, site}) => {
                     </SidebarMenu.Nav>
                 </SidebarMenu.Body>
                 <SidebarMenuFooter>
-                    <SidebarMenuBrand href={brandUrl}>
-                        <Image priority={true} src="/images/logo.gif" alt="UtahCollegeApartments" width={120}
+                    <SidebarMenuBrand href={"http://www.utahcollegeapartments.com"}>
+                        <Image priority={true} src={`/images/logo.png`} alt="UtahCollegeApartments" width={120}
                                height={120}></Image>
                     </SidebarMenuBrand>
                 </SidebarMenuFooter>
@@ -62,7 +62,7 @@ function buildNavLink(item, links, site) {
         );
     } else {
         return (
-            <SidebarMenu.Nav.Link href={`/${item.page}?site=${site}${item.page === "user" ? ("&" + new Date().getTime()) : ""}`} key={item.position} eventKey={item.page} target={item.target}>
+            <SidebarMenu.Nav.Link href={`${!item.target ? "/" : ""}${item.page}?site=${site}${item.page === "user" ? ("&" + new Date().getTime()) : ""}`} key={item.position} eventKey={item.page} target={item.target}>
                 <SidebarMenu.Nav.Item>
                     <SidebarMenu.Nav.Title>{item.label}</SidebarMenu.Nav.Title>
                 </SidebarMenu.Nav.Item>

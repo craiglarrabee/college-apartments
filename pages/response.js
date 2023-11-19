@@ -11,10 +11,12 @@ import PageContent from "../components/pageContent";
 import {Button} from "react-bootstrap";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Home = ({site, page, body, links, canEdit, user, company}) => {
-    const bg = "black";
-    const variant = "dark";
+
+const Home = ({site, page, body, links, canEdit, user, company, ...restOfProps }) => {
     const from = `${site}@uca.snowcollegeapartments.com`;
     const brandUrl = "http://www.utahcollegeapartments.com";
 
@@ -34,7 +36,7 @@ const Home = ({site, page, body, links, canEdit, user, company}) => {
                 body: JSON.stringify(payload),
             }
 
-            const resp = await fetch(`/api/util/email`, options);
+            const resp = await fetch(`/api/util/email?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     alert("An error occurred sending the email.");
@@ -51,7 +53,7 @@ const Home = ({site, page, body, links, canEdit, user, company}) => {
 
 
     return (
-        <Layout user={user} >
+        <Layout site={site}  user={user} >
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
             <main>

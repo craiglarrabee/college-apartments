@@ -18,15 +18,16 @@ import {
 import {BulkEmailOptions} from "../../components/bulkEmailOptions";
 
 const SITE = process.env.SITE;
+const bg = process.env.BG;
+const variant = process.env.VARIANT;
+const brandUrl = process.env.BRAND_URL;
 
-const Send = ({site, page, links, user, semesters, tenants, apartments}) => {
-    const bg = "black";
-    const variant = "dark";
-    const brandUrl = "http://www.utahcollegeapartments.com";
+
+const Send = ({site, page, links, user, semesters, tenants, apartments, ...restOfProps }) => {
     const from = `${site}@uca.snowcollegeapartments.com`;
     const {register, formState: {isDirty, errors, isValid}, handleSubmit} = useForm({mode: "all"});
     const [message, setMessage] = useState();
-    const [semester, setSemester] = useState();
+    const [semester, setSemester] = useState(semesters[0].semester);
 
     const sendBulkEmail = async (data, event) => {
         event.preventDefault();
@@ -48,7 +49,7 @@ const Send = ({site, page, links, user, semesters, tenants, apartments}) => {
                 body: JSON.stringify(payload),
             }
 
-            const resp = await fetch(`/api/util/bulk-email`, options);
+            const resp = await fetch(`/api/util/bulk-email?site=${site}`, options);
             switch (resp.status) {
                 case 400:
                     setMessage({value:"An error occurred submitting the email.", type: "error"});
@@ -56,6 +57,7 @@ const Send = ({site, page, links, user, semesters, tenants, apartments}) => {
                 case 200:
                     let json = await resp.json();
                     setMessage({value:"Message submitted.", type: "info"});
+                    setTimeout(() => location = `/email/status?site=${site}`, 1000);
                     break;
             }
         } catch (e) {
@@ -65,7 +67,7 @@ const Send = ({site, page, links, user, semesters, tenants, apartments}) => {
     }
 
     return (
-        <Layout user={user} wide={true}>
+        <Layout site={site}  user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
