@@ -38,9 +38,7 @@ const Payments = ({site, navPage, links, user, payments, applications, leases, r
 
             const resp = await fetch(`/api/users/${user.id}/leases/${leaseId}/payment?site=${site}`, options)
             switch (resp.status) {
-                case 400:
-                    setPaymentError("There was an error processing your payment. Please try again.");
-                    break;
+                case 204:
                 case 200:
                     setValidApplications(validApplications.filter(app => app.lease_id !== leaseId));
                     setvalidPayments([...validPayments,
@@ -56,6 +54,10 @@ const Payments = ({site, navPage, links, user, payments, applications, leases, r
                         }]);
                     const newRequiredPayments = requiredPayments.filter(pmt => !(pmt.lease_id == leaseId && pmt.payment_number === number && pmt.payment_type === type));
                     setRequiredPayments(newRequiredPayments);
+                    break;
+                case 400:
+                default:
+                    setPaymentError("There was an error processing your payment. Please try again.");
                     break;
             }
         } catch (e) {
