@@ -11,8 +11,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "POST":
-                await Promise.all([AddApplication(req.body.site, req.query.userId, req.query.leaseId, req.body),
-                    CopyTenantForUserLease(req.query.userId, req.query.leaseId)]);
+                await AddApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
                 res.status(204).send();
                 return;
             case "PUT":

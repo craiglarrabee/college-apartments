@@ -12,7 +12,8 @@ const ApplicationFormGroups = ({
                                    site,
                                    canEdit,
                                    application
-                               , ...restOfProps }) => {
+                                   , ...restOfProps
+                               }) => {
     let [hideEsa, setHideEsa] = useState(!application?.esa);
 
     const handleShowEsa = () => setHideEsa(false);
@@ -37,9 +38,10 @@ const ApplicationFormGroups = ({
             </Row>
             <div className="h4">Preferences:</div>
             {site !== "suu" ? <></> :
-                <>
+                <div className={classNames("d-grid")}>
                     <div className={classNames("d-inline-flex")}>
-                        <div className="required">I&apos;d like to receive text communication from Stadium Way/College Way Apartments.&nbsp;</div>
+                        <div className="required">I&apos;d like to receive text communication from Stadium Way/College
+                            Way Apartments.&nbsp;</div>
                         <Form.Check disabled={!canChangeApplication}
                                     className={errors && errors.sms_enrolled && classNames("border-danger")} {...register("sms_enrolled", {
                             required: "This is required.",
@@ -52,23 +54,29 @@ const ApplicationFormGroups = ({
                         })} title="sms_enrolled_false" type="radio" id="sms_enrolled_false" inline label="No"
                                     value="0"/>
                     </div>
+                    {errors && errors.sms_enrolled && <Form.Text
+                        className={classNames("text-danger")}>{errors && errors.sms_enrolled.message}</Form.Text>}
                     &nbsp;<br/>
-                </>
+                </div>
             }
-            <div className={classNames("d-inline-flex")}>
-                <div className="required">Do you have an ESA?&nbsp;</div>
-                <Form.Check disabled={!canChangeApplication}
-                            className={errors && errors.esa && classNames("border-danger")} {...register("esa", {
-                    required: "This is required.",
-                    setValueAs: value => value !== null ? value.toString() : ""
-                })} title="esa_true" type="radio" id="esa_true" inline label="Yes" value="1"
-                            onClick={handleShowEsa}/>
-                <Form.Check disabled={!canChangeApplication}
-                            className={errors && errors.esa && classNames("border-danger")} {...register("esa", {
-                    required: "This is required.",
-                    setValueAs: value => value !== null ? value.toString() : ""
-                })} title="esa_false" type="radio" id="esa_false" inline label="No" value="0"
-                            onClick={handleHideEsa}/>
+            <div className={classNames("d-grid")}>
+                <div className={classNames("d-inline-flex")}>
+                    <div className="required">Do you have an ESA?&nbsp;</div>
+                    <Form.Check disabled={!canChangeApplication}
+                                className={errors && errors.esa && classNames("border-danger")} {...register("esa", {
+                        required: "This is required.",
+                        setValueAs: value => value !== null ? value.toString() : ""
+                    })} title="esa_true" type="radio" id="esa_true" inline label="Yes" value="1"
+                                onClick={handleShowEsa}/>
+                    <Form.Check disabled={!canChangeApplication}
+                                className={errors && errors.esa && classNames("border-danger")} {...register("esa", {
+                        required: "This is required.",
+                        setValueAs: value => value !== null ? value.toString() : ""
+                    })} title="esa_false" type="radio" id="esa_false" inline label="No" value="0"
+                                onClick={handleHideEsa}/>
+                </div>
+                {errors && errors.esa && <Form.Text
+                    className={classNames("text-danger")}>{errors && errors.esa.message}</Form.Text>}
             </div>
             <Row>
                 <Form.Text className="mb-3" controlId="esa_packet" hidden={!canEdit && hideEsa}>

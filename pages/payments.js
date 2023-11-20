@@ -12,6 +12,7 @@ import {GetUserPayments} from "../lib/db/users/userPayment";
 import {GetTenant} from "../lib/db/users/tenant";
 import {GetTenantApplications} from "../lib/db/users/application";
 import {GetTenantUserLeases} from "../lib/db/users/userLease";
+import {GetUserRequiredPayments} from "../lib/db/users/userRequiredPayments";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -19,22 +20,23 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Payments = ({site, navPage, links, user, payments, applications, leases, tenant, ...restOfProps}) => {
+const Payments = ({site, navPage, links, user, payments, applications, leases, requiredLeasePayments, tenant, ...restOfProps}) => {
     const [paymentError, setPaymentError] = useState();
     const [validApplications, setValidApplications] = useState(applications);
     const [validPayments, setvalidPayments] = useState(payments);
+    const [requiredPayments, setRequiredPayments] = useState(requiredLeasePayments.filter(pmt => !pmt.date));
 
-    const payDeposit = async (leaseId, label, amount) => {
+    const makePayment = async (leaseId, label, amount, type, number) => {
 
         try {
-            const description = `Deposit for ${label}`;
+            const description = `${type} for ${label}`;
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({amount: amount, description: description}),
+                body: JSON.stringify({amount: amount, description: description, type: type, payment_number: number}),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/leases/${leaseId}/application/deposit?site=${site}`, options)
+            const resp = await fetch(`/api/users/${user.id}/leases/${leaseId}/payment?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     setPaymentError("There was an error processing your payment. Please try again.");
@@ -42,7 +44,18 @@ const Payments = ({site, navPage, links, user, payments, applications, leases, t
                 case 200:
                     setValidApplications(validApplications.filter(app => app.lease_id !== leaseId));
                     setvalidPayments([...validPayments,
-                        {date: new Date().toLocaleDateString(), user_id: user.id, site: site, lease_id: leaseId, amount: amount, type: "deposit", description: description }]);
+                        {
+                            date: new Date().toLocaleDateString(),
+                            user_id: user.id,
+                            site: site,
+                            lease_id: leaseId,
+                            amount: amount,
+                            type: type,
+                            description: description,
+                            payment_number: number
+                        }]);
+                    const newRequiredPayments = requiredPayments.filter(pmt => !(pmt.lease_id == leaseId && pmt.payment_number === number && pmt.payment_type === type));
+                    setRequiredPayments(newRequiredPayments);
                     break;
             }
         } catch (e) {
@@ -62,12 +75,12 @@ const Payments = ({site, navPage, links, user, payments, applications, leases, t
                 <div className={classNames("main-content")}>
                     <Tabs defaultActiveKey={0}>
                         <Tab title="Make a payment" eventKey={0} key={0}>
-                            <div style={{marginTop: "30px"}}>
+                            <div style={{marginTop: "30px", display: "grid", paddingRight: "100px", paddingLeft: "100px"}}>
                                 {
-                                    validApplications.map(app =>
+                                    requiredPayments.map(pmt =>
                                         <Button style={{marginTop: "10px", marginBottom: "10px"}}
-                                                onClick={() => payDeposit(app.lease_id, app.label, app.deposit_amount)}>
-                                            Pay ${app.deposit_amount} deposit for {app.label}
+                                                onClick={() => makePayment(pmt.lease_id, pmt.label, pmt.amount, pmt.payment_type, pmt.payment_number)}>
+                                            Pay ${pmt.amount} {pmt.payment_type} for {pmt.label}
                                         </Button>
                                     )
                                 }
@@ -107,12 +120,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const userId = user.id;
 
     if (!user.isLoggedIn) return {notFound: true};
-    const [nav, tenant, applications, leases, payments] = await Promise.all([
+    const [nav, tenant, applications, leases, payments, requiredPayments] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(site, userId),
         GetTenantApplications(userId),
         GetTenantUserLeases(userId),
         GetUserPayments(userId),
+        GetUserRequiredPayments(userId)
     ]);
     // only include applications ready for deposit
     const depositApplications = applications.filter(app => app.processed && !app.deposit_date);
@@ -126,7 +140,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             navPage: "payments",
             tenant: tenant,
             applications: depositApplications,
-            leases: leases
+            leases: leases,
+            requiredLeasePayments: requiredPayments
         }
     };
 }, ironOptions);

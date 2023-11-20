@@ -122,7 +122,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(newApplications.filter(app => app.apartment_number));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
                     processed && await sendResponseEmail(thisApp.email)
                     break;
             }
@@ -140,16 +140,19 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
 
             const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${roomTypeId}`, options)
             switch (resp.status) {
-                case 400:
-                    break;
                 case 204:
+                case 200:
                     // now remove from the applications on this page components
-                    setAllApplications(allApplications.filter(app => !(app.user_id === userId && app.lease_id === leaseId && app.room_type_id === roomTypeId)))
-                    setUnprocessedApplications(allApplications.filter(app => app.processed === 0));
-                    setProcessedApplications(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
-                    setDepositReceivedApplications(allApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(allApplications.filter(app => app.apartment_number));
-                    setWelcomedApplications(allApplications.filter(app => app.lease_date));
+                    const newApplications = allApplications.filter(app => !(app.user_id == userId && app.pending_application == leaseId && app.room_type_id == roomTypeId));
+                    setAllApplications(newApplications);
+                    setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
+                    setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
+                    setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
+                    setWelcomedApplications(newApplications.filter(app => app.lease_date));
+                    break;
+                case 400:
+                default:
                     break;
             }
         } catch (e) {
@@ -177,7 +180,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(newApplications.filter(app => app.apartment_number));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
                     break;
             }
         } catch (e) {
@@ -207,12 +210,12 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     break;
                 case 204:
                     // now remove from the applications on this page components
-                    const newApplications = allApplications.filter(app => app.user_id != data.userId);
+                    const newApplications = await Promise.all(allApplications.map(async (app) => { if (app.user_id === userId) {app.lease_date = new Date().toLocaleDateString(); return app} else {return app}}));
                     setAllApplications(newApplications);
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(newApplications.filter(app => app.apartment_number));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
                     setWelcomedApplications(newApplications.filter(app => app.lease_date));
                     delete resetHooks[data.userId];
                     Object.values(resetHooks).forEach(hook => hook());

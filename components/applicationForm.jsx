@@ -124,6 +124,7 @@ const ApplicationForm = ({
                     className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
                 <ApplicationFormGroups canChangeApplication={canChangeApplication} register={register} errors={errors}
                                        previousRentalLabel={previousRentalLabel} esa_packet={esa_packet} site={site} canEdit={canEdit} application={application}/>
+
                 <PageContent
                     initialContent={rules}
                     site={site}
