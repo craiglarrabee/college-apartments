@@ -23,7 +23,23 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Application = ({site, page, navPage, rules, previous_rental, esa_packet, disclaimer, guaranty, links, canEdit, user, currentLeases, company, tenant, ...restOfProps }) => {
+const Application = ({
+                         site,
+                         page,
+                         navPage,
+                         rules,
+                         previous_rental,
+                         esa_packet,
+                         disclaimer,
+                         guaranty,
+                         links,
+                         canEdit,
+                         user,
+                         currentLeases,
+                         company,
+                         tenant,
+                         ...restOfProps
+                     }) => {
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm(tenant);
     const [applicationError, setApplicationError] = useState();
 
@@ -56,24 +72,29 @@ const Application = ({site, page, navPage, rules, previous_rental, esa_packet, d
     }
 
     return (
-        <Layout site={site}  user={user} wide={false} >
+        <Layout site={site} user={user} wide={false}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 {applicationError &&
-                <Alert variant={"danger"} onClick={() => setApplicationError(null)}>{applicationError}</Alert>
+                    <Alert variant={"danger"} dismissible onClick={() => setApplicationError(null)}>{applicationError}</Alert>
                 }
                 <div className={classNames("main-content")}>
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
                         <Form.Group controlId="email">
                             <Form.Control {...register("email")} type="hidden" value={tenant.email}/>
                         </Form.Group>
-                        {site === "suu" ? <WorkFormGroups canChangeApplication={true} register={register}  errors={errors} /> : null}
+                        {site === "suu" ?
+                            <WorkFormGroups canChangeApplication={true} register={register} errors={errors}/> : null}
                         <div className="h4">Room Type:</div>
                         <br/>
-                        {currentLeases.map(lease => <CurrentLeases canChangeApplication={true} {...lease} register={register} />)}
-                        {errors && errors.lease_room_type_id && <Form.Text className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
-                        <ApplicationFormGroups canChangeApplication={true} register={register} errors={errors} esa_packet={esa_packet} previousRentalLabel={previous_rental} site={site} canEdit={canEdit}/>
+                        {currentLeases.map(lease => <CurrentLeases canChangeApplication={true} {...lease}
+                                                                   register={register}/>)}
+                        {errors && errors.lease_room_type_id && <Form.Text
+                            className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
+                        <ApplicationFormGroups canChangeApplication={true} register={register} errors={errors}
+                                               esa_packet={esa_packet} previousRentalLabel={previous_rental} site={site}
+                                               canEdit={canEdit}/>
                         <PageContent
                             initialContent={rules}
                             site={site}
@@ -87,7 +108,9 @@ const Application = ({site, page, navPage, rules, previous_rental, esa_packet, d
                             name="disclaimer"
                             canEdit={canEdit}/>
                         <div className={classNames("mb-3", "d-inline-flex")}>
-                            <Form.Check className="mb-3" {...register("installments", {setValueAs: value => value !== null ? value.toString() : ""})} type="checkbox" id="installments" value="1" />
+                            <Form.Check
+                                className="mb-3" {...register("installments", {setValueAs: value => value !== null ? value.toString() : ""})}
+                                type="checkbox" id="installments" value="1"/>
                             <span>
                                 <div>
                                     Check here if you want to pay in installments. <br/>
@@ -100,7 +123,8 @@ const Application = ({site, page, navPage, rules, previous_rental, esa_packet, d
                                 </div>
                             </span>
                         </div>
-                        <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                        <div style={{width: "100%"}}
+                             className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                             <Button variant="primary" type="submit" disabled={canEdit || !isDirty}>Submit</Button>
                         </div>
                     </Form>
@@ -126,7 +150,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetTenant(site, user.id)
     ]);
 
-    if(!currentRooms || currentRooms.length === 0) {
+    if (!currentRooms || currentRooms.length === 0) {
         console.error("redirecting to deposit due to no current rooms");
         context.res.writeHead(302, {Location: `/deposit?site=${site}`});
         context.res.end();

@@ -2,13 +2,13 @@ import Layout from "../../../components/layout";
 import Navigation from "../../../components/navigation";
 import Title from "../../../components/title";
 import Footer from "../../../components/footer";
-import React from "react";
+import React, {useState} from "react";
 import {GetDynamicContent} from "../../../lib/db/content/dynamicContent";
 import {GetNavLinks} from "../../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../lib/session/options";
 import classNames from "classnames";
-import {Button, Col, Form, Row} from "react-bootstrap";
+import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import PageContent from "../../../components/pageContent";
 import {useForm} from "react-hook-form";
 import LeaseDefinitionGroup from "../../../components/leaseDefinitionGroup";
@@ -28,7 +28,8 @@ const Lease = ({
                    rent_body, vehicle_header, vehicle_body, lease, signed,
                    lease_body, lease_acceptance, rules, cleaning, repairs, links, canEdit, user, rooms
                , ...restOfProps }) => {
-    const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({mode: "onChange"});
+    const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({values: lease, mode: "onChange"});
+    const [leaseError, setLeaseError] = useState();
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
@@ -59,6 +60,9 @@ const Lease = ({
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} startWithLogin={!user.isLoggedIn} />
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <main>
+                {leaseError &&
+                    <Alert variant={"danger"} dismissible onClick={() => setLeaseError(null)}>{leaseError}</Alert>
+                }
                 <div className={classNames("main-content")}>
                     {user && user.isLoggedIn ?
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
@@ -161,46 +165,46 @@ const Lease = ({
                             name="lease_acceptance"
                             canEdit={canEdit}/>
                         <Row>
-                            <Form.Label column >Resident Name</Form.Label>
+                            <Form.Label column className={!signed && "required"} >Resident Name</Form.Label>
                             <Col xs="9">
-                                <Form.Control{...register("signature", {disabled: signed, required: true, maxLength: 100})} type="text"/>
+                                <Form.Control className={errors && errors.alternate_room_info && classNames("border-danger")} {...register("signature", {disabled: signed, required: true, maxLength: 100})} type="text"/>
                             </Col>
                         </Row>
                         <div>(Signature-Type for electronic signature over internet)</div>
                         <br/>
                         <Row>
-                            <Form.Label column >Email Address</Form.Label>
+                            <Form.Label column className={!signed && "required"} >Email Address</Form.Label>
                             <Col xs="9">
-                                <Form.Control{...register("lease_email", {disabled: signed, required: true, maxLength: 100})} type="text"/>
+                                <Form.Control className={errors && errors.alternate_room_info && classNames("border-danger")} {...register("lease_email", {disabled: signed, required: true, maxLength: 100})} type="text"/>
                             </Col>
                         </Row>
                         <br/>
                         <Row>
                             <Col>
-                                <Form.Control{...register("lease_address", {disabled: signed, required: true, maxLength: 200})} type="text"/>
+                                <Form.Control className={errors && errors.alternate_room_info && classNames("border-danger")} {...register("lease_address", {disabled: signed, required: true, maxLength: 200})} type="text"/>
                             </Col>
                         </Row>
-                        <div>Tenant&apos;s Full Address: Street, City, State and Zip Code (NO P.O. BOXES)</div>
+                        <div className={!signed && "required"} >Tenant&apos;s Full Address: Street, City, State and Zip Code (NO P.O. BOXES)</div>
                         <br/>
                         <Row>
-                            <Form.Label column >Tenant&apos;s Cell Phone with Area Code</Form.Label>
+                            <Form.Label column className={!signed && "required"} >Tenant&apos;s Cell Phone with Area Code</Form.Label>
                             <Col>
-                                <Form.Control{...register("lease_cell_phone", {disabled: signed, required: true, maxLength: 20})} type="text"/>
+                                <Form.Control className={errors && errors.alternate_room_info && classNames("border-danger")} {...register("lease_cell_phone", {disabled: signed, required: true, maxLength: 20})} type="text"/>
                             </Col>
                         </Row>
                         <br/>
                         <div>FOR EMERGENCY PURPOSES</div>
                         <Row>
-                            <Form.Label column >Parents&apos; names</Form.Label>
+                            <Form.Label column className={!signed && "required"} >Parents&apos; names</Form.Label>
                             <Col>
-                                <Form.Control{...register("lease_parent_name", {disabled: signed, required: true, maxLength: 255})} type="text"/>
+                                <Form.Control className={errors && errors.alternate_room_info && classNames("border-danger")} {...register("lease_parent_name", {disabled: signed, required: true, maxLength: 255})} type="text"/>
                             </Col>
                         </Row>
                         <br/>
                         <Row>
-                            <Form.Label column >and cell phone number with area codes</Form.Label>
+                            <Form.Label column className={!signed && "required"} >and cell phone number with area codes</Form.Label>
                             <Col>
-                                <Form.Control{...register("lease_parent_phone", {disabled: signed, required: true, maxLength:50})} type="text"/>
+                                <Form.Control className={errors && errors.alternate_room_info && classNames("border-danger")} {...register("lease_parent_phone", {disabled: signed, required: true, maxLength:50})} type="text"/>
                             </Col>
                         </Row>
                         <br/>
@@ -246,6 +250,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetNavLinks(user, site),
         GetLeaseRooms(context.query.leaseId)
     ]);
+    if (!lease) return {notFound: true};
     const signed = !!lease.signed_date;
     if (!signed) lease.signed_date = today;
     contentRows.forEach(row => content[row.name] = row.content);
