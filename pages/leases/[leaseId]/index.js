@@ -42,10 +42,11 @@ const Lease = ({
 
             const resp = await fetch(`/api/users/${user.id}/leases/${lease.lease_id}?site=${site}`, options)
             switch (resp.status) {
-                case 400:
-                    break;
                 case 204:
                     reset(data);
+                    break;
+                case 400:
+
                     break;
             }
         } catch (e) {

@@ -29,7 +29,7 @@ const Payments = ({site, navPage, links, user, payments, applications, leases, r
     const makePayment = async (leaseId, label, amount, type, number) => {
 
         try {
-            const description = `${type} for ${label}`;
+            const description = type === "payment" ? `${type} ${number} for ${label}` : `${type} for ${label}`;
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -82,7 +82,7 @@ const Payments = ({site, navPage, links, user, payments, applications, leases, r
                                     requiredPayments.map(pmt =>
                                         <Button style={{marginTop: "10px", marginBottom: "10px"}}
                                                 onClick={() => makePayment(pmt.lease_id, pmt.label, pmt.amount, pmt.payment_type, pmt.payment_number)}>
-                                            Pay ${pmt.amount} {pmt.payment_type} for {pmt.label}
+                                            Pay ${pmt.amount} {pmt.payment_type} {pmt.payment_type === "payment" && pmt.payment_number} for {pmt.label}
                                         </Button>
                                     )
                                 }
