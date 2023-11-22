@@ -210,7 +210,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     break;
                 case 204:
                     // now remove from the applications on this page components
-                    const newApplications = await Promise.all(allApplications.map(async (app) => { if (app.user_id === userId) {app.lease_date = new Date().toLocaleDateString(); return app} else {return app}}));
+                    const newApplications = allApplications.map((app) => { if (app.user_id == data.userId) { return {...app, lease_date: new Date().toLocaleDateString()};} else {return app}});
                     setAllApplications(newApplications);
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));

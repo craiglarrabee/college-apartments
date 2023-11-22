@@ -12,7 +12,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
             case "POST":
                 // TODO: make payment
                 // record payment
-                await AddUserPayment(req.query.site, req.query.userId, req.query.leaseId, req.body.type, req.body.amount, req.body.description, req.body.payment_number)
+                await AddUserPayment(req.query.site, req.query.userId, req.query.leaseId, req.body.type, req.body.amount, req.body.description, req.body.payment_number, req.body.semester);
                 if (req.body.type === "deposit") await ReceiveDeposit(req.query.site, req.query.userId, req.query.leaseId);
                 res.status(204).send();
                 return;

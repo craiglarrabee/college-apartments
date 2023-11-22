@@ -26,14 +26,14 @@ const Payments = ({site, navPage, links, user, payments, applications, leases, r
     const [validPayments, setvalidPayments] = useState(payments);
     const [requiredPayments, setRequiredPayments] = useState(requiredLeasePayments.filter(pmt => !pmt.date));
 
-    const makePayment = async (leaseId, label, amount, type, number) => {
+    const makePayment = async (leaseId, semester, amount, type, number) => {
 
         try {
-            const description = type === "payment" ? `${type} ${number} for ${label}` : `${type} for ${label}`;
+            const description = type === "payment" ? `${type} ${number} for ${semester}` : `${type} for ${semester}`;
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({amount: amount, description: description, type: type, payment_number: number}),
+                body: JSON.stringify({amount: amount, description: description, type: type, payment_number: number, semester: semester}),
             }
 
             const resp = await fetch(`/api/users/${user.id}/leases/${leaseId}/payment?site=${site}`, options)
@@ -81,8 +81,8 @@ const Payments = ({site, navPage, links, user, payments, applications, leases, r
                                 {
                                     requiredPayments.map(pmt =>
                                         <Button style={{marginTop: "10px", marginBottom: "10px"}}
-                                                onClick={() => makePayment(pmt.lease_id, pmt.label, pmt.amount, pmt.payment_type, pmt.payment_number)}>
-                                            Pay ${pmt.amount} {pmt.payment_type} {pmt.payment_type === "payment" && pmt.payment_number} for {pmt.label}
+                                                onClick={() => makePayment(pmt.lease_id, pmt.semester, pmt.amount, pmt.payment_type, pmt.payment_number)}>
+                                            Pay ${pmt.amount} {pmt.payment_type} {pmt.payment_type === "payment" && pmt.payment_number} for {pmt.semester}
                                         </Button>
                                     )
                                 }

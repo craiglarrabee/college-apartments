@@ -16,7 +16,6 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 res.status(204).send();
             case "PUT":
                 await UpdateUserLease(req.query.userId, req.query.leaseId, req.body);
-                // now create the required payment entries
                 res.status(204).send();
                 return;
             default:
