@@ -1,6 +1,5 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
-import {AddUser} from "../../lib/db/users/user";
 
 const view = withIronSessionApiRoute(async (req, res) => {
             try {

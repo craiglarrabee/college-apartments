@@ -143,7 +143,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, ...restOfPro
                             className={classNames("text-danger")}>{errors && errors.cell_phone2.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="home_phone">
-                        <Form.Label className="required">Home Phone</Form.Label>
+                        <Form.Label >Home Phone</Form.Label>
                         <Form.Control
                             className={errors && errors.home_phone && classNames("border-danger")} {...register("home_phone", {})}
                             type="tel"
