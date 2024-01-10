@@ -3,7 +3,7 @@ import classNames from "classnames";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 
-export const TenantForm = ({site, userId, tenant, isNewApplication, ...restOfProps }) => {
+export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, ...restOfProps }) => {
 
     const [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? tenant.convicted_crime : false);
     const [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? tenant.charged_crime : false);
@@ -22,7 +22,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, ...restOfPro
 
     const onSubmitPersonal = async (data, event) => {
         event.preventDefault();
-
+        data.leaseId = leaseId;
         try {
             const options = {
                 method: "POST",

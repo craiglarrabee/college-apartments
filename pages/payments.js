@@ -11,6 +11,8 @@ import {ironOptions} from "../lib/session/options";
 import {GetUserPayments} from "../lib/db/users/userPayment";
 import {GetTenant} from "../lib/db/users/tenant";
 import {useForm} from "react-hook-form";
+import {GetTenantApplications} from "../lib/db/users/application";
+import {GetTenantUserLeases} from "../lib/db/users/userLease";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -168,7 +170,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             payments: payments,
             navPage: "payments",
             tenant: tenant,
-            applications: depositApplications,
+            applications: applications,
             leases: leases
         }
     };

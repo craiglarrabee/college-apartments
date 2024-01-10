@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
-import {GetPendingEmailRecipients, MarkEmailRecipientComplete} from "./lib/db/users/bulkEmail";
+import {GetPendingEmailRecipients, MarkEmailRecipientComplete} from "../../../lib/db/users/bulkEmail";
+import {withIronSessionApiRoute} from "iron-session/next";
+import {ironOptions} from "../../../lib/session/options";
 
 const suuTransporter = nodemailer.createTransport({
     host: "uca.snowcollegeapartments.com",
@@ -20,7 +22,8 @@ const snowTransporter = nodemailer.createTransport({
         pass: process.env.SNOW_EMAIL_PASS
     }
 });
-const processBulkEmail = async (site) => {
+const processBulkEmail = withIronSessionApiRoute(async (req, res) => {
+    const site = req.query.site;
     const tenants = await GetPendingEmailRecipients(site);
     const transporter = site === "suu" ? suuTransporter : snowTransporter;
     let resp;
@@ -40,11 +43,12 @@ const processBulkEmail = async (site) => {
         } catch (e) {
             await MarkEmailRecipientComplete(tenant.message_id, tenant.user_id, "failure", e.response || e.message);
             console.log(e.message);
+            res.status(400).send();
             return;
         }
     }
+    res.status(204).send();
     return;
-};
+}, ironOptions);
 
-if (process.argv.length ===3 && ["suu", "snow"].includes(process.argv[2]))
-    await processBulkEmail(process.argv[2]);
+export default processBulkEmail;

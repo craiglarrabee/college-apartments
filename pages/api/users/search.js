@@ -2,7 +2,7 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../lib/session/options";
-import {AddTenant, GetTenant, SearchTenantByName} from "../../../lib/db/users/tenant";
+import {SearchTenantByName} from "../../../lib/db/users/tenant";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.manage.includes(req.query.site)) res.status(403).send();
