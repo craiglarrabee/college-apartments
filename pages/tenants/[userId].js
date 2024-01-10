@@ -186,11 +186,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const [nav, tenant, applications, leases, emails, applicationContentRows, payments, roommates] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(site, userId),
-        GetTenantApplications(userId),
-        GetTenantUserLeases(userId),
-        GetTenantBulkEmails(userId),
+        GetTenantApplications(site, userId),
+        GetTenantUserLeases(site, userId),
+        GetTenantBulkEmails(site, userId),
         GetDynamicContent(site, "application"),
-        GetUserPayments(userId),
+        GetUserPayments(site, userId),
         user && user.isLoggedIn ? GetUserRoomates(user.id) : [],
     ]);
     applicationContentRows.forEach(row => applicationContent[row.name] = row.content);
