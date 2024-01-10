@@ -25,7 +25,7 @@ const brandUrl = process.env.BRAND_URL;
 
 const Lease = ({
                    site, page, lease_header, accommodations_header, accommodations_body, rent_header,
-                   rent_body, vehicle_header, vehicle_body, lease, signed,
+                   rent_body, vehicle_header, vehicle_body, lease, signed, label,
                    lease_body, lease_acceptance, rules, cleaning, repairs, links, canEdit, user, rooms
                , ...restOfProps }) => {
     const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({values: lease, mode: "onChange"});
@@ -65,7 +65,7 @@ const Lease = ({
                 <div className={classNames("main-content")}>
                     {user && user.isLoggedIn ?
                     <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        {canEdit ? <LeaseDefinitionGroup {...lease} register={register} className={classNames("custom-content")}/> : null}
+                        {canEdit ? <LeaseDefinitionGroup {...lease} page={page} label={label} register={register} className={classNames("custom-content")}/> : null}
                         <PageContent
                             initialContent={lease_header}
                             site={site}
@@ -253,17 +253,20 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const signed = !!lease.signed_date;
     if (!signed) lease.signed_date = today;
     contentRows.forEach(row => content[row.name] = row.content);
+    const label = nav.filter(link => link.page === page)[0].label;
 
     return {
         props: {
             lease: {...lease},
             site: site,
-            page: page, ...content,
+            page: page,
+            ...content,
             links: nav,
             canEdit: editing,
             user: {...user},
             rooms: rooms,
-            signed: signed
+            signed: signed,
+            label: label
         }
     };
 }, ironOptions);

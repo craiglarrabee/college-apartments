@@ -10,6 +10,8 @@ const LeaseDefinitionGroup = ({
                                   semester1,
                                   semester2,
                                   id,
+                                  label,
+                                  page,
                                   register = () => {
                                   },
                                   ...restOfProps
@@ -21,7 +23,8 @@ const LeaseDefinitionGroup = ({
     const [endDate, setEndDate] = useState(end_date);
     const [leaseDescription, setLeaseDescription] = useState(description);
     const [leaseSemesters, setLeaseSemesters] = useState(startSemesters);
-    const [depositAmount, setDepositAmount] = useState(deposit_amount || "50");
+    const [depositAmount, setDepositAmount] = useState(deposit_amount || "350");
+    const [linkLabel, setLinkLabel] = useState(label);
 
     const firstYear = startDate ? new Date(startDate).getUTCFullYear() : new Date().getFullYear();
     const secondYear = firstYear + 1;
@@ -36,16 +39,19 @@ const LeaseDefinitionGroup = ({
                 end_date: endDate ? endDate : null,
                 description: leaseDescription,
                 semesters: leaseSemesters,
-                deposit_amount: depositAmount
+                deposit_amount: depositAmount,
+                label: linkLabel
             });
         }, 1500);
 
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [endDate, startDate, leaseDescription, leaseSemesters, depositAmount]);
+    }, [endDate, startDate, leaseDescription, leaseSemesters, depositAmount, linkLabel]);
 
 
     const saveLeaseDefinition = async (data) => {
+        data.page = page;
+        data.site = site;
         try {
             const options = {
                 method: "PUT",
@@ -67,6 +73,16 @@ const LeaseDefinitionGroup = ({
 
     return (
         <>
+            <Row>
+                <Form.Group as={Row} controlId="label" xs={6} style={{width: "100%"}}>
+                    <Form.Label column>Label</Form.Label>
+                    <Col xs={4}>
+                        <Form.Control {...register("label", {required: true, maxLength: 3})}
+                                      onChange={(e) => setLinkLabel(e.target.value)} type="text"
+                                      value={linkLabel}/>
+                    </Col>
+                </Form.Group>
+            </Row>
             <Row>
                 <Form.Group as={Col} controlId="start_date" xs={3}>
                     <Form.Label>Visible From</Form.Label>
