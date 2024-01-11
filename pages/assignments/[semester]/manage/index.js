@@ -83,10 +83,14 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
     const setTenantAssignment = (tenant, apartment_number) => {
         let newAssignments = {...assignments};
         if (tenant.apartment_number) {
-            newAssignments[tenant.apartment_number] = newAssignments[tenant.apartment_number].filter(assignment => assignment.user_id !== tenant.user_id);
+            try {
+                newAssignments[tenant.apartment_number] = newAssignments[tenant.apartment_number].filter(assignment => assignment.user_id !== tenant.user_id);
+            } catch (e) {
+                console.log(e);
+            }
         }
         tenant.apartment_number = ["unassigned_type", "unassigned_others", "unassigned_previous"].includes(apartment_number) ? null : apartment_number;
-        newAssignments[apartment_number].push(tenant);
+        newAssignments[apartment_number]?.push(tenant);
         setAssignments(newAssignments);
     }
 
@@ -227,7 +231,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                                         flexDirection: "column"
                                     }}>
                                         <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomTypeId="type"
+                                                           roomType="type"
                                                            additionalStyle={{backgroundColor: roomTypeColor}}
                                                            title="Tenants applied with matching room type">
                                             {tenants
@@ -240,7 +244,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                                                 )}
                                         </UnassignedTenants>
                                         <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomTypeId="others"
+                                                           roomType="others"
                                                            additionalStyle={{backgroundColor: otherTypeColor}}
                                                            title="Tenants applied with other room type">
                                             {tenants
@@ -253,7 +257,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                                                 )}
                                         </UnassignedTenants>
                                         <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomTypeId="previous"
+                                                           roomType="previous"
                                                            additionalStyle={{backgroundColor: previousColor}}
                                                            title="Previous tenants">
                                             {tenants
