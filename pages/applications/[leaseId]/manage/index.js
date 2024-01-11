@@ -123,7 +123,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
                     setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
-                    processed && await sendResponseEmail(thisApp.email)
+                    if (processed) await sendResponseEmail(thisApp.email)
                     break;
             }
         } catch (e) {
