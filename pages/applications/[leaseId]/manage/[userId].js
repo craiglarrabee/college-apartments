@@ -4,7 +4,7 @@ import Title from "../../../../components/title";
 import Footer from "../../../../components/footer";
 import React from "react";
 import classNames from "classnames";
-import {Tab, Tabs} from "react-bootstrap";
+import {Button, Tab, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
@@ -35,6 +35,14 @@ const Home = ({site, navPage, links, user, tenant, currentLeases, application, u
                         </Tab>
                         <Tab title="Application" eventKey={2} key={2}>
                             <ApplicationForm {...content} application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} roomTypeId={tenant.room_type_id} />
+                        </Tab>
+                        <Tab title="Printable" eventKey={3} key={3}>
+                            <TenantForm tenant={tenant} site={site} userId={userId} leaseId={leaseId} hideButton={true} />
+                            <ApplicationForm {...content} printing={true} application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} roomTypeId={tenant.room_type_id} />
+                            <div style={{width: "100%"}}
+                                 className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                                <Button onClick={() => window.print()}>Print</Button>
+                            </div>
                         </Tab>
                     </Tabs>
                 </div>

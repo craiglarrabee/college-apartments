@@ -8,6 +8,7 @@ import ApplicationFormGroups from "./ApplicationFormGroups";
 import PageContent from "./pageContent";
 
 const ApplicationForm = ({
+                             printing,
                              isTenant,
                              page,
                              navPage,
@@ -34,6 +35,7 @@ const ApplicationForm = ({
     const [error, setError] = useState();
     const [processed, setProcessed] = useState(application.processed);
     const canChangeApplication = !isTenant || !application.processed;
+    const showButtons = canChangeApplication && !printing;
 
     const handleDelete = async () => {
         try {
@@ -124,8 +126,9 @@ const ApplicationForm = ({
                     className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
                 <ApplicationFormGroups canChangeApplication={canChangeApplication} register={register} errors={errors}
                                        previousRentalLabel={previousRentalLabel} esa_packet={esa_packet} site={site} canEdit={canEdit} application={application}/>
-
-                <PageContent
+                {!printing &&
+                    <>
+                    <PageContent
                     initialContent={rules}
                     site={site}
                     page={page}
@@ -137,6 +140,8 @@ const ApplicationForm = ({
                     page={page}
                     name="disclaimer"
                     canEdit={canEdit}/>
+                    </>
+            }
                 <div className={classNames("mb-3", "d-inline-flex")}>
                     <Form.Check
                         disabled={!canChangeApplication}
@@ -154,7 +159,7 @@ const ApplicationForm = ({
                                 </div>
                             </span>
                 </div>
-                {canChangeApplication &&
+                {showButtons &&
                     <div style={{width: "100%"}}
                          className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                         {isDirty || isTenant ?

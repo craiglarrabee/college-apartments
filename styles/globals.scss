@@ -36,7 +36,18 @@ body {
   display: flex;
   justify-content: center;
 }
+@media print {
 
+  html,
+  body {
+    overflow-x: unset !important;
+  }
+
+  button {
+    visibility: hidden;
+  }
+
+}
 li.text-success:before {
   content: "✓\00a0\00a0\00a0";
 }
