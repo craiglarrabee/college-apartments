@@ -3,7 +3,6 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../../lib/session/options";
 import {AddApplication, DeleteApplication, ProcessApplication} from "../../../../../../../lib/db/users/application";
-import {CopyTenantForUserLease} from "../../../../../../../lib/db/users/tenant";
 import {DeleteUserLease} from "../../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
@@ -11,7 +10,14 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "POST":
-                await AddApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
+                for (const lease of req.body.leases) {
+                    const data = {...req.body, lease_id: lease.lease_id, room_type_id: lease.room_type_id}
+                    try {
+                        await AddApplication(data.site, req.query.userId, req.query.leaseId, data);
+                    } catch (e) {
+                        console.log(e);
+                    }
+                }
                 res.status(204).send();
                 return;
             case "PUT":

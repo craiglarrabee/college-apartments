@@ -46,9 +46,10 @@ const Application = ({
     const onSubmit = async (data, event) => {
         event.preventDefault();
         data.site = site;
-        let ids = data.lease_room_type_id.split("_");
-        data.lease_id = ids[0];
-        data.room_type_id = ids[1];
+        data.leases = currentLeases.map(lease => {
+            let ids = data[`lease_${lease.leaseId}_room_type_id`].split("_");
+            return {lease_id: ids[0], room_type_id: ids[1]};
+        }).filter(lease => !!lease.lease_id);
         data.share_info = data.do_not_share_info === "1" ? "0" : "1";
 
         try {
@@ -58,7 +59,7 @@ const Application = ({
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${user.id}/leases/${data.lease_id}/application?site=${site}`, options)
+            const resp = await fetch(`/api/users/${user.id}/applications?site=${site}`, options)
             switch (resp.status) {
                 case 400:
                     setApplicationError("There was an error processing your application. Please try again.");

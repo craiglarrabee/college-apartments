@@ -26,6 +26,7 @@ const ApplicationForm = ({
                              currentLeases,
                              roomTypeId
                          , ...restOfProps }) => {
+    application[`lease_${leaseId}_room_type_id`] = application.lease_room_type_id;
     const {
         register,
         reset,

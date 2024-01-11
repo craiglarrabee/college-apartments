@@ -13,8 +13,7 @@ const CurrentLeases = ({canChangeApplication, register, leaseId, leaseDescriptio
             </div>
             {filteredRooms.map(room => (
                 <>
-                    <FormCheck {...register("lease_room_type_id", {
-                        required: "Please select a Room Type above.",
+                    <FormCheck {...register(`lease_${leaseId}_room_type_id`, {
                         setValueAs: value => value !== null ? value.toString() : ""
                     })} style={{whiteSpace: "normal"}} disabled={!canChangeApplication} type="radio"
                                label={`$${room.room_rent}/sem - ${room.room_desc}`}

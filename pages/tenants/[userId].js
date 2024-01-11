@@ -63,6 +63,7 @@ const Tenant = ({
                                                              userId={userId}
                                                              leaseId={application.lease_id}
                                                              navPage={navPage}
+                                                             roomTypeId={application.room_type_id}
                                                              currentLeases={currentLeases}
                                                              isTenant={isTenant}
                                                              {...applicationContent} />
