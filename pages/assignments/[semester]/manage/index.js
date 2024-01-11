@@ -200,6 +200,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
                                                 <Apartment key={apartment.apartment_number}
                                                            roomType={apartment.room_type}
                                                            id={apartment.apartment_number}
+                                                           apartmentNumber={apartment.apartment_number}
                                                            tenants={tenants}
                                                            data={{
                                                                roomTypeId: apartment.room_type_id,
