@@ -126,8 +126,7 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps }) => {
                             {errors && errors.confirm_password &&
                                 <Form.Text className={classNames("text-danger")}>Must match Password.</Form.Text>}
                         </Form.Group>
-                        <div style={{width: "100%"}}
-                             className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                        <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                             <Button variant="primary" type="submit" disabled={!isDirty}>Next</Button>
                         </div>
                     </Form>

@@ -11,9 +11,48 @@ const handler = withIronSessionApiRoute(async (req, res) => {
         switch (req.method) {
             case "POST":
                 // TODO: make payment
+                const payResp =
+                    {
+                        transactionResponse: {
+                            responseCode: "1",
+                            authCode: "HH5414",
+                            avsResultCode: "P",
+                            cvvResultCode: "",
+                            cavvResultCode: "",
+                            transId: "1234567890",
+                            refTransID: "1234567890",
+                            transHash: "FE3CE11E9F7670D3ECD606E455B7C222",
+                            accountNumber: "XXXX0015",
+                            accountType: "Mastercard",
+                            messages: [
+                                {
+                                    code: "1",
+                                    description: "This transaction has been approved."
+                                }
+                            ]
+                        },
+                        refId: "123456",
+                        messages: {
+                            resultCode: "Ok",
+                            message: [
+                                {
+                                    code: "I00001",
+                                    text: "Successful."
+                                }
+                            ]
+                        }
+                    }
                 // record payment
-                await AddUserPayment(req.query.site, req.query.userId, req.body);
-                res.status(204).send();
+                const data = {...req.body};
+                data.transId = payResp.transactionResponse.transId;
+                data.authCode = payResp.transactionResponse.authCode;
+                data.resultCode = payResp.messages?.resultCode;
+                data.resultMessage = payResp.messages?.message[0]?.text;
+                data.accountType = payResp.transactionResponse.accountType;
+                data.accountNumber = payResp.transactionResponse.accountNumber;
+                await AddUserPayment(req.query.site, req.query.userId, data);
+                res.body = data;
+                res.status(200).send();
                 return;
             case "PUT":
                 await MarkPaymentReviewed(req.body.id);

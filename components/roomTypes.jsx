@@ -1,10 +1,8 @@
-import {Alert, Button, Form, Modal} from "react-bootstrap";
-import React, {useState} from "react";
+import {Button, Form, Modal} from "react-bootstrap";
+import React from "react";
 import classNames from "classnames";
 import {useForm} from "react-hook-form";
-import Router from "next/router";
 import CurrentLeases from "./currentLeases";
-import semester from "../pages/assignments/[semester]";
 
 const RoomTypes = ({show, close, setTenantRoomType, userId, roomTypes, selectedRoomType, selectedLocation, apartment_number, ...restOfProps }) => {
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();

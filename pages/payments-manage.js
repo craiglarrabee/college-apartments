@@ -4,14 +4,11 @@ import Title from "../components/title";
 import Footer from "../components/footer";
 import React, {useState} from "react";
 import classNames from "classnames";
-import {Alert, Button, Tab, Table, Tabs} from "react-bootstrap";
+import {Alert, Button, Table} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetUnreviewedUserPayments, GetUserPayments} from "../lib/db/users/userPayment";
-import {GetTenant} from "../lib/db/users/tenant";
-import {GetTenantApplications} from "../lib/db/users/application";
-import {GetTenantUserLeases} from "../lib/db/users/userLease";
+import {GetUnreviewedUserPayments} from "../lib/db/users/userPayment";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;

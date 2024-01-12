@@ -114,6 +114,7 @@ const Tenant = ({
                                 <thead>
                                 <tr>
                                     <th>Date</th>
+                                    <th>Location</th>
                                     <th>Amount</th>
                                     <th>Type</th>
                                     <th>Description</th>
@@ -122,6 +123,7 @@ const Tenant = ({
                                 <tbody>
                                 {payments.map(row => (<tr key={row.id}>
                                     <td>{row.date}</td>
+                                    <td>{row.location}</td>
                                     <td>{row.amount}</td>
                                     <td>{row.type}</td>
                                     <td>{row.description}</td>
