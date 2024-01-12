@@ -9,14 +9,14 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "GET":
-                res.body = await GetRoomType(req.query.roomTypeId);
+                res.body = await GetRoomType(req.query.site, req.query.roomTypeId);
                 res.status(200).send();
             case "PUT":
                 if (!req.session.user.admin.includes(req.query.site)) {
                     res.status(403).send();
                     return;
                 }
-                await UpdateRoomType(req.query.roomTypeId, req.body);
+                await UpdateRoomType(req.query.site, req.query.roomTypeId, req.body);
                 res.status(204).send();
                 return;
             default:
