@@ -14,11 +14,18 @@ import {useForm} from "react-hook-form";
 import GenericModal from "../components/genericModal";
 import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import ReceiptModal from "../components/receiptModal";
+import Link from "next/link";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
 const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
+
+const locations = {
+    cw: "College Way Apartments",
+    sw: "Stadium Way Apartments",
+    pp: "Park Place Apartments"
+}
 
 
 const Payments = ({site, navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
@@ -99,7 +106,6 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
 
     const makePayment = async (data, event) => {
         event.preventDefault();
-        reset();
         try {
             const options = {
                 method: "POST",
@@ -115,16 +121,19 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                             {
                                 date: new Date().toLocaleDateString(),
                                 user_id: user.id,
-                                amount: data.amount,
-                                description: data.description
+                                amount: amount,
+                                description: data.description,
+                                location: locations[data.location]
                             }
                         ]
                     );
-                    setPaymentInfo("Thank you for your payment.");
+                    setPayment({...data, amount: amount, date: new Date().toLocaleDateString(), location: locations[data.location]});
+                    setShowReceipt(true);
                     reset();
                     break;
                 case 400:
                 default:
+                    setPaymentError(`There was an error processing your payment: ${resp.body}`)
                     break;
             }
         } catch (e) {
@@ -144,8 +153,9 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
 
                 {paymentError &&
                     <Alert dismissible={true} variant={"danger"}
-                           onClick={() => setPaymentError(null)}>{paymentError} Please try again or {<a href="/contact">Contact
-                        us</a>} </Alert>
+                           onClick={() => setPaymentError(null)}>{paymentError} Please try again or {<Link
+                        href="/contact">Contact
+                        us</Link>} </Alert>
                 }
                 {paymentInfo &&
                     <Alert dismissible={true} variant={"primary"}
@@ -221,8 +231,8 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                                     value: true,
                                                     message: "State is required."
                                                 }
-                                            })} type="text" placeholder="State">
-                                                <option value="" selected disabled>Select State</option>
+                                            })} type="text" placeholder="State" defaultValue="">
+                                                <option value="" disabled>Select State</option>
                                                 <option value="AL">Alabama</option>
                                                 <option value="AK">Alaska</option>
                                                 <option value="AZ">Arizona</option>
@@ -334,7 +344,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                                     value: true,
                                                     message: "MM/YYYY is required"
                                                 }, onChange: formatExpDate
-                                            })}  value={expDate} type="text"
+                                            })} value={expDate} type="text"
                                                           placeholder="MM/YYYY"/>
                                             {errors && errors.cc_expire && <Form.Text
                                                 className={classNames("text-danger")}>{errors && errors.cc_expire && errors.cc_expire.message}</Form.Text>}
@@ -371,7 +381,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                                             message: "Please select the location you are making a payment for."
                                                         }
                                                     })} onChange={changeLocation} value={location}>
-                                                        <option value="" disabled={true} selected={true}>Location
+                                                        <option value="" disabled={true}>Location
                                                         </option>
                                                         <option value="cw">College Way</option>
                                                         <option value="sw">Stadium Way</option>
@@ -467,12 +477,14 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {validPayments.map(row => (<tr>
-                                    <td>{row.date}</td>
-                                    <td>{row.location}</td>
-                                    <td>{row.amount}</td>
-                                    <td>{row.description}</td>
-                                </tr>))}
+                                {validPayments.map(row => (
+                                    <tr>
+                                        <td>{row.date}</td>
+                                        <td>{row.location}</td>
+                                        <td>{row.amount}</td>
+                                        <td>{row.description}</td>
+                                    </tr>
+                                ))}
                                 </tbody>
                             </Table>
                         </Tab>

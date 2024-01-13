@@ -10,10 +10,18 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "POST":
-                for (const lease of req.body.leases) {
-                    const data = {...req.body, lease_id: lease.lease_id, room_type_id: lease.room_type_id}
+                if (req.body.leases) {
+                    for (const lease of req.body.leases) {
+                        const data = {...req.body, lease_id: lease.lease_id, room_type_id: lease.room_type_id};
+                        try {
+                            await AddApplication(data.site, req.query.userId, req.query.leaseId, data);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    }
+                } else {
                     try {
-                        await AddApplication(data.site, req.query.userId, req.query.leaseId, data);
+                        await AddApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
                     } catch (e) {
                         console.log(e);
                     }
