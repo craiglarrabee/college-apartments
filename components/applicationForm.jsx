@@ -55,7 +55,7 @@ const ApplicationForm = ({
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -78,7 +78,7 @@ const ApplicationForm = ({
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -107,7 +107,7 @@ const ApplicationForm = ({
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 

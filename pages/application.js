@@ -68,7 +68,7 @@ const Application = ({
                     location = `/deposit?site=${site}`;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 

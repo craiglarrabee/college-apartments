@@ -33,7 +33,7 @@ const Home = ({site, user, links, navPage, ...restOfProps }) => {
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 

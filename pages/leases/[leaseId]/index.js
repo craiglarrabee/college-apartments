@@ -50,7 +50,7 @@ const Lease = ({
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
 

@@ -68,7 +68,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
             }
         } catch (e) {
             setError(`An error occurred sending the application response email. ${e.message}`);
-            console.log(e);
+            console.error(e);
         }
     }
 
@@ -98,7 +98,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
             }
         } catch (e) {
             setError(`An error occurred sending the welcome email. ${e.message}`);
-            console.log(e);
+            console.error(e);
         }
     }
 
@@ -127,7 +127,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -156,7 +156,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -184,7 +184,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -223,7 +223,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
 
     };

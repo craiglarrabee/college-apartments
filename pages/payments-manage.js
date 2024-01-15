@@ -9,6 +9,7 @@ import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {GetUnreviewedUserPayments} from "../lib/db/users/userPayment";
+import * as Constants from "../lib/constants";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -42,7 +43,7 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
             }
         } catch (e) {
             setPaymentError("There was an error processing this payment. Please try again.");
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -52,14 +53,17 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 {paymentError &&
-                    <Alert dismissible onClose={() => setPaymentError(null)} variant={"danger"} onClick={() => setPaymentError(null)}>{paymentError}</Alert>
+                    <Alert dismissible onClose={() => setPaymentError(null)} variant={"danger"}
+                           onClick={() => setPaymentError(null)}>{paymentError}</Alert>
                 }
                 <div className={classNames("main-content")}>
                     <Table>
                         <thead>
                         <tr>
                             <th>Tenant</th>
+                            <th>Trans ID</th>
                             <th>Date</th>
+                            <th>Location</th>
                             <th>Amount</th>
                             <th>Type</th>
                             <th>Number</th>
@@ -68,15 +72,19 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
                         </tr>
                         </thead>
                         <tbody>
-                        {validPayments.map(row => (<tr>
-                            <td><a href={`/tenants/${row.user_id}?site=${site}`} >{row.tenant_name}</a></td>
-                            <td>{row.date}</td>
-                            <td>{row.amount}</td>
-                            <td>{row.type}</td>
-                            <td>{row.payment_number}</td>
-                            <td>{row.description}</td>
-                            <td><Button onClick={() => markPaymentReviewed(row.id, row.lease_id)}>Mark Reviewed</Button></td>
-                        </tr>))}
+                        {validPayments.map(row => (
+                            <tr>
+                                <td><a href={`/tenants/${row.user_id}?site=${site}`}>{row.tenant_name}</a></td>
+                                <td>{row.trans_id}</td>
+                                <td>{row.date}</td>
+                                <td>{Constants.locations[row.location]}</td>
+                                <td>{row.amount}</td>
+                                <td>{row.account_type}</td>
+                                <td>{row.account_number}</td>
+                                <td>{row.description}</td>
+                                <td><Button onClick={() => markPaymentReviewed(row.id, row.lease_id)}>Reviewed</Button></td>
+                            </tr>
+                        ))}
                         </tbody>
                     </Table>
                 </div>

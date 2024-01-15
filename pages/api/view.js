@@ -17,7 +17,7 @@ const view = withIronSessionApiRoute(async (req, res) => {
                 }
             } catch
                 (e) {
-                console.log(e);
+                console.error(e);
             }
         }
         ,

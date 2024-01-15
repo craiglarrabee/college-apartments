@@ -38,7 +38,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
                 await fetch(endpoint, options);
                 location = `/index?site=${site}`;
             } catch (e) {
-                console.log(e);
+                console.error(e);
             }
         }
     }
@@ -56,7 +56,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
                 await fetch(endpoint, options);
                 location = `/index?site=${site}`;
             } catch (e) {
-                console.log(e);
+                console.error(e);
             }
         }
     }
@@ -74,7 +74,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
                 await fetch(endpoint, options);
                 location = `/index?site=${site}`;
             } catch (e) {
-                console.log(e);
+                console.error(e);
             }
         }
     }
@@ -106,7 +106,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
             setNewUser(user);
             location = `/index?site=${site}`;
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 

@@ -47,7 +47,7 @@ const Home = ({site, page, body, links, canEdit, user, company, ...restOfProps }
             }
         } catch (e) {
             alert(`An error occurred sending the email. ${e.message}`);
-            console.log(e);
+            console.error(e);
         }
     }
 

@@ -56,7 +56,7 @@ export const bulkEmail = withIronSessionApiRoute(async (req, res) => {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.log(e);
+        console.error(e);
     }
 }, ironOptions);
 

@@ -38,7 +38,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const newApplication = context.query && context.query.hasOwnProperty("newApplication");
     const site = context.query.site || SITE;
     if (user.isLoggedIn && user.editSite) {
-        console.error("redirecting to application");
+        console.log("redirecting to application");
         context.res.writeHead(302, {Location: `/application?site=${site}&${new Date().getTime()}`});
         context.res.end();
         return {};

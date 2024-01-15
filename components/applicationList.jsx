@@ -148,7 +148,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfPr
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 

@@ -86,7 +86,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
             try {
                 newAssignments[tenant.apartment_number] = newAssignments[tenant.apartment_number].filter(assignment => assignment.user_id !== tenant.user_id);
             } catch (e) {
-                console.log(e);
+                console.error(e);
             }
         }
         tenant.apartment_number = ["unassigned_type", "unassigned_others", "unassigned_previous"].includes(apartment_number) ? null : apartment_number;
@@ -170,7 +170,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
             }
         } catch (e) {
             setError(`An error occurred setting apartment assignment for ${tenant.first_name} ${tenant.last_name}`);
-            console.log(e);
+            console.error(e);
             return false;
         }
     };
@@ -323,6 +323,9 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetPreviousLeaseTenants(site, semester),
         GetVisibleSemesterLeaseRoomsMap(site, semester)
     ]);
+    //filter tenants without deposit for snow
+    //snow uses this page, suu uses /assignments/{semester}/manage/location
+    tenants = tenants.filter(tenant => tenant.deposit_date !== null)
     tenants = [...tenants, ...previousTenants];
     return {
         props: {

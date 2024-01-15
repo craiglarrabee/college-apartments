@@ -21,7 +21,7 @@ const manage = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        console.log(e);
+        console.error(e);
     }
 }, ironOptions);
 

@@ -40,7 +40,7 @@ const Lease = ({site, page, links, user, leaseId, leases, ...restOfProps }) => {
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 

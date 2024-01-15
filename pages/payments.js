@@ -2,7 +2,7 @@ import Layout from "../components/layout";
 import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import classNames from "classnames";
 import {Alert, Button, Col, Form, Row, Tab, Table, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
@@ -15,17 +15,12 @@ import GenericModal from "../components/genericModal";
 import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import ReceiptModal from "../components/receiptModal";
 import Link from "next/link";
+import * as Constants from "../lib/constants";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
 const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
-
-const locations = {
-    cw: "College Way Apartments",
-    sw: "Stadium Way Apartments",
-    pp: "Park Place Apartments"
-}
 
 
 const Payments = ({site, navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
@@ -123,22 +118,23 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                 user_id: user.id,
                                 amount: amount,
                                 description: data.description,
-                                location: locations[data.location]
+                                location: data.location
                             }
                         ]
                     );
-                    setPayment({...data, amount: amount, date: new Date().toLocaleDateString(), location: locations[data.location]});
+                    setPayment({...data, amount: amount, date: new Date().toLocaleDateString(), location: Constants.locations[data.location]});
                     setShowReceipt(true);
                     reset();
                     break;
                 case 400:
                 default:
-                    setPaymentError(`There was an error processing your payment: ${resp.body}`)
+                    const err = JSON.stringify(await resp.json());
+                    setPaymentError(`There was an error processing your payment: ${err}`)
                     break;
             }
         } catch (e) {
             setPaymentError("There was an error processing your payment.");
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -315,9 +311,9 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                     <hr/>
                                     <Form.Text>Credit Card Information</Form.Text>
                                     <Row>
-                                        <Form.Group as={Col} xs={5} className="mb-3" controlId="cc_number">
+                                        <Form.Group as={Col} xs={5} className="mb-3" controlId="cc_number" >
                                             <Form.Label className="required">Card Number</Form.Label>
-                                            <Form.Control maxLength={19}
+                                            <Form.Control maxLength={19} autoComplete="cc-number"
                                                           className={errors && errors.cc_number && classNames("border-danger")} {...register("cc_number", {
                                                     pattern: {
                                                         value: /\d{4} \d{4} \d{4} \d{4}/,
@@ -334,7 +330,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                         </Form.Group>
                                         <Form.Group as={Col} xs={3} className="mb-3" controlId="cc_expire">
                                             <Form.Label className="required">Expires</Form.Label>
-                                            <Form.Control maxLength={7}
+                                            <Form.Control maxLength={7} autoComplete="cc-exp"
                                                           className={errors && errors.cc_expire && classNames("border-danger")} {...register("cc_expire", {
                                                 pattern: {
                                                     value: /\d{2}\/\d{4}/,
@@ -350,12 +346,12 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                                 className={classNames("text-danger")}>{errors && errors.cc_expire && errors.cc_expire.message}</Form.Text>}
                                         </Form.Group>
                                         <Form.Group as={Col} xs={3} className="mb-3" controlId="cc_code">
-                                            <Form.Label className="required">CVV</Form.Label>
+                                            <Form.Label className="required">CCV</Form.Label>
                                             <Form.Control maxLength={4}
                                                           className={errors && errors.cc_code && classNames("border-danger")} {...register("cc_code", {
                                                 pattern: {
                                                     value: /\d{3,4}/,
-                                                    message: "A Valid CVV is required."
+                                                    message: "A Valid CCV is required."
                                                 },
                                                 required: {
                                                     value: true,
@@ -480,7 +476,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                 {validPayments.map(row => (
                                     <tr>
                                         <td>{row.date}</td>
-                                        <td>{row.location}</td>
+                                        <td>{Constants.locations[row.location]}</td>
                                         <td>{row.amount}</td>
                                         <td>{row.description}</td>
                                     </tr>
@@ -499,9 +495,9 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = context.query.site || SITE;
     const user = context.req.session.user;
-    const userId = user.id;
 
     if (!user.isLoggedIn) return {notFound: true};
+    const userId = user.id;
     const [nav, tenant, payments, privacyContent, refundContent] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(site, userId),

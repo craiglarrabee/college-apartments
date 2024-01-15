@@ -2,48 +2,19 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
-import {ReceiveDeposit} from "../../../../lib/db/users/application";
 import {AddUserPayment, MarkPaymentReviewed} from "../../../../lib/db/users/userPayment";
+import chargeCreditCard from "../../../../lib/payment/chargeCreditCard";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "POST":
-                // TODO: make payment
-                const payResp =
-                    {
-                        transactionResponse: {
-                            responseCode: "1",
-                            authCode: "HH5414",
-                            avsResultCode: "P",
-                            cvvResultCode: "",
-                            cavvResultCode: "",
-                            transId: "1234567890",
-                            refTransID: "1234567890",
-                            transHash: "FE3CE11E9F7670D3ECD606E455B7C222",
-                            accountNumber: "XXXX0015",
-                            accountType: "Mastercard",
-                            messages: [
-                                {
-                                    code: "1",
-                                    description: "This transaction has been approved."
-                                }
-                            ]
-                        },
-                        refId: "123456",
-                        messages: {
-                            resultCode: "Ok",
-                            message: [
-                                {
-                                    code: "I00001",
-                                    text: "Successful."
-                                }
-                            ]
-                        }
-                    }
-                // record payment
                 const data = {...req.body};
+                // TODO: make payment
+                const payResp = await chargeCreditCard(data);
+
+                // record payment
                 data.transId = payResp.transactionResponse.transId;
                 data.authCode = payResp.transactionResponse.authCode;
                 data.resultCode = payResp.messages?.resultCode;
@@ -65,7 +36,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.log(e);
+        console.error(e);
     }
 }, ironOptions);
 

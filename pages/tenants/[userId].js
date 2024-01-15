@@ -4,7 +4,7 @@ import Title from "../../components/title";
 import Footer from "../../components/footer";
 import React from "react";
 import classNames from "classnames";
-import {Tab, Table, Tabs} from "react-bootstrap";
+import {Button, Tab, Table, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
@@ -19,6 +19,7 @@ import {GetDynamicContent} from "../../lib/db/content/dynamicContent";
 import {GetTenantBulkEmails} from "../../lib/db/users/bulkEmail";
 import {GetUserPayments} from "../../lib/db/users/userPayment";
 import {UserApartment} from "../../components/assignments";
+import * as Constants from "../../lib/constants";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -32,7 +33,7 @@ const Tenant = ({
                     emails, applicationContent, payments, roommates, tab
                     , ...restOfProps
                 }) => {
-    const roommateSemesters = roommates.map(it =>  it.semester).reduce(function (acc, curr) {
+    const roommateSemesters = roommates.map(it => it.semester).reduce(function (acc, curr) {
         if (!acc.includes(curr))
             acc.push(curr);
         return acc;
@@ -94,43 +95,51 @@ const Tenant = ({
                                 })}
                             </Tabs>
                         </Tab>
-                        { roommateSemesters.length > 0 &&
-                        <Tab title="Roommates" eventKey={3} key={3}>
-                            <Tabs>
-                                {
-                                    roommateSemesters.map(sem =>
-                                        <Tab title={sem} eventKey={sem.replace(" ", "_")} key={sem.replace(" ", "_")}>
-                                            {
-                                                <UserApartment data={roommates.filter(tenant => sem === tenant.semester)}/>
-                                            }
-                                        </Tab>)
-                                }
-                            </Tabs>
-                        </Tab>
+                        {roommateSemesters.length > 0 &&
+                            <Tab title="Roommates" eventKey={3} key={3}>
+                                <Tabs>
+                                    {
+                                        roommateSemesters.map(sem =>
+                                            <Tab title={sem} eventKey={sem.replace(" ", "_")}
+                                                 key={sem.replace(" ", "_")}>
+                                                {
+                                                    <UserApartment
+                                                        data={roommates.filter(tenant => sem === tenant.semester)}/>
+                                                }
+                                            </Tab>)
+                                    }
+                                </Tabs>
+                            </Tab>
                         }
                         {payments.length > 0 &&
-                        <Tab title="Payments" eventKey={4} key={4}>
-                            <Table>
-                                <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Location</th>
-                                    <th>Amount</th>
-                                    <th>Type</th>
-                                    <th>Description</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {payments.map(row => (<tr key={row.id}>
-                                    <td>{row.date}</td>
-                                    <td>{row.location}</td>
-                                    <td>{row.amount}</td>
-                                    <td>{row.type}</td>
-                                    <td>{row.description}</td>
-                                </tr>))}
-                                </tbody>
-                            </Table>
-                        </Tab>
+                            <Tab title="Payments" eventKey={4} key={4}>
+                                <Table>
+                                    <thead>
+                                    <tr>
+                                        <th>Trans ID</th>
+                                        <th>Date</th>
+                                        <th>Location</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
+                                        <th>Number</th>
+                                        <th>Description</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {payments.map(row => (
+                                        <tr>
+                                            <td>{row.trans_id}</td>
+                                            <td>{row.date}</td>
+                                            <td>{Constants.locations[row.location]}</td>
+                                            <td>{row.amount}</td>
+                                            <td>{row.account_type}</td>
+                                            <td>{row.account_number}</td>
+                                            <td>{row.description}</td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </Table>
+                            </Tab>
                         }
                         {!isTenant &&
                             <Tab title="Bulk Emails" eventKey={5} key={5}>

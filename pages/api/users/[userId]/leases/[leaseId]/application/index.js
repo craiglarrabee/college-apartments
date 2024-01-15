@@ -16,14 +16,14 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         try {
                             await AddApplication(data.site, req.query.userId, req.query.leaseId, data);
                         } catch (e) {
-                            console.log(e);
+                            console.error(e);
                         }
                     }
                 } else {
                     try {
                         await AddApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
                     } catch (e) {
-                        console.log(e);
+                        console.error(e);
                     }
                 }
                 res.status(204).send();
@@ -44,7 +44,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.log(e);
+        console.error(e);
     }
 }, ironOptions);
 

@@ -191,7 +191,7 @@ const Assignments = ({
             }
         } catch (e) {
             setError(`An error occurred setting apartment assignment for ${tenant.first_name} ${tenant.last_name}`);
-            console.log(e);
+            console.error(e);
             return false;
         }
     };

@@ -43,7 +43,7 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
             }
 
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -146,7 +146,7 @@ function Uploader({handleClose, title, show, site, page}) {
             }
 
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
     const uploadImage = async (data, uri, fileName, fileType) => {
@@ -174,7 +174,7 @@ function Uploader({handleClose, title, show, site, page}) {
             }
 
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 

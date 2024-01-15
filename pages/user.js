@@ -62,7 +62,7 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps }) => {
                     break;
                 case 200:
                 case 204:
-                    console.error("redirecting to tenant due to user form submission");
+                    console.log("redirecting to tenant due to user form submission");
                     await fetch(`/api/login?site=${site}`, options);
                     location = `/tenant?newApplication&site=${site}&form`;
             }
@@ -141,7 +141,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const site = context.query.site || SITE;
     if (user?.isLoggedIn) {
-        console.error("redirecting to tenant");
+        console.log("redirecting to tenant");
         context.res.writeHead(302, {Location: `/tenant?newApplication&site=${site}&${new Date().getTime()}`});
         context.res.end();
         return {};

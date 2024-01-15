@@ -23,7 +23,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 
@@ -43,7 +43,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
                     break;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     };
 
