@@ -254,6 +254,9 @@ span.sub-brand {
   td {
     visibility:hidden;
   }
+  div.modal-body td {
+    visibility: visible;
+  }
   .sidebar-menu, .main-footer, .navbar {
     display:none !important;
   }

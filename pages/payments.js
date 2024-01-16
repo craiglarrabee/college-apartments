@@ -6,8 +6,6 @@ import React, {useState} from "react";
 import classNames from "classnames";
 import {Alert, Button, Col, Form, Row, Tab, Table, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
-import {withIronSessionSsr} from "iron-session/next";
-import {ironOptions} from "../lib/session/options";
 import {GetUserPayments} from "../lib/db/users/userPayment";
 import {GetTenant} from "../lib/db/users/tenant";
 import {useForm} from "react-hook-form";
@@ -16,11 +14,15 @@ import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import ReceiptModal from "../components/receiptModal";
 import Link from "next/link";
 import * as Constants from "../lib/constants";
+import {withIronSessionSsr} from "iron-session/next";
+import {ironOptions} from "../lib/session/options";
+import AcknowledgePaymentModal from "../components/acknowledgePaymentModal";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
 const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
+const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
 
 
 const Payments = ({site, navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
@@ -40,9 +42,12 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
     const [showPrivacy, setShowPrivacy] = useState(false);
     const [showRefund, setShowRefund] = useState(false);
     const [showReceipt, setShowReceipt] = useState(false);
-    const [location, setLocation] = useState(site === "snow" ? "pp" : "");
-    const [selectedPrivacyContent, setSelectedPrivacyContent] = useState(privacyContent[location]);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [aptLocation, setAptLocation] = useState(site === "snow" ? "pp" : "");
+    const [selectedPrivacyContent, setSelectedPrivacyContent] = useState(privacyContent[aptLocation]);
     const [amount, setAmount] = useState("");
+    const [surcharge, setSurcharge] = useState("");
+    const [total, setTotal] = useState("");
     const [payment, setPayment] = useState("");
 
     const formatCardNumber = (event) => {
@@ -90,22 +95,46 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
     }
 
     const formatAmount = (event) => {
-        if (!event.target.value.includes("."))
-            setAmount(`${event.target.value}.00`);
+        let amt = event.target.value.replaceAll(",", "").replace("$", "");
+        let chg = getSurcharge(amt);
+
+        setAmount(currency.format(amt));
+        setSurcharge(currency.format(chg));
+
+        setTotal(currency.format((1 * amt) + (chg)));
+    }
+
+    const getSurcharge = (amt) => {
+        if (site === "snow") {
+            return Math.round(amt * 2.25) / 100;
+        }
+        return 0;
     }
 
     const changeLocation = (event) => {
-        setLocation(event.currentTarget.value);
+        setAptLocation(event.currentTarget.value);
         setSelectedPrivacyContent(privacyContent[event.currentTarget.value]);
     };
 
-    const makePayment = async (data, event) => {
+    const submitForm = async (data, event) => {
         event.preventDefault();
+        // remove dollar formatting and recalculate total deal with race condition
+        data.amount = data.amount.replaceAll(",", "").replace("$", "");
+        data.surcharge = getSurcharge(data.amount);
+        data.total = (1*data.amount) + (1*data.surcharge);
+
+        // now store form data for use after confirmation
+        setPayment({...data, date: new Date().toLocaleDateString()});
+        // now show confirmation dialog
+        setShowConfirmation(true);
+    };
+
+    const makePayment = async () => {
         try {
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data),
+                body: JSON.stringify(payment),
             }
 
             const resp = await fetch(`/api/users/${user.id}/payment?site=${site}`, options)
@@ -116,15 +145,15 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                             {
                                 date: new Date().toLocaleDateString(),
                                 user_id: user.id,
-                                amount: amount,
-                                description: data.description,
-                                location: data.location
+                                amount: payment.amount,
+                                surcharge: payment.surcharge,
+                                total: payment.total,
+                                description: payment.description,
+                                location: payment.location
                             }
                         ]
                     );
-                    setPayment({...data, amount: amount, date: new Date().toLocaleDateString(), location: Constants.locations[data.location]});
                     setShowReceipt(true);
-                    reset();
                     break;
                 case 400:
                 default:
@@ -139,32 +168,36 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
     };
 
     return (
-        <Layout site={site} user={user} wide={false}>
+        <Layout site={site} user={user} wide={true}>
             <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <main>
                 <GenericModal content={selectedPrivacyContent} close={() => setShowPrivacy(false)} show={showPrivacy}/>
                 <GenericModal content={refundContent} close={() => setShowRefund(false)} show={showRefund}/>
-                <ReceiptModal content={payment} close={() => setShowReceipt(false)} show={showReceipt}/>
+                <ReceiptModal content={payment} site={site} close={() => {location = `/index?site=${site}`; setShowReceipt(false);}} show={showReceipt}/>
+                <AcknowledgePaymentModal content={payment} acknowledge={async () => {setShowConfirmation(false); await makePayment();}} site={site} close={() => setShowConfirmation(false)} show={showConfirmation}/>
 
-                {paymentError &&
-                    <Alert dismissible={true} variant={"danger"}
-                           onClick={() => setPaymentError(null)}>{paymentError} Please try again or {<Link
-                        href="/contact">Contact
-                        us</Link>} </Alert>
-                }
                 {paymentInfo &&
                     <Alert dismissible={true} variant={"primary"}
                            onClick={() => setPaymentInfo(null)}>{paymentInfo}</Alert>
                 }
                 <div className={classNames("main-content")}>
+                    {site === "snow" &&
+                        <Alert>For those using a Credit Card or Debit Card to make online payments, a surcharge of 2.25% will be added on to any such payment to partially offset the cost of processing fees charged by the Credit Card and Debit card processing companies.  No such charge will be added to checks sent by mail or to Debit Cards processed in person at the Landlord's office on the office machine as such Debit Card transactions do not incur a processing fee. </Alert>
+                    }
                     <Tabs defaultActiveKey={0}>
                         <Tab title="Make a payment" eventKey={0} key={0}>
                             <div style={{
                                 marginTop: "30px",
                                 display: "grid"
                             }}>
-                                <Form onSubmit={handleSubmit(makePayment)} method="post">
+                                {paymentError &&
+                                    <Alert dismissible={true} variant={"danger"}
+                                           onClick={() => setPaymentError(null)}>{paymentError} Please verify your data and try again or {<Link
+                                        href="/contact">Contact
+                                        us</Link>} </Alert>
+                                }
+                                <Form onSubmit={handleSubmit(submitForm)} method="post">
                                     <Form.Text>Card Holder Information</Form.Text>
                                     <Row>
                                         <Form.Group as={Col} className="mb-3" controlId="first_name">
@@ -311,12 +344,12 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                     <hr/>
                                     <Form.Text>Credit Card Information</Form.Text>
                                     <Row>
-                                        <Form.Group as={Col} xs={5} className="mb-3" controlId="cc_number" >
+                                        <Form.Group as={Col} xs={5} className="mb-3" controlId="cc_number">
                                             <Form.Label className="required">Card Number</Form.Label>
                                             <Form.Control maxLength={19} autoComplete="cc-number"
                                                           className={errors && errors.cc_number && classNames("border-danger")} {...register("cc_number", {
                                                     pattern: {
-                                                        value: /\d{4} \d{4} \d{4} \d{4}/,
+                                                        value: /\d{4} \d{4} \d{4} \d{3,4}/,
                                                         message: "Valid Card Number is required"
                                                     },
                                                     required: {
@@ -376,7 +409,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                                             value: true,
                                                             message: "Please select the location you are making a payment for."
                                                         }
-                                                    })} onChange={changeLocation} value={location}>
+                                                    })} onChange={changeLocation} value={aptLocation}>
                                                         <option value="" disabled={true}>Location
                                                         </option>
                                                         <option value="cw">College Way</option>
@@ -389,7 +422,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                             <>
                                                 <Form.Group as={Col} xs={4} className="mb-3" controlId="location">
                                                     <Form.Control as="input" type="hidden"
-                                                                  value={location} {...register("location")} />
+                                                                  value={aptLocation} {...register("location")} />
                                                 </Form.Group>
                                             </>
                                         }
@@ -410,13 +443,14 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                                 className={classNames("text-danger")}>{errors && errors.description.message}</Form.Text>}
                                         </Form.Group>
                                     </Row>
+                                    <br/>
                                     <Row>
-                                        <Form.Label className="required" as={Col} xs={2}>Amount</Form.Label>
+                                        <Form.Label className="required" as={Col} xs={1}>Amount</Form.Label>
                                         <Form.Group as={Col} xs={4} controlId="amount">
                                             <Form.Control
                                                 className={errors && errors.amount && classNames("border-danger")} {...register("amount", {
                                                 pattern: {
-                                                    value: /^[1-9]\d{0,4}\.{0,1}\d{0,2}$/,
+                                                    value: /^\$?\d{0,2},?\d{0,3}(\.?\d{0,2})?$/,
                                                     message: "Must be a valid amount between $1.00 and $99999.99"
                                                 },
                                                 required: {
@@ -431,9 +465,30 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                             {errors && errors.amount && <Form.Text
                                                 className={classNames("text-danger")}>{errors && errors.amount.message}</Form.Text>}
                                         </Form.Group>
+                                        {site === "snow" ?
+                                            <>
+                                                <Form.Label as={Col} xs={1}
+                                                            style={{marginRight: "5px"}}>Surcharge</Form.Label>
+                                                <Form.Group as={Col} xs={2} controlId="surcharge">
+                                                    <Form.Control
+                                                        readOnly
+                                                        {...register("surcharge")} type="text"
+                                                        value={surcharge}/>
+                                                </Form.Group>
+                                            </> :
+                                            <>
+                                            </>
+                                        }
+                                        <Form.Label as={Col} xs={1}>Total</Form.Label>
+                                        <Form.Group as={Col} xs={2} controlId="total">
+                                            <Form.Control
+                                                readOnly
+                                                {...register("total")} type="text"
+                                                value={total}/>
+                                        </Form.Group>
                                     </Row>
                                     <Row>
-                                        {location &&
+                                        {aptLocation &&
                                             <div className="align-content-center">
                                                 <Form.Text>With your payment, you agree to our
                                                     <Button style={{
@@ -467,8 +522,14 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                 <thead>
                                 <tr>
                                     <th>Date</th>
-                                    <th>Location</th>
-                                    <th>Amount</th>
+                                    {site === "snow" &&
+                                        <>
+                                            <th>Location</th>
+                                            <th>Amount</th>
+                                        </>
+                                    }
+                                    <th>Surcharge</th>
+                                    <th>Total</th>
                                     <th>Description</th>
                                 </tr>
                                 </thead>
@@ -477,7 +538,13 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                     <tr>
                                         <td>{row.date}</td>
                                         <td>{Constants.locations[row.location]}</td>
-                                        <td>{row.amount}</td>
+                                        {site === "snow" &&
+                                            <>
+                                                <td>{row.amount}</td>
+                                                <td>{row.surcharge}</td>
+                                            </>
+                                        }
+                                        <td>{row.total}</td>
                                         <td>{row.description}</td>
                                     </tr>
                                 ))}
