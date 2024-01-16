@@ -83,9 +83,7 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
                                         // everything else in thes folders are videos
 
                                         image.name !== null ?
-                                            <img role="carousel-image" src={`/upload/images/${site}/${page}/${image.name}`}
-                                                 alt={image.name}
-                                                 width={"720px"}/> :
+                                            <img role="carousel-image" src={`/upload/images/${site}/${page}/${image.name}`} alt={image.name} width={"720px"}/> : // eslint-disable-line @next/next/no-img-element
                                             <></>
                                     }
                                     <Carousel.Caption>

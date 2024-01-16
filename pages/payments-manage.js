@@ -49,8 +49,8 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
         }
     };
 
-    useEffect(async () => {
-        if (deleteData.description && deleteData.paymentId) {
+    useEffect( () => {
+        async function process() {
             try {
                 const options = {
                     method: "DELETE",
@@ -62,7 +62,9 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
                 switch (resp.status) {
                     case 204:
                     case 200:
+                        const payment = {...(validPayments.find(payment => payment.id === deleteData.paymentId)), reason_deleted: deleteData.description, date_deleted: new Date().toLocaleDateString()};;
                         setvalidPayments(validPayments.filter(payment => payment.id !== deleteData.paymentId));
+                        setvalidDeletedPayments([...validDeletedPayments, payment]);
                         break;
                     case 400:
                     default:
@@ -74,7 +76,11 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
                 console.error(e);
             }
         }
-    }, [deleteData.description]);
+        if (deleteData.description && deleteData.paymentId) {
+            process();
+        }
+
+    }, [deleteData.description]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Layout site={site} user={user} wide={true}>

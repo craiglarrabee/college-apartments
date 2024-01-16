@@ -47,8 +47,8 @@ const Tenant = ({
 
     tab = (tab === "Roommates") ? 3 : 0;
 
-    useEffect(async () => {
-        if (deleteData.description && deleteData.paymentId) {
+    useEffect( () => {
+        async function process() {
             try {
                 const options = {
                     method: "DELETE",
@@ -74,7 +74,10 @@ const Tenant = ({
                 console.error(e);
             }
         }
-    }, [deleteData.description]);
+        if (deleteData.description && deleteData.paymentId) {
+            process();
+        }
+    }, [deleteData.description]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Layout site={site} user={user} wide={!isTenant}>
