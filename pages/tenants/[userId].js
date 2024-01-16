@@ -2,9 +2,9 @@ import Layout from "../../components/layout";
 import Navigation from "../../components/navigation";
 import Title from "../../components/title";
 import Footer from "../../components/footer";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import classNames from "classnames";
-import {Button, Tab, Table, Tabs} from "react-bootstrap";
+import {Alert, Button, Tab, Table, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
@@ -17,9 +17,10 @@ import {GetTenantUserLeases} from "../../lib/db/users/userLease";
 import LeaseForm from "../../components/leaseForm";
 import {GetDynamicContent} from "../../lib/db/content/dynamicContent";
 import {GetTenantBulkEmails} from "../../lib/db/users/bulkEmail";
-import {GetUserPayments} from "../../lib/db/users/userPayment";
+import {GetUserDeletedPayments, GetUserPayments} from "../../lib/db/users/userPayment";
 import {UserApartment} from "../../components/assignments";
 import * as Constants from "../../lib/constants";
+import GenericExplanationModal from "../../components/genericExplanationModal";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -29,7 +30,7 @@ const brandUrl = process.env.BRAND_URL;
 
 const Tenant = ({
                     isTenant, site, navPage, links, user, tenant, currentLeasesMap,
-                    applications, userId, leases, leaseContentMap,
+                    applications, userId, leases, leaseContentMap, deletedPayments,
                     emails, applicationContent, payments, roommates, tab
                     , ...restOfProps
                 }) => {
@@ -39,7 +40,41 @@ const Tenant = ({
         return acc;
     }, []);
 
+    const [validPayments, setvalidPayments] = useState(payments);
+    const [validDeletedPayments, setvalidDeletedPayments] = useState(deletedPayments);
+    const [paymentError, setPaymentError] = useState();
+    const [deleteData, setDeleteData] = useState({show: false, description: null});
+
     tab = (tab === "Roommates") ? 3 : 0;
+
+    useEffect(async () => {
+        if (deleteData.description && deleteData.paymentId) {
+            try {
+                const options = {
+                    method: "DELETE",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({id: deleteData.paymentId, reason: deleteData.description}),
+                }
+
+                const resp = await fetch(`/api/users/${user.id}/payment?site=${site}`, options)
+                switch (resp.status) {
+                    case 204:
+                    case 200:
+                        const payment = {...(validPayments.find(payment => payment.id === deleteData.paymentId)), reason_deleted: deleteData.description, date_deleted: new Date().toLocaleDateString()};;
+                        setvalidPayments(validPayments.filter(payment => payment.id !== deleteData.paymentId));
+                        setvalidDeletedPayments([...validDeletedPayments, payment]);
+                        break;
+                    case 400:
+                    default:
+                        setPaymentError("There was an error removing this payment. Please try again.");
+                        break;
+                }
+            } catch (e) {
+                setPaymentError("There was an error removing this payment. Please try again.");
+                console.error(e);
+            }
+        }
+    }, [deleteData.description]);
 
     return (
         <Layout site={site} user={user} wide={!isTenant}>
@@ -111,8 +146,15 @@ const Tenant = ({
                                 </Tabs>
                             </Tab>
                         }
-                        {payments.length > 0 &&
+                        {payments?.length > 0 &&
                             <Tab title="Payments" eventKey={4} key={4}>
+                                {paymentError &&
+                                    <Alert dismissible onClose={() => setPaymentError(null)} variant={"danger"}
+                                           onClick={() => setPaymentError(null)}>{paymentError}</Alert>
+                                }
+                                {!isTenant &&
+                                    <GenericExplanationModal data={deleteData} accept={(description) => setDeleteData({...deleteData, show: false, description: description})} close={() => setDeleteData({...deleteData, show: false})}></GenericExplanationModal>
+                                }
                                 <Table>
                                     <thead>
                                     <tr>
@@ -123,10 +165,11 @@ const Tenant = ({
                                         <th>Type</th>
                                         <th>Number</th>
                                         <th>Description</th>
+                                        <th></th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {payments.map(row => (
+                                    {validPayments.map(row => (
                                         <tr>
                                             <td>{row.trans_id}</td>
                                             <td>{row.date}</td>
@@ -135,6 +178,36 @@ const Tenant = ({
                                             <td>{row.account_type}</td>
                                             <td>{row.account_number}</td>
                                             <td>{row.description}</td>
+                                            <td><Button onClick={() => setDeleteData({show: true, paymentId: row.id})}>Delete</Button></td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </Table>
+                            </Tab>
+                        }
+                        {!isTenant && validDeletedPayments?.length > 0 &&
+                            <Tab title="Deleted Payments" eventKey={5} key={5}>
+                                <Table>
+                                    <thead>
+                                    <tr>
+                                        <th>Trans ID</th>
+                                        <th>Date Deleted</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
+                                        <th>Number</th>
+                                        <th>Reason</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {validDeletedPayments.map(row => (
+                                        <tr>
+                                            <td>{row.trans_id}</td>
+                                            <td>{row.date_deleted}</td>
+                                            <td>{row.amount}</td>
+                                            <td>{row.account_type}</td>
+                                            <td>{row.account_number}</td>
+                                            <td>{row.reason_deleted}</td>
                                         </tr>
                                     ))}
                                     </tbody>
@@ -142,7 +215,7 @@ const Tenant = ({
                             </Tab>
                         }
                         {!isTenant &&
-                            <Tab title="Bulk Emails" eventKey={5} key={5}>
+                            <Tab title="Bulk Emails" eventKey={6} key={6}>
                                 <Tabs>
                                     {emails.map(email =>
                                         <Tab title={email.semester} eventKey={email.semester.replace(" ", "_")}
@@ -195,7 +268,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const [nav, tenant, applications, leases, emails, applicationContentRows, payments, roommates] = await Promise.all([
+    const [nav, tenant, applications, leases, emails, applicationContentRows, payments, deletedPayments, roommates] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(site, userId),
         GetTenantApplications(site, userId),
@@ -203,6 +276,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetTenantBulkEmails(site, userId),
         GetDynamicContent(site, "application"),
         GetUserPayments(site, userId),
+        GetUserDeletedPayments(site, userId),
         user && user.isLoggedIn ? GetUserRoomates(user.id) : [],
     ]);
     applicationContentRows.forEach(row => applicationContent[row.name] = row.content);
@@ -238,6 +312,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             emails: emails,
             applicationContent: applicationContent,
             payments: payments,
+            deletedPayments: deletedPayments,
             roommates: roommates,
             tab: context.query.tab || null
         }

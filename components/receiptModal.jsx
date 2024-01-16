@@ -5,13 +5,10 @@ import * as Constants from "../lib/constants";
 
 const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
 const ReceiptModal = ({show, close, content, site, ...restOfProps}) => {
-    const handleClose = () => {
-        close();
-    };
 
     return (
         <Modal show={show}
-               onHide={handleClose}
+               onHide={close}
                size="xl"
                aria-labelledby="contained-modal-title-vcenter"
                centered
@@ -28,7 +25,7 @@ const ReceiptModal = ({show, close, content, site, ...restOfProps}) => {
             <Modal.Body>
                 <Table className="h3">
                     <tr>
-                        <td>{Constants.locations[content.location]}</td>
+                        <td colSpan={2}>{Constants.locations[content.location]}</td>
                     </tr>
                     <br/>
                     <tr>
@@ -52,7 +49,7 @@ const ReceiptModal = ({show, close, content, site, ...restOfProps}) => {
                 <Modal.Body>
                     <Table className="h3">
                         <tr>
-                            <td>{Constants.locations[content.location]}</td>
+                            <td colSpan={2}>{Constants.locations[content.location]}</td>
                         </tr>
                         <br/>
                         <tr>

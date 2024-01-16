@@ -28,7 +28,6 @@ const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD',
 const Payments = ({site, navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
     const {
         register,
-        reset,
         formState: {isValid, isDirty, errors},
         handleSubmit
     } = useForm();
@@ -158,7 +157,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                 case 400:
                 default:
                     const err = JSON.stringify(await resp.json());
-                    setPaymentError(`There was an error processing your payment: ${err}`)
+                    setPaymentError(`There was an error processing your payment: ${err.message}`)
                     break;
             }
         } catch (e) {

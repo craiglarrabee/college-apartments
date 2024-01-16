@@ -1,20 +1,20 @@
-import {Modal} from "react-bootstrap";
+import {Button, Modal} from "react-bootstrap";
 import React from "react";
 import classNames from "classnames";
 
-const GenericModal = ({show, close, content, ...restOfProps }) => {
+const GenericModal = ({title, show, close, content, ...restOfProps }) => {
     const handleClose = () => {
         close();
     };
 
     return (
         <Modal show={show}
-               onHide={handleClose}
+               onHide={close}
                size="xl"
                aria-labelledby="contained-modal-title-vcenter"
                centered
         >
-            <Modal.Header closeButton />
+            <Modal.Header closeButton >{title}</Modal.Header>
 
             <Modal.Body>
                 <div className={classNames("custom-content")}>
@@ -23,6 +23,9 @@ const GenericModal = ({show, close, content, ...restOfProps }) => {
                     </div>
                 </div>
             </Modal.Body>
+            <Modal.Footer>
+                <Button onClick={close}>OK</Button>
+            </Modal.Footer>
         </Modal>
     );
 }
