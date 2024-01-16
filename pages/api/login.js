@@ -28,7 +28,6 @@ const login = withIronSessionApiRoute(async (req, res) => {
         res.status(200).send();
 
     } catch (e) {
-        console.error(e);
         res.status(401).send({});
     }
 }, ironOptions);

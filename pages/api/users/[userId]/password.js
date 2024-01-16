@@ -18,7 +18,6 @@ const Password = withIronSessionApiRoute(async (req, res) => {
         }
     } catch (e) {
         res.status(401).send();
-        console.error(e);
     }
 }, ironOptions);
 
