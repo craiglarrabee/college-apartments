@@ -183,7 +183,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                 }
                 <div className={classNames("main-content")}>
                     {site === "snow" &&
-                        <Alert>For those using a Credit Card or Debit Card to make online payments, a surcharge of 2.25% will be added on to any such payment to partially offset the cost of processing fees charged by the Credit Card and Debit card processing companies.  No such charge will be added to checks sent by mail or to Debit Cards processed in person at the Landlord's office on the office machine as such Debit Card transactions do not incur a processing fee. </Alert>
+                        <Alert>For those using a Credit Card or Debit Card to make online payments, a surcharge of 2.25% will be added on to any such payment to partially offset the cost of processing fees charged by the Credit Card and Debit card processing companies.  No such charge will be added to checks sent by mail or to Debit Cards processed in person at the Landlord&apos;s office on the office machine as such Debit Card transactions do not incur a processing fee. </Alert>
                     }
                     <Tabs defaultActiveKey={0}>
                         <Tab title="Make a payment" eventKey={0} key={0}>
