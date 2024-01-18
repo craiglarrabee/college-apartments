@@ -1,12 +1,11 @@
 import React, {useState} from "react";
 import classNames from "classnames";
 import PageContent from "./pageContent";
-import {Alert, Button, Carousel, Form, Modal, Spinner} from "react-bootstrap";
+import {Alert, Button, Carousel, Form, Modal, Spinner, Image} from "react-bootstrap";
 import {Trash} from "react-bootstrap-icons";
 import {useForm} from "react-hook-form";
 import FileResizer from "react-image-file-resizer";
 import Router from "next/router";
-import ReactPlayer from "react-player";
 
 const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
     images = images?.map(image => {
@@ -14,7 +13,7 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
     });
     if (!images) images = [];
     if (canEdit && !images.length) {
-        images.push({name: "empty", value:null});
+        images.push({name: "empty", value: null});
     }
 
     const [showUploader, setShowUploader] = useState(false);
@@ -83,7 +82,8 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
                                         // everything else in thes folders are videos
 
                                         image.name !== null ?
-                                            <img role="carousel-image" src={`/upload/images/${site}/${page}/${image.name}`} alt={image.name} width={"720px"}/> : // eslint-disable-line @next/next/no-img-element
+                                            <Image role="carousel-image"
+                                                   src={`/upload/images/${site}/${page}/${image.name}`} alt={image.name}/> :
                                             <></>
                                     }
                                     <Carousel.Caption>

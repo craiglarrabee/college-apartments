@@ -4,7 +4,7 @@ import classNames from "classnames";
 import {useForm} from "react-hook-form";
 import Router from "next/router";
 
-const Login = ({show, close, setNewUser, site, ...restOfProps }) => {
+const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
     const [loginError, setLoginError] = useState(false);
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
@@ -65,20 +65,23 @@ const Login = ({show, close, setNewUser, site, ...restOfProps }) => {
             </Modal.Header>
 
             <Modal.Body>
-                {loginError && <Alert variant="danger" >Incorrect username or password.</Alert>}
+                {loginError && <Alert variant="danger">Incorrect username or password.</Alert>}
                 <Form onSubmit={handleSubmit(onSubmit)} method="post">
                     <Form.Group className="mb-3" controlId="username">
                         <Form.Label visuallyHidden={true}>Username</Form.Label>
-                        <Form.Control {...register("username", {required: "This is required."})} type="text" placeholder="username" maxLength={25} />
+                        <Form.Control {...register("username", {required: "This is required."})} type="text"
+                                      placeholder="username" maxLength={25}/>
                     </Form.Group>
                     <Form.Group controlId="site">
-                        <Form.Control {...register("site")} type="hidden" value={site} />
+                        <Form.Control {...register("site")} type="hidden" value={site}/>
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="password">
                         <Form.Label visuallyHidden={true}>Password</Form.Label>
-                        <Form.Control {...register("password", {required: "This is required."})} type="password" placeholder="password" maxLength={100} />
+                        <Form.Control {...register("password", {required: "This is required."})} type="password"
+                                      placeholder="password" maxLength={100}/>
                     </Form.Group>
-                    <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                    <div style={{width: "100%"}}
+                         className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                         <Button variant="primary" type="submit" disabled={!isDirty || !isValid}>Login</Button>
                     </div>
                 </Form>

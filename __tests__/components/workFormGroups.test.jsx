@@ -9,13 +9,13 @@ describe("WorkFormGroups", () => {
     beforeAll(() => {
         user = userEvent.setup();
     });
-    
+
     it("renders the component", () => {
-        render(<WorkFormGroups />);
+        render(<WorkFormGroups/>);
     });
 
     it("calls handleShowExperience when 'Yes' radio button is clicked", async () => {
-        const {queryByLabelText, getAllByRole} = render(<WorkFormGroups register={jest.fn()} />);
+        const {queryByLabelText, getAllByRole} = render(<WorkFormGroups register={jest.fn()}/>);
         const buttons = getAllByRole("radio");
         const yesButton = buttons.find(button => button.id === "maint_work_true");
 
@@ -25,7 +25,7 @@ describe("WorkFormGroups", () => {
     });
 
     it("calls handleHideExperience when 'No' radio button is clicked", async () => {
-        const {queryByLabelText, getAllByRole} = render(<WorkFormGroups register={jest.fn()} />);
+        const {queryByLabelText, getAllByRole} = render(<WorkFormGroups register={jest.fn()}/>);
         const buttons = getAllByRole("radio");
         const noButton = buttons.find(button => button.id === "maint_work_false");
         const yesButton = buttons.find(button => button.id === "maint_work_true");
@@ -40,7 +40,7 @@ describe("WorkFormGroups", () => {
         const mockRegister = jest.fn();
         const mockErrors = {};
 
-        render(<WorkFormGroups register={mockRegister} errors={mockErrors} />);
+        render(<WorkFormGroups register={mockRegister} errors={mockErrors}/>);
 
         // Assert that the component renders without throwing an error
         expect(screen.getByText("Work Opportunities:")).toBeInTheDocument();

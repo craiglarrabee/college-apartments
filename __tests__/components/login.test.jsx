@@ -30,7 +30,7 @@ describe("Login component", () => {
         const site = "example.com";
         const close = jest.fn();
         const {getByText, getByLabelText} = render(
-            <Login show={true} setNewUser={setNewUser} site={site} close={close} />
+            <Login show={true} setNewUser={setNewUser} site={site} close={close}/>
         );
 
         const usernameInput = getByLabelText("Username");
@@ -54,8 +54,8 @@ describe("Login component", () => {
         const setNewUser = jest.fn();
         const site = "example.com";
         const close = jest.fn();
-        const { getByLabelText, getByText } = render(
-            <Login show={true} setNewUser={setNewUser} site={site} close={close} />
+        const {getByLabelText, getByText} = render(
+            <Login show={true} setNewUser={setNewUser} site={site} close={close}/>
         );
         const usernameInput = getByLabelText("Username");
         const passwordInput = getByLabelText("Password");

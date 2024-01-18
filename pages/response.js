@@ -16,7 +16,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Home = ({site, page, body, links, canEdit, user, company, ...restOfProps }) => {
+const Home = ({site, page, body, links, canEdit, user, company, ...restOfProps}) => {
     const from = `${site}@uca.snowcollegeapartments.com`;
     const brandUrl = "http://www.utahcollegeapartments.com";
 
@@ -53,19 +53,23 @@ const Home = ({site, page, body, links, canEdit, user, company, ...restOfProps }
 
 
     return (
-        <Layout site={site}  user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user} />
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page} />
-            <main>
-                <PageContent
-                    initialContent={body}
-                    site={site}
-                    page={page}
-                    name="body"
-                    canEdit={canEdit}/>
-                <Button style={{alignSelf: "center"}} size="lg" onClick={sendEmail}>{`Send to ${user.email}`}</Button>
-                <Footer bg={bg}/>
-            </main>
+        <Layout site={site} user={user}>
+            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <PageContent
+                        initialContent={body}
+                        site={site}
+                        page={page}
+                        name="body"
+                        canEdit={canEdit}/>
+                    <Button style={{alignSelf: "center"}} size="lg"
+                            onClick={sendEmail}>{`Send to ${user.email}`}</Button>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };
@@ -80,7 +84,16 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
     const [contentRows, nav] = await Promise.all([GetDynamicContent(site, page), GetNavLinks(user, site)]);
     contentRows.forEach(row => content[row.name] = row.content);
-    return {props: {site: site, page: page, ...content, links: nav, canEdit: editing, user: {...user}, company: company}};
+    return {
+        props: {
+            site: site,
+            page: page, ...content,
+            links: nav,
+            canEdit: editing,
+            user: {...user},
+            company: company
+        }
+    };
 }, ironOptions);
 
 export default Home;

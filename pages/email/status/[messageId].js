@@ -15,57 +15,62 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Index = ({site, page, links, user, details, ...restOfProps }) => {
+const Index = ({site, page, links, user, details, ...restOfProps}) => {
 
     return (
-        <Layout site={site}  user={user} wide={true}>
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user} wide={true}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                <div className="h4">Bulk email sent on {details[0].created} with subject: <strong>{details[0].subject}</strong></div>
-                <div className="h4">Status: <strong>{details[0].completed ? "Complete" : "In process"}</strong></div>
-                <Tabs>
-                    <Tab style={{minHeight: "350px"}} title="Failures" eventKey={"failures"} key={"failures"}>
-                        <Table >
-                            <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email Address</th>
-                                <th>Sent</th>
-                                <th>Reason</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {details.filter(row => "failure" === row.status).map(row => (<tr key={row.user_id}>
-                                <td><a href={`/tenants/${row.user_id}?site=${site}`}>{row.name}</a></td>
-                                <td>{row.address}</td>
-                                <td>{row.sent}</td>
-                                <td>{row.reason}</td>
-                            </tr>))}
-                            </tbody>
-                        </Table>
-                    </Tab>
-                    <Tab style={{minHeight: "350px"}} title="Successes" eventKey={"successes"} key={"successes"}>
-                        <Table >
-                            <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email Address</th>
-                                <th>Sent</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {details.filter(row => "success" === row.status).map(row => (<tr key={row.user_id}>
-                                <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
-                                <td>{row.address}</td>
-                                <td>{row.sent}</td>
-                            </tr>))}
-                            </tbody>
-                        </Table>
-                    </Tab>
-                </Tabs>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className="h4">Bulk email sent on {details[0].created} with
+                        subject: <strong>{details[0].subject}</strong></div>
+                    <div className="h4">Status: <strong>{details[0].completed ? "Complete" : "In process"}</strong>
+                    </div>
+                    <Tabs>
+                        <Tab style={{minHeight: "350px"}} title="Failures" eventKey={"failures"} key={"failures"}>
+                            <Table>
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email Address</th>
+                                    <th>Sent</th>
+                                    <th>Reason</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {details.filter(row => "failure" === row.status).map(row => (<tr key={row.user_id}>
+                                    <td><a href={`/tenants/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                                    <td>{row.address}</td>
+                                    <td>{row.sent}</td>
+                                    <td>{row.reason}</td>
+                                </tr>))}
+                                </tbody>
+                            </Table>
+                        </Tab>
+                        <Tab style={{minHeight: "350px"}} title="Successes" eventKey={"successes"} key={"successes"}>
+                            <Table>
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email Address</th>
+                                    <th>Sent</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {details.filter(row => "success" === row.status).map(row => (<tr key={row.user_id}>
+                                    <td><a href={`/${page}/${row.user_id}?site=${site}`}>{row.name}</a></td>
+                                    <td>{row.address}</td>
+                                    <td>{row.sent}</td>
+                                </tr>))}
+                                </tbody>
+                            </Table>
+                        </Tab>
+                    </Tabs>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

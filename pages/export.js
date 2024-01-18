@@ -16,29 +16,32 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Export = ({site, page, links, user, semesters, tenants, ...restOfProps }) => {
+const Export = ({site, page, links, user, semesters, tenants, ...restOfProps}) => {
 
     return (
-        <Layout site={site}  user={user}>
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                <div style={{minHeight: "400px", display: "flex", flexDirection: "column"}} >
-                {semesters.map((item) => {
-                    const semester_tenants = tenants.filter(tenant => tenant.Semester === item.semester);
-                    return (
-                    <div className={classNames("mb-3", "d-inline-flex")}>
-                        <CSVLink style={{width: "270px", display: "flex", justifyContent: "left"}}
-                                 data={semester_tenants}
-                                 separator=","
-                                 className={"btn btn-primary"}
-                                 filename={`${item.semester.toLowerCase().replace(" ", "_")}_tenant_export.csv`}>{`Export ${item.semester} tenants`}</CSVLink>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div style={{minHeight: "400px", display: "flex", flexDirection: "column"}}>
+                        {semesters.map((item) => {
+                            const semester_tenants = tenants.filter(tenant => tenant.Semester === item.semester);
+                            return (
+                                <div className={classNames("mb-3", "d-inline-flex")}>
+                                    <CSVLink style={{width: "270px", display: "flex", justifyContent: "left"}}
+                                             data={semester_tenants}
+                                             separator=","
+                                             className={"btn btn-primary"}
+                                             filename={`${item.semester.toLowerCase().replace(" ", "_")}_tenant_export.csv`}>{`Export ${item.semester} tenants`}</CSVLink>
+                                </div>
+                            )
+                        })}
                     </div>
-                    )
-                })}
-                </div>
-                <Footer bg={bg}/>
-            </main>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

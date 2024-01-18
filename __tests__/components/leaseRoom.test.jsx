@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import {render, screen} from "@testing-library/react";
 import LeaseRoom from "../../components/leaseRoom";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
@@ -24,7 +24,8 @@ describe("LeaseRoom", () => {
     });
 
     it("renders room details for non-editable mode", () => {
-        render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc} canEdit={false} />);
+        render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc}
+                          canEdit={false}/>);
         const roomId = screen.getByText(`#${room_type_id}:`);
         const rent = screen.getByText(`$${room_rent}.00`);
         const desc = screen.getByText(room_desc);
@@ -34,7 +35,8 @@ describe("LeaseRoom", () => {
     });
 
     it("renders edit form for editable mode", () => {
-        render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc} canEdit={true} />);
+        render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc}
+                          canEdit={true}/>);
         const roomId = screen.getByLabelText("Room Type");
         const rent = screen.getByLabelText("Room Rent");
         const desc = screen.getByLabelText("Room Description");
@@ -44,7 +46,8 @@ describe("LeaseRoom", () => {
     });
 
     it("updates room rent when changed", async () => {
-        render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc} canEdit={true} />);
+        render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc}
+                          canEdit={true}/>);
         const rentInput = screen.getByLabelText("Room Rent");
         await user.type(rentInput, "200", {initialSelectionStart: 0, initialSelectionEnd: 4});
         await user.tab();
@@ -58,7 +61,8 @@ describe("LeaseRoom", () => {
     });
 
     it("updates room description when changed", async () => {
-        render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc} canEdit={true} />);
+        render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc}
+                          canEdit={true}/>);
         const descInput = screen.getByLabelText("Room Description");
         await user.type(descInput, "new description", {initialSelectionStart: 0, initialSelectionEnd: 16});
         await user.tab();

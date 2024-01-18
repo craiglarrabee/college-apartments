@@ -19,7 +19,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 req.body.leaseId = leaseId;
                 const newPage = `leases/${leaseId}`;
                 let oldLeaseId;
-                if (req.body.template) oldLeaseId = req.body.template.substring(req.body.template.indexOf("/")+1);
+                if (req.body.template) oldLeaseId = req.body.template.substring(req.body.template.indexOf("/") + 1);
                 await Promise.all([AddNavLink(req.body), CopyDynamicContent(req.body.site, req.body.template, newPage), oldLeaseId ? CopyLeaseRooms(oldLeaseId, leaseId) : AddLeaseRooms(req.body.site, leaseId)]);
                 res.json({id: leaseId});
                 res.status(200).send();

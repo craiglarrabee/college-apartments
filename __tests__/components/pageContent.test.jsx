@@ -24,7 +24,7 @@ describe("PageContent", () => {
 
     it("renders custom content for edit mode", async () => {
         const canEdit = true;
-        const { getByRole, getByText, queryByText } = render(
+        const {getByRole, getByText, queryByText} = render(
             <PageContent
                 site={site}
                 page={page}
@@ -39,7 +39,7 @@ describe("PageContent", () => {
 
     it("clicking on edit displays editor", async () => {
         const canEdit = true;
-        const { getByRole, getByText, queryByText } = render(
+        const {getByRole, getByText, queryByText} = render(
             <PageContent
                 site={site}
                 page={page}
@@ -57,7 +57,7 @@ describe("PageContent", () => {
 
     it("renders custom content for read-only mode", () => {
         const canEdit = false;
-        const { getByText } = render(
+        const {getByText} = render(
             <PageContent
                 site={site}
                 page={page}
@@ -72,7 +72,7 @@ describe("PageContent", () => {
 
     it("saves content on click of Save changes button", async () => {
         const canEdit = true;
-        const { queryByText, container, getByRole, getByText } = render(
+        const {queryByText, container, getByRole, getByText} = render(
             <PageContent
                 site={site}
                 page={page}
@@ -95,7 +95,7 @@ describe("PageContent", () => {
 
     it("error saving does not update page", async () => {
         const canEdit = true;
-        const { queryByText, container, getByRole, getByText } = render(
+        const {queryByText, container, getByRole, getByText} = render(
             <PageContent
                 site={site}
                 page={page}

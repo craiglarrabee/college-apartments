@@ -17,7 +17,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Lease = ({site, page, links, user, leaseId, leases, ...restOfProps }) => {
+const Lease = ({site, page, links, user, leaseId, leases, ...restOfProps}) => {
     const [pendingLeases, setPendingLeases] = useState(leases.filter(lease => !lease.signed_date));
     const [signedLeases, setSignedLeases] = useState(leases.filter(lease => lease.signed_date));
 
@@ -45,22 +45,26 @@ const Lease = ({site, page, links, user, leaseId, leases, ...restOfProps }) => {
     };
 
     return (
-        <Layout site={site}  user={user}>
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                <div className={classNames("main-content")}>
-                    <Tabs defaultActiveKey={1}>
-                        <Tab eventKey={1} title="Welcomed">
-                            <WelcomedApplicationList data={pendingLeases} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} />
-                        </Tab>
-                        <Tab eventKey={2} title="Signed">
-                            <SignedLeaseList data={signedLeases} page={page} site={site} leaseId={leaseId} />
-                        </Tab>
-                    </Tabs>
-                </div>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className={classNames("main-content")}>
+                        <Tabs defaultActiveKey={1}>
+                            <Tab eventKey={1} title="Welcomed">
+                                <WelcomedApplicationList data={pendingLeases} page={page} site={site} leaseId={leaseId}
+                                                         handleDelete={deleteApplication}/>
+                            </Tab>
+                            <Tab eventKey={2} title="Signed">
+                                <SignedLeaseList data={signedLeases} page={page} site={site} leaseId={leaseId}/>
+                            </Tab>
+                        </Tabs>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

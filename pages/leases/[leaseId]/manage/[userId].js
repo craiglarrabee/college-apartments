@@ -18,18 +18,22 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Lease = ({site, navPage, lease, links, user, userId, rooms, content, ...restOfProps }) => {
+const Lease = ({site, navPage, lease, links, user, userId, rooms, content, ...restOfProps}) => {
 
     return (
-        <Layout site={site}  user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
-            <main>
-                <div className={classNames("main-content")}>
-                    <LeaseForm site={site} navPage={navPage} userId={userId} lease={lease} {...content} rooms={rooms} />
-                </div>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className={classNames("main-content")}>
+                        <LeaseForm site={site} navPage={navPage} userId={userId} lease={lease} {...content}
+                                   rooms={rooms}/>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };
@@ -38,7 +42,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
     const {userId, leaseId} = context.query;
 
-    const navPage = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "")
+    const navPage = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
     const page = navPage.replace("/manage", "");
     const site = context.query.site || SITE;

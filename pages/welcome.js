@@ -18,7 +18,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Home = ({site, page, header, body, links, canEdit, user, company, tenant, ...restOfProps }) => {
+const Home = ({site, page, header, body, links, canEdit, user, company, tenant, ...restOfProps}) => {
     const from = `${site}@uca.snowcollegeapartments.com`;
     const emailBody = <WelcomeEmailBody tenant={tenant} header={header} body={body}
                                         canEdit={false} company={`${company}, LLC`}
@@ -56,15 +56,19 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant, 
     }
 
     return (
-        <Layout site={site}  user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                <WelcomeEmailBody tenant={tenant} header={header} body={body} canEdit={canEdit} company={company}
-                                  site={site} page={page}></WelcomeEmailBody>
-                <Button style={{alignSelf: "center"}} size="lg" onClick={sendEmail}>{`Send to ${tenant.email}`}</Button>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <WelcomeEmailBody tenant={tenant} header={header} body={body} canEdit={canEdit} company={company}
+                                      site={site} page={page}></WelcomeEmailBody>
+                    <Button style={{alignSelf: "center"}} size="lg"
+                            onClick={sendEmail}>{`Send to ${tenant.email}`}</Button>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

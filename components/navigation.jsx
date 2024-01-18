@@ -1,40 +1,47 @@
-import SidebarMenu, {SidebarMenuBrand, SidebarMenuCollapse, SidebarMenuFooter, SidebarMenuNavIcon} from "react-bootstrap-sidebar-menu";
+import SidebarMenu, {SidebarMenuFooter} from "react-bootstrap-sidebar-menu";
 import Image from "next/image";
 import classNames from "classnames";
+import {List} from "react-bootstrap-icons";
+import Link from "next/link";
 
-const Navigation = ({bg, variant, brandUrl, links, page, site, ...restOfProps }) => {
+const Navigation = ({bg, variant, brandUrl, links, page, site, ...restOfProps}) => {
     const navLinks = buildNavLinks(links, "", site);
 
     return (
-        <SidebarMenu
-            bg={bg}
-            variant={variant}
-            expand="md"
-            defaultExpanded={true}
-            hide="sm"
-            exclusiveExpand={true}
-            collapseOnSelect={false}
-            activeKey={page}
-        >
-            <SidebarMenuCollapse>
-                <SidebarMenu.Header>
-                    <SidebarMenuNavIcon>&nbsp;&nbsp;&nbsp;&nbsp;</SidebarMenuNavIcon>
-                    <SidebarMenu.Brand className={classNames("navbar-dark", "h4")}
-                                       href={"http://www.utahcollegeapartments.com"}>UtahCollegeApartments</SidebarMenu.Brand>
-                </SidebarMenu.Header>
-                <SidebarMenu.Body>
-                    <SidebarMenu.Nav>
-                        {navLinks}
-                    </SidebarMenu.Nav>
-                </SidebarMenu.Body>
-                <SidebarMenuFooter>
-                    <SidebarMenuBrand href={"http://www.utahcollegeapartments.com"}>
-                        <Image priority={true} src={`/images/logo.png`} alt="UtahCollegeApartments" width={120}
-                               height={120}></Image>
-                    </SidebarMenuBrand>
-                </SidebarMenuFooter>
-            </SidebarMenuCollapse>
-        </SidebarMenu>
+        <>
+            <SidebarMenu
+                bg={bg}
+                variant={variant}
+                expand="sm"
+                defaultExpanded={true}
+                exclusiveExpand={true}
+                collapseOnSelect={false}
+                activeKey={page}
+            >
+                <SidebarMenu.Collapse >
+                    <SidebarMenu.Header>
+                        <SidebarMenu.Nav.Icon>
+                            <Link href={"http://www.utahcollegeapartments.com"}>
+                                <Image width={120} height={120} priority={true} src={`/images/logo.png`} alt="UtahCollegeApartments" ></Image>
+                            </Link>
+                        </SidebarMenu.Nav.Icon>
+                        <SidebarMenu.Brand className={classNames("navbar-dark", "h6")}
+                                          href={"http://www.utahcollegeapartments.com"}>
+                                <div>UtahCollegeApartments</div>
+                        </SidebarMenu.Brand>
+                         <SidebarMenu.Toggle><List/></SidebarMenu.Toggle>
+                    </SidebarMenu.Header>
+                    <SidebarMenu.Body>
+                        <SidebarMenu.Nav>
+                            {navLinks}
+                        </SidebarMenu.Nav>
+                    </SidebarMenu.Body>
+                    <SidebarMenuFooter>
+
+                    </SidebarMenuFooter>
+                </SidebarMenu.Collapse>
+            </SidebarMenu>
+        </>
     );
 };
 
@@ -62,7 +69,9 @@ function buildNavLink(item, links, site) {
         );
     } else {
         return (
-            <SidebarMenu.Nav.Link href={`${!item.target ? "/" : ""}${item.page}?site=${site}${item.page === "user" ? ("&" + new Date().getTime()) : ""}`} key={item.position} eventKey={item.page} target={item.target}>
+            <SidebarMenu.Nav.Link
+                href={`${!item.target ? "/" : ""}${item.page}?site=${site}${item.page === "user" ? ("&" + new Date().getTime()) : ""}`}
+                key={item.position} eventKey={item.page} target={item.target}>
                 <SidebarMenu.Nav.Item>
                     <SidebarMenu.Nav.Title>{item.label}</SidebarMenu.Nav.Title>
                 </SidebarMenu.Nav.Item>

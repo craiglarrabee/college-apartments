@@ -33,7 +33,7 @@ const video = withIronSessionApiRoute(async (req, res) => {
 }, ironOptions);
 
 const uploadVideo = async (req) => {
-    const busboy = new Busboy({ headers: req.headers });
+    const busboy = new Busboy({headers: req.headers});
     console.log(JSON.stringify(req.headers, null, 2));
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
         console.log(

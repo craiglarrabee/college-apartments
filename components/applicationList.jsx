@@ -4,7 +4,15 @@ import React, {useEffect, useState} from "react";
 import classNames from "classnames";
 
 
-export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDelete, handleProcess, ...restOfProps }) => {
+export const UnprocessedApplicationList = ({
+                                               data,
+                                               page,
+                                               site,
+                                               leaseId,
+                                               handleDelete,
+                                               handleProcess,
+                                               ...restOfProps
+                                           }) => {
     return (
         <>
             <Table>
@@ -18,17 +26,28 @@ export const UnprocessedApplicationList = ({data, page, site, leaseId, handleDel
                 </thead>
                 <tbody>
                 {data.map(row => (<tr key={row.user_id}>
-                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a>
+                    </td>
                     <td>{row.submit_date}</td>
                     <td><Button onClick={(e) => handleProcess(row.user_id, site, leaseId, true)}>Process</Button></td>
-                    <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></td>
+                    <td><Button
+                        onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></td>
                 </tr>))}
                 </tbody>
             </Table>
         </>
     );
 };
-export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelete, handleDeposit, handleProcess, ...restOfProps }) => {
+export const ProcessedApplicationList = ({
+                                             data,
+                                             page,
+                                             site,
+                                             leaseId,
+                                             handleDelete,
+                                             handleDeposit,
+                                             handleProcess,
+                                             ...restOfProps
+                                         }) => {
 
     return (
         <>
@@ -45,13 +64,17 @@ export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelet
                 {
                     data.map(row => (
                         <tr key={row.user_id}>
-                            <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
+                            <td><a
+                                href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a>
+                            </td>
                             <td>{row.submit_date}</td>
                             <td><Button onClick={(e) => handleDeposit(row.user_id, site, leaseId)}>Deposit</Button></td>
                             <td><Button
                                 onClick={(e) => handleProcess(row.user_id, site, leaseId, false)}>Unprocess</Button>
                             </td>
-                            <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></td>
+                            <td><Button
+                                onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button>
+                            </td>
                         </tr>
                     ))
                 }
@@ -60,7 +83,7 @@ export const ProcessedApplicationList = ({data, page, site, leaseId, handleDelet
         </>
     );
 };
-export const DepositReceivedApplicationList = ({data, page, site, leaseId, ...restOfProps }) => {
+export const DepositReceivedApplicationList = ({data, page, site, leaseId, ...restOfProps}) => {
     return (
         <>
             <Table>
@@ -72,7 +95,8 @@ export const DepositReceivedApplicationList = ({data, page, site, leaseId, ...re
                 </thead>
                 <tbody>
                 {data.map(row => (<tr>
-                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a>
+                    </td>
                     <td>{row.deposit_date}</td>
                 </tr>))}
                 </tbody>
@@ -82,7 +106,7 @@ export const DepositReceivedApplicationList = ({data, page, site, leaseId, ...re
 };
 
 
-export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHook, ...restOfProps }) => {
+export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHook, ...restOfProps}) => {
     const {register, formState: {errors}, handleSubmit, reset} = useForm();
     addResetHook(row.user_id, reset);
     return (
@@ -122,13 +146,18 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
 };
 
 
-export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfProps }) => {
+export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfProps}) => {
     const [semester1Selected, setSemester1Selected] = useState(row.semester1_selected);
     const [semester2Selected, setSemester2Selected] = useState(row.semester2_selected);
-    const {register } = useForm();
+    const {register} = useForm();
 
     useEffect(() => {
-        saveTenantSemesters({semesters: [{value: row.semester1, selected: semester1Selected}, {value: row.semester2, selected: semester2Selected}]});
+        saveTenantSemesters({
+            semesters: [{value: row.semester1, selected: semester1Selected}, {
+                value: row.semester2,
+                selected: semester2Selected
+            }]
+        });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [semester1Selected, semester2Selected]);
 
@@ -161,17 +190,21 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfPr
                     <Row>
                         <Col>
                             {row.semester1 ?
-                            <Form.Check
-                                className="mb-3" {...register("semester1", {onChange: (e) => setSemester1Selected(e.target.checked)})}
-                                type="checkbox" id="semester1" checked={semester1Selected} label={row.semester1} inline/>
+                                <Form.Check
+                                    className="mb-3" {...register("semester1", {onChange: (e) => setSemester1Selected(e.target.checked)})}
+                                    type="checkbox" id="semester1" checked={semester1Selected} label={row.semester1}
+                                    inline/>
                                 : <></>}
                             {row.semester2 ?
-                            <Form.Check
-                                className="mb-3" {...register("semester2", {onChange: (e) =>  setSemester2Selected(e.target.checked)})}
-                                type="checkbox" id="semester2" checked={semester2Selected} label={row.semester2} inline/>
+                                <Form.Check
+                                    className="mb-3" {...register("semester2", {onChange: (e) => setSemester2Selected(e.target.checked)})}
+                                    type="checkbox" id="semester2" checked={semester2Selected} label={row.semester2}
+                                    inline/>
                                 : <></>}
                         </Col>
-                        {handleDelete && <td><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></td>}
+                        {handleDelete && <td><Button
+                            onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button>
+                        </td>}
 
                     </Row>
                 </Form>
@@ -187,7 +220,8 @@ export const AssignedApplicationList = ({
                                             leaseId,
                                             handleWelcome,
                                             addResetHook
-                                        , ...restOfProps }) => {
+                                            , ...restOfProps
+                                        }) => {
 
     return (
         <>
@@ -209,7 +243,7 @@ export const AssignedApplicationList = ({
         </>
     );
 };
-export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete, ...restOfProps }) => {
+export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete, ...restOfProps}) => {
     return (
         <>
             <Table>
@@ -222,13 +256,13 @@ export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete
                 </thead>
                 <tbody>
                 {data.map(row => (
-                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleDelete={handleDelete} />))}
+                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleDelete={handleDelete}/>))}
                 </tbody>
             </Table>
         </>
     );
 };
-export const SignedLeaseList = ({data, page, site, leaseId , ...restOfProps }) => {
+export const SignedLeaseList = ({data, page, site, leaseId, ...restOfProps}) => {
     return (
         <>
             <Table>
@@ -241,7 +275,7 @@ export const SignedLeaseList = ({data, page, site, leaseId , ...restOfProps }) =
                 </thead>
                 <tbody>
                 {data.map(row => (
-                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} />))}
+                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId}/>))}
                 </tbody>
             </Table>
         </>

@@ -49,7 +49,7 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
         }
     };
 
-    useEffect( () => {
+    useEffect(() => {
         async function process() {
             try {
                 const options = {
@@ -62,7 +62,12 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
                 switch (resp.status) {
                     case 204:
                     case 200:
-                        const payment = {...(validPayments.find(payment => payment.id === deleteData.paymentId)), reason_deleted: deleteData.description, date_deleted: new Date().toLocaleDateString()};;
+                        const payment = {
+                            ...(validPayments.find(payment => payment.id === deleteData.paymentId)),
+                            reason_deleted: deleteData.description,
+                            date_deleted: new Date().toLocaleDateString()
+                        };
+                        ;
                         setvalidPayments(validPayments.filter(payment => payment.id !== deleteData.paymentId));
                         setvalidDeletedPayments([...validDeletedPayments, payment]);
                         break;
@@ -76,6 +81,7 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
                 console.error(e);
             }
         }
+
         if (deleteData.description && deleteData.paymentId) {
             process();
         }
@@ -84,50 +90,59 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
 
     return (
         <Layout site={site} user={user} wide={true}>
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
-            <main>
-                {paymentError &&
-                    <Alert dismissible onClose={() => setPaymentError(null)} variant={"danger"}
-                           onClick={() => setPaymentError(null)}>{paymentError}</Alert>
-                }
-                <GenericExplanationModal data={deleteData} accept={(description) => setDeleteData({...deleteData, show: false, description: description})} close={() => setDeleteData({...deleteData, show: false})}></GenericExplanationModal>
-                <div className={classNames("main-content")}>
-                    <Table>
-                        <thead>
-                        <tr>
-                            <th>Tenant</th>
-                            <th>Trans ID</th>
-                            <th>Date</th>
-                            <th>Location</th>
-                            <th>Amount</th>
-                            <th>Type</th>
-                            <th>Number</th>
-                            <th>Description</th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {validPayments.map(row => (
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    {paymentError &&
+                        <Alert dismissible onClose={() => setPaymentError(null)} variant={"danger"}
+                               onClick={() => setPaymentError(null)}>{paymentError}</Alert>
+                    }
+                    <GenericExplanationModal data={deleteData} accept={(description) => setDeleteData({
+                        ...deleteData,
+                        show: false,
+                        description: description
+                    })} close={() => setDeleteData({...deleteData, show: false})}></GenericExplanationModal>
+                    <div className={classNames("main-content")}>
+                        <Table>
+                            <thead>
                             <tr>
-                                <td><a href={`/tenants/${row.user_id}?site=${site}`}>{row.tenant_name}</a></td>
-                                <td>{row.trans_id}</td>
-                                <td>{row.date}</td>
-                                <td>{Constants.locations[row.location]}</td>
-                                <td>{row.amount}</td>
-                                <td>{row.account_type}</td>
-                                <td>{row.account_number}</td>
-                                <td>{row.description}</td>
-                                <td><Button onClick={() => markPaymentReviewed(row.id)}>Reviewed</Button></td>
-                                <td><Button onClick={() => setDeleteData({show: true, paymentId: row.id})}>Delete</Button></td>
+                                <th>Tenant</th>
+                                <th>Trans ID</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                                <th>Number</th>
+                                <th>Description</th>
+                                <th></th>
+                                <th></th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </Table>
-                </div>
-                <Footer bg={bg}/>
-            </main>
+                            </thead>
+                            <tbody>
+                            {validPayments.map(row => (
+                                <tr>
+                                    <td><a href={`/tenants/${row.user_id}?site=${site}`}>{row.tenant_name}</a></td>
+                                    <td>{row.trans_id}</td>
+                                    <td>{row.date}</td>
+                                    <td>{Constants.locations[row.location]}</td>
+                                    <td>{row.amount}</td>
+                                    <td>{row.account_type}</td>
+                                    <td>{row.account_number}</td>
+                                    <td>{row.description}</td>
+                                    <td><Button onClick={() => markPaymentReviewed(row.id)}>Reviewed</Button></td>
+                                    <td><Button
+                                        onClick={() => setDeleteData({show: true, paymentId: row.id})}>Delete</Button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

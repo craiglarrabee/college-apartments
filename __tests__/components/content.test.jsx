@@ -68,14 +68,14 @@ describe("Content", () => {
     });
 
     it("renders editable page content", async () => {
-        render(<Content site={site} page={page} top={top} bottom={bottom} canEdit={canEdit} />);
+        render(<Content site={site} page={page} top={top} bottom={bottom} canEdit={canEdit}/>);
 
         const editButtons = screen.getAllByRole("edit");
         expect(editButtons.length).toBe(2);
         //shouldn"t see edit dialog, with save button
-        expect( await screen.queryByRole("save")).not.toBeInTheDocument();
+        expect(await screen.queryByRole("save")).not.toBeInTheDocument();
         fireEvent.click(editButtons[0]);
         //now we should see the edit dialog , with save
-        expect( await screen.queryByRole("save")).toBeInTheDocument();
+        expect(await screen.queryByRole("save")).toBeInTheDocument();
     });
 });

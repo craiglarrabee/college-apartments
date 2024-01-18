@@ -53,7 +53,7 @@ describe("Navigation component", () => {
     const page = "home";
 
     it("renders with expected props", () => {
-        const { getByText } = render(
+        const {getByText} = render(
             <Navigation
                 bg={bg}
                 variant={variant}
@@ -73,7 +73,7 @@ describe("Navigation component", () => {
 
     it("skips submenu if no items in submenu", () => {
         const testLinks = links.filter(link => link.parent_page !== "services")
-        const { queryByText, getByText } = render(
+        const {queryByText, getByText} = render(
             <Navigation
                 bg={bg}
                 variant={variant}
@@ -91,7 +91,7 @@ describe("Navigation component", () => {
     });
 
     it("renders the logo with expected props", () => {
-        const { getByAltText } = render(
+        const {getByAltText} = render(
             <Navigation
                 bg={bg}
                 variant={variant}

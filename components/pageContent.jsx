@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 
 const JoditEditor = dynamic(() => import("jodit-react"), {ssr: false});
 
-export const PageContent = ({site, page, name, canEdit, initialContent, ...restOfProps }) => {
+export const PageContent = ({site, page, name, canEdit, initialContent, ...restOfProps}) => {
     const [showEditor, setShowEditor] = useState(false);
     const [content, setContent] = useState(initialContent);
 
@@ -44,7 +44,17 @@ export const PageContent = ({site, page, name, canEdit, initialContent, ...restO
     }
 };
 
-export const Editor = ({show, handleClose, title, site, page, name, initialContent, setEditableText, ...restOfProps }) => {
+export const Editor = ({
+                           show,
+                           handleClose,
+                           title,
+                           site,
+                           page,
+                           name,
+                           initialContent,
+                           setEditableText,
+                           ...restOfProps
+                       }) => {
     const [content, setContent] = useState(initialContent);
     const [error, setError] = useState();
     const json = {
@@ -75,23 +85,23 @@ export const Editor = ({show, handleClose, title, site, page, name, initialConte
     };
 
     const editorOptions = useMemo(() => (
-        {
-            readOnly: false,
-            height: "250px",
-            minHeight: "100px",
-            maxHeight: "600px",
-            toolbarAdaptive: false,
-            buttons: ["undo", "redo",
-                "font", "fontSize", "brush", "paragraph",
-                "bold", "underline", "italic", "strikethrough", "subscript", "superscript",
-                "outdent", "indent",
-                "align", "ul", "ol", "lineHeight",
-                "table","link","image",
-                "source"],
-            resizingBar: true,
-            resizeEnable: true,
-            placeholder: "Start typing..."
-        }),
+            {
+                readOnly: false,
+                height: "250px",
+                minHeight: "100px",
+                maxHeight: "600px",
+                toolbarAdaptive: false,
+                buttons: ["undo", "redo",
+                    "font", "fontSize", "brush", "paragraph",
+                    "bold", "underline", "italic", "strikethrough", "subscript", "superscript",
+                    "outdent", "indent",
+                    "align", "ul", "ol", "lineHeight",
+                    "table", "link", "image",
+                    "source"],
+                resizingBar: true,
+                resizeEnable: true,
+                placeholder: "Start typing..."
+            }),
         []
     );
 
@@ -103,22 +113,23 @@ export const Editor = ({show, handleClose, title, site, page, name, initialConte
                centered
                enforceFocus={false}
         >
-            <Modal.Header closeButton >
+            <Modal.Header closeButton>
                 <Modal.Title>{title}</Modal.Title>
             </Modal.Header>
 
-            <Modal.Body role="editor" >
+            <Modal.Body role="editor">
                 <JoditEditor
                     config={editorOptions}
                     tabIndex={1}
                     value={content}
                     onBlur={newContent => setContent(newContent)} // preferred to use only this option to update the content for performance reasons
-                    onChange={newContent => {}}
+                    onChange={newContent => {
+                    }}
                 />
             </Modal.Body>
 
             <Modal.Footer>
-                {error && <Alert variant="danger" >{error}</Alert>}
+                {error && <Alert variant="danger">{error}</Alert>}
                 <Button size="sm" variant="secondary" onClick={handleClose}>Close</Button>
                 <Button role="save" size="sm" variant="primary" onClick={saveContent}>Save changes</Button>
             </Modal.Footer>

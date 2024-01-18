@@ -31,7 +31,7 @@ const addResetHook = (userId, hook) => {
     resetHooks[userId] = hook;
 }
 
-const Applications = ({leaseId, site, page, links, user, applications, header, body, company, ...restOfProps }) => {
+const Applications = ({leaseId, site, page, links, user, applications, header, body, company, ...restOfProps}) => {
     const [allApplications, setAllApplications] = useState(applications);
     const [unprocessedApplications, setUnprocessedApplications] = useState(allApplications.filter(app => app.processed === 0));
     const [processedApplications, setProcessedApplications] = useState(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
@@ -117,7 +117,14 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     break;
                 case 204:
                     // now remove from the applications on this page components
-                    const newApplications = await Promise.all(allApplications.map(async (app) => { if (app.user_id === userId) {app.processed = processed ? 1 : 0; return app} else {return app}}));
+                    const newApplications = await Promise.all(allApplications.map(async (app) => {
+                        if (app.user_id === userId) {
+                            app.processed = processed ? 1 : 0;
+                            return app
+                        } else {
+                            return app
+                        }
+                    }));
                     setAllApplications(newApplications);
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
@@ -175,7 +182,13 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                 case 200:
                     // now remove from the applications on this page components
                     const updatedApplication = await resp.json();
-                    const newApplications = await Promise.all(allApplications.map(async (app) => { if (app.user_id === userId) {return updatedApplication} else {return app}}));
+                    const newApplications = await Promise.all(allApplications.map(async (app) => {
+                        if (app.user_id === userId) {
+                            return updatedApplication
+                        } else {
+                            return app
+                        }
+                    }));
                     setAllApplications(newApplications);
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
@@ -194,7 +207,8 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
         const thisApp = allApplications.find(app => app.user_id == data.userId);
         const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={header} body={body}
                                             canEdit={false} company={`${company}, LLC`}
-                                            site={data.site} page={page} semester={thisApp.semester1}></WelcomeEmailBody>;
+                                            site={data.site} page={page}
+                                            semester={thisApp.semester1}></WelcomeEmailBody>;
         const emailBodyString = ReactDomServer.renderToString(emailBody);
 
         try {
@@ -210,7 +224,13 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                     break;
                 case 204:
                     // now remove from the applications on this page components
-                    const newApplications = allApplications.map((app) => { if (app.user_id == data.userId) { return {...app, lease_date: new Date().toLocaleDateString()};} else {return app}});
+                    const newApplications = allApplications.map((app) => {
+                        if (app.user_id == data.userId) {
+                            return {...app, lease_date: new Date().toLocaleDateString()};
+                        } else {
+                            return app
+                        }
+                    });
                     setAllApplications(newApplications);
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
@@ -229,40 +249,54 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
     };
 
     return (
-        <Layout site={site}  user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                <div className={classNames("main-content")}>
-                    {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
-                    {success && <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
-                    <Tabs defaultActiveKey={1} >
-                        <Tab eventKey={1} title={`Unprocessed (${unprocessedApplications.length})`}>
-                            <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleProcess={processApplication} />
-                        </Tab>
-                        <Tab eventKey={2} title={`Processed (${processedApplications.length})`}>
-                            <ProcessedApplicationList data={processedApplications} page={page} site={site} leaseId={leaseId} handleDelete={deleteApplication} handleDeposit={receiveDeposit} handleProcess={processApplication}/>
-                        </Tab>
-                        <Tab eventKey={3} title={`Deposit Received (${depositReceivedApplications.length})`}>
-                            <DepositReceivedApplicationList data={depositReceivedApplications} page={page} leaseId={leaseId} site={site} />
-                        </Tab>
-                        <Tab eventKey={4} title={`Assignment Made (${assignedApplications.length})`}>
-                            <AssignedApplicationList data={assignedApplications} page={page} leaseId={leaseId} site={site} handleWelcome={welcome} addResetHook={addResetHook} header={header} company={company} body={body} />
-                        </Tab>
-                        <Tab eventKey={5} title={`Welcomed (${welcomedApplications.length})`}>
-                            <WelcomedApplicationList data={welcomedApplications} page={page} leaseId={leaseId} site={site} header={header} company={company} body={body} handleDelete={deleteApplication}/>
-                        </Tab>
-                    </Tabs>
-                </div>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className={classNames("main-content")}>
+                        {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
+                        {success &&
+                            <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
+                        <Tabs defaultActiveKey={1}>
+                            <Tab eventKey={1} title={`Unprocessed (${unprocessedApplications.length})`}>
+                                <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site}
+                                                            leaseId={leaseId} handleDelete={deleteApplication}
+                                                            handleProcess={processApplication}/>
+                            </Tab>
+                            <Tab eventKey={2} title={`Processed (${processedApplications.length})`}>
+                                <ProcessedApplicationList data={processedApplications} page={page} site={site}
+                                                          leaseId={leaseId} handleDelete={deleteApplication}
+                                                          handleDeposit={receiveDeposit}
+                                                          handleProcess={processApplication}/>
+                            </Tab>
+                            <Tab eventKey={3} title={`Deposit Received (${depositReceivedApplications.length})`}>
+                                <DepositReceivedApplicationList data={depositReceivedApplications} page={page}
+                                                                leaseId={leaseId} site={site}/>
+                            </Tab>
+                            <Tab eventKey={4} title={`Assignment Made (${assignedApplications.length})`}>
+                                <AssignedApplicationList data={assignedApplications} page={page} leaseId={leaseId}
+                                                         site={site} handleWelcome={welcome} addResetHook={addResetHook}
+                                                         header={header} company={company} body={body}/>
+                            </Tab>
+                            <Tab eventKey={5} title={`Welcomed (${welcomedApplications.length})`}>
+                                <WelcomedApplicationList data={welcomedApplications} page={page} leaseId={leaseId}
+                                                         site={site} header={header} company={company} body={body}
+                                                         handleDelete={deleteApplication}/>
+                            </Tab>
+                        </Tabs>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    const page = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "");
+    const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
     const welcomePage = "welcome";
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";

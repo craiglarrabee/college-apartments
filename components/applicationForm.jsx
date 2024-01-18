@@ -25,7 +25,8 @@ const ApplicationForm = ({
                              application,
                              currentLeases,
                              roomTypeId
-                         , ...restOfProps }) => {
+                             , ...restOfProps
+                         }) => {
     application[`lease_${leaseId}_room_type_id`] = application.lease_room_type_id;
     const {
         register,
@@ -126,23 +127,24 @@ const ApplicationForm = ({
                 {errors && errors.lease_room_type_id && <Form.Text
                     className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
                 <ApplicationFormGroups canChangeApplication={canChangeApplication} register={register} errors={errors}
-                                       previousRentalLabel={previousRentalLabel} esa_packet={esa_packet} site={site} canEdit={canEdit} application={application}/>
+                                       previousRentalLabel={previousRentalLabel} esa_packet={esa_packet} site={site}
+                                       canEdit={canEdit} application={application}/>
                 {!printing &&
                     <>
-                    <PageContent
-                    initialContent={rules}
-                    site={site}
-                    page={page}
-                    name="rules"
-                    canEdit={canEdit}/>
-                <PageContent
-                    initialContent={disclaimer}
-                    site={site}
-                    page={page}
-                    name="disclaimer"
-                    canEdit={canEdit}/>
+                        <PageContent
+                            initialContent={rules}
+                            site={site}
+                            page={page}
+                            name="rules"
+                            canEdit={canEdit}/>
+                        <PageContent
+                            initialContent={disclaimer}
+                            site={site}
+                            page={page}
+                            name="disclaimer"
+                            canEdit={canEdit}/>
                     </>
-            }
+                }
                 <div className={classNames("mb-3", "d-inline-flex")}>
                     <Form.Check
                         disabled={!canChangeApplication}

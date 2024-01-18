@@ -248,9 +248,9 @@ describe("ApplicationForm", () => {
         await act(() => user.click(screen.getByText("Save")));
         expect(fetchMock).toHaveBeenCalledWith(`/api/users/${mockUserId}/leases/1/application?site=${mockSite}`,
             expect.objectContaining({
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: expect.stringContaining("1_2")
-        }));
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: expect.stringContaining("1_2")
+            }));
     });
 });

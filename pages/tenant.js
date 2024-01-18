@@ -19,15 +19,18 @@ const Tenant = ({site, navPage, links, user, tenant, isNewApplication = false}) 
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     return (
-        <Layout user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
-            <main>
-                <div className={classNames("main-content")}>
-                    <TenantForm tenant={tenant} isNewApplication={isNewApplication} site={site} userId={user.id}/>
-                </div>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className={classNames("main-content")}>
+                        <TenantForm tenant={tenant} isNewApplication={isNewApplication} site={site} userId={user.id}/>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };
@@ -48,7 +51,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetUserAvailableLeaseRooms(site, user.id)
     ]);
 
-    if(newApplication && (!leases || leases.length === 0)) {
+    if (newApplication && (!leases || leases.length === 0)) {
         console.error("redirecting to deposit from tenant due to no leases");
         context.res.writeHead(302, {Location: `/deposit?site=${site}`});
         context.res.end();

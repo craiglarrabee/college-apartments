@@ -1,14 +1,14 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { Apartment, UnassignedTenants, Tenant, TenantCard } from "../../components/dragAndDrop";
+import {render, screen} from "@testing-library/react";
+import {Apartment, UnassignedTenants, Tenant, TenantCard} from "../../components/dragAndDrop";
 import "@testing-library/jest-dom";
 
 describe("Apartment", () => {
     const mockId = "101";
-    const mockData = { spots: 2 };
+    const mockData = {spots: 2};
     const mockTenants = [
-        { user_id: 1, spots: 1 },
-        { user_id: 2, spots: 1 },
+        {user_id: 1, spots: 1},
+        {user_id: 2, spots: 1},
     ];
 
     test("renders Apartment component", () => {
@@ -29,7 +29,7 @@ describe("Apartment", () => {
 
 describe("UnassignedTenants", () => {
     const mockDroppableId = "unassigned-tenants";
-    const mockAdditionalStyle = { color: "red" };
+    const mockAdditionalStyle = {color: "red"};
     const mockTitle = "Unassigned Tenants";
 
     test("renders UnassignedTenants component", () => {
@@ -55,7 +55,7 @@ describe("UnassignedTenants", () => {
 
 describe("Tenant", () => {
     const mockUserId = 1;
-    const mockData = { name: "John Doe" };
+    const mockData = {name: "John Doe"};
 
     test("renders Tenant component", () => {
         render(

@@ -18,29 +18,34 @@ const AcknowledgePaymentModal = ({acknowledge, show, close, content, site, ...re
             </Modal.Header>
 
             {site === "snow" ?
-            <Modal.Body>
-                <Table className="h3">
-                    <tr>
-                        <td colSpan={2}>{Constants.locations[content.location]}</td>
-                    </tr>
-                    <br/>
-                    <tr>
-                        <td>Date: </td><td>{content.date}</td>
-                    </tr>
-                    <tr>
-                        <td>Payment Description: </td><td>{content.description}</td>
-                    </tr>
-                    <tr>
-                        <td>Payment Amount: </td><td>{currency.format(content.amount)}</td>
-                    </tr>
-                    <tr>
-                        <td>Surcharge Amount: </td><td>{currency.format(content.surcharge)}</td>
-                    </tr>
-                    <tr>
-                        <td>Total: </td><td>{currency.format(content.total)}</td>
-                    </tr>
-                </Table>
-            </Modal.Body>
+                <Modal.Body>
+                    <Table className="h3">
+                        <tr>
+                            <td colSpan={2}>{Constants.locations[content.location]}</td>
+                        </tr>
+                        <br/>
+                        <tr>
+                            <td>Date:</td>
+                            <td>{content.date}</td>
+                        </tr>
+                        <tr>
+                            <td>Payment Description:</td>
+                            <td>{content.description}</td>
+                        </tr>
+                        <tr>
+                            <td>Payment Amount:</td>
+                            <td>{currency.format(content.amount)}</td>
+                        </tr>
+                        <tr>
+                            <td>Surcharge Amount:</td>
+                            <td>{currency.format(content.surcharge)}</td>
+                        </tr>
+                        <tr>
+                            <td>Total:</td>
+                            <td>{currency.format(content.total)}</td>
+                        </tr>
+                    </Table>
+                </Modal.Body>
                 :
                 <Modal.Body>
                     <Table className="h3">
@@ -49,13 +54,16 @@ const AcknowledgePaymentModal = ({acknowledge, show, close, content, site, ...re
                         </tr>
                         <br/>
                         <tr>
-                            <td>Date: </td><td>{content.date}</td>
+                            <td>Date:</td>
+                            <td>{content.date}</td>
                         </tr>
                         <tr>
-                            <td>Payment Description: </td><td>{content.description}</td>
+                            <td>Payment Description:</td>
+                            <td>{content.description}</td>
                         </tr>
                         <tr>
-                            <td>Amount: </td><td>{currency.format(content.total)}</td>
+                            <td>Amount:</td>
+                            <td>{currency.format(content.total)}</td>
                         </tr>
                     </Table>
                 </Modal.Body>

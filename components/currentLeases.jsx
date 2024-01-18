@@ -1,7 +1,16 @@
 import {FormCheck} from "react-bootstrap";
 import React from "react";
 
-const CurrentLeases = ({canChangeApplication, register, leaseId, leaseDescription, rooms, selectedRoomType, selectedLocation, ...restOfProps }) => {
+const CurrentLeases = ({
+                           canChangeApplication,
+                           register,
+                           leaseId,
+                           leaseDescription,
+                           rooms,
+                           selectedRoomType,
+                           selectedLocation,
+                           ...restOfProps
+                       }) => {
     const filteredRooms = selectedRoomType
         ? rooms.filter(room => room.base_type_id === selectedRoomType)
         : selectedLocation ? rooms.filter(room.location === selectedLocation) : rooms;

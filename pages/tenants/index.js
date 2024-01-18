@@ -15,7 +15,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Tenants = ({site, page, links, user, ...restOfProps }) => {
+const Tenants = ({site, page, links, user, ...restOfProps}) => {
     const [tenants, setTenants] = useState([]);
     const [searchString, setSearchString] = useState();
     const [message, setMessage] = useState();
@@ -31,7 +31,7 @@ const Tenants = ({site, page, links, user, ...restOfProps }) => {
             const resp = await fetch(`/api/users/search?site=${site}&search=${searchString}`, options);
             switch (resp.status) {
                 case 400:
-                    setMessage({value:"An error occurred searching for the user.", type: "error"});
+                    setMessage({value: "An error occurred searching for the user.", type: "error"});
                     break;
                 case 404:
                     setMessage({value: "No tenants found", type: "error"});
@@ -43,7 +43,7 @@ const Tenants = ({site, page, links, user, ...restOfProps }) => {
                     break;
             }
         } catch (e) {
-            setMessage({value:"An error occurred searching for the user.", type: "error"});
+            setMessage({value: "An error occurred searching for the user.", type: "error"});
             console.error(e);
         }
     };
@@ -53,20 +53,24 @@ const Tenants = ({site, page, links, user, ...restOfProps }) => {
     }
 
     return (
-        <Layout site={site}  user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                {message && <Alert variant={message.type === "error" ? "danger" : "primary"} >{message.value}</Alert> }
-                <SearchBar click={handleSearch} change={updateSearchStr}/>
-                <ul style={{minHeight: "350px"}}>
-                    {tenants.map(tenant =>
-                        (<li key={tenant.user_id}>
-                            <a href={`/tenants/${tenant.user_id}?site=${site}`}>{tenant.name}</a>
-                        </li>))}
-                </ul>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    {message &&
+                        <Alert variant={message.type === "error" ? "danger" : "primary"}>{message.value}</Alert>}
+                    <SearchBar click={handleSearch} change={updateSearchStr}/>
+                    <ul style={{minHeight: "350px"}}>
+                        {tenants.map(tenant =>
+                            (<li key={tenant.user_id}>
+                                <a href={`/tenants/${tenant.user_id}?site=${site}`}>{tenant.name}</a>
+                            </li>))}
+                    </ul>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

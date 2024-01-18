@@ -4,7 +4,7 @@ import {CSS} from "@dnd-kit/utilities";
 import {useState} from "react";
 import {WindowDash, WindowFullscreen} from "react-bootstrap-icons";
 
-export const Apartment = ({apartmentNumber, id, data, tenants, children, roomType, ...restOfProps }) => {
+export const Apartment = ({apartmentNumber, id, data, tenants, children, roomType, ...restOfProps}) => {
     const {isOver, setNodeRef, active} = useDroppable({
         id: id,
         data: data
@@ -27,7 +27,7 @@ export const Apartment = ({apartmentNumber, id, data, tenants, children, roomTyp
     )
 };
 
-export const UnassignedTenants = ({children, apartmentNumber, additionalStyle, title, roomType, ...restOfProps }) => {
+export const UnassignedTenants = ({children, apartmentNumber, additionalStyle, title, roomType, ...restOfProps}) => {
     const id = `${apartmentNumber}_${roomType}`;
     const {isOver, setNodeRef} = useDroppable({data: {apartmentNumber: apartmentNumber, roomType: roomType}, id: id});
     const [showTenants, setShowTenants] = useState(true);
@@ -46,21 +46,24 @@ export const UnassignedTenants = ({children, apartmentNumber, additionalStyle, t
     };
 
     return (
-        <div style={style} className={classNames("d-flex", "flex-row", "flex-wrap")} ref={setNodeRef} >
+        <div style={style} className={classNames("d-flex", "flex-row", "flex-wrap")} ref={setNodeRef}>
             <div style={{width: "100%", display: "flex"}}>
-                <span style={{textAlign: "center", width: "90%", fontWeight: "bolder", fontSize: "large"}}>{title}</span>
-                <span style={{textAlign: "right", width: "10%"}} >{showTenants ? <WindowDash onClick={() => setShowTenants(false)}/> : <WindowFullscreen onClick={() => setShowTenants(true)}/>}</span>
+                <span
+                    style={{textAlign: "center", width: "90%", fontWeight: "bolder", fontSize: "large"}}>{title}</span>
+                <span style={{textAlign: "right", width: "10%"}}>{showTenants ?
+                    <WindowDash onClick={() => setShowTenants(false)}/> :
+                    <WindowFullscreen onClick={() => setShowTenants(true)}/>}</span>
             </div>
             {showTenants &&
-            <div>
-                {children}
-            </div>
+                <div>
+                    {children}
+                </div>
             }
         </div>
     );
 };
 
-export const Tenant = ({userId, data, children, ...restOfProps }) => {
+export const Tenant = ({userId, data, children, ...restOfProps}) => {
 
     const {attributes, listeners, setNodeRef, transform} = useDraggable({
         id: userId,
@@ -75,16 +78,23 @@ export const Tenant = ({userId, data, children, ...restOfProps }) => {
     );
 };
 
-export const TenantCard = ({tenant, children, visible, backgroundColor, ...restOfProps }) => {
+export const TenantCard = ({tenant, children, visible, backgroundColor, ...restOfProps}) => {
     const roomates = buildRoomateList(tenant);
     return (
-        <button className={classNames("draggable")} style={{borderWidth: visible ? "1px" : "0px", opacity: visible ? "1.0" : "0.0", backgroundColor: backgroundColor}} >
+        <button className={classNames("draggable")} style={{
+            borderWidth: visible ? "1px" : "0px",
+            opacity: visible ? "1.0" : "0.0",
+            backgroundColor: backgroundColor
+        }}>
             <div style={{width: "530px", visibility: visible ? "visible" : "hidden"}}>
                 {`${tenant.spots === 2 ? "*" : ""} ${tenant.room_type ? tenant.room_type + " - " : ""}${tenant.first_name} ${tenant.last_name} | ${new Date().getFullYear() - new Date(tenant.date_of_birth).getFullYear()} | ${tenant.gender === "M" ? "Male" : "Female"} | ${tenant.school_year || ""} | ${tenant.submit_date || ""}`}<br/>
                 {roomates && <><span style={{fontWeight: "bold"}}>desired roommates: </span>{roomates}<br/></>}
-                {tenant.roomate_desc && <><span style={{fontWeight: "bold"}}>roommates: </span>{tenant.roomate_desc}<br/></>}
-                {tenant.likes_dislikes && <><span style={{fontWeight: "bold"}}>likes: </span>{tenant.likes_dislikes}<br/></>}
-                {tenant.room_rent && <><span style={{fontWeight: "bold"}}>applied: </span>{tenant.room_desc} (${tenant.room_rent})</>}
+                {tenant.roomate_desc && <><span
+                    style={{fontWeight: "bold"}}>roommates: </span>{tenant.roomate_desc}<br/></>}
+                {tenant.likes_dislikes && <><span
+                    style={{fontWeight: "bold"}}>likes: </span>{tenant.likes_dislikes}<br/></>}
+                {tenant.room_rent && <><span
+                    style={{fontWeight: "bold"}}>applied: </span>{tenant.room_desc} (${tenant.room_rent})</>}
                 {children}
             </div>
         </button>

@@ -2,7 +2,7 @@ import {Button, Modal} from "react-bootstrap";
 import React from "react";
 import classNames from "classnames";
 
-const GenericModal = ({title, show, close, content, ...restOfProps }) => {
+const GenericModal = ({title, show, close, content, ...restOfProps}) => {
     const handleClose = () => {
         close();
     };
@@ -14,7 +14,7 @@ const GenericModal = ({title, show, close, content, ...restOfProps }) => {
                aria-labelledby="contained-modal-title-vcenter"
                centered
         >
-            <Modal.Header closeButton >{title}</Modal.Header>
+            <Modal.Header closeButton>{title}</Modal.Header>
 
             <Modal.Body>
                 <div className={classNames("custom-content")}>

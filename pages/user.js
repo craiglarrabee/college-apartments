@@ -16,7 +16,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Home = ({site, page, links, canEdit, user, ...restOfProps }) => {
+const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
 
     const {register, formState: {isDirty, errors}, handleSubmit} = useForm();
     const [pwd, setPwd] = useState("");
@@ -72,66 +72,82 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps }) => {
     };
 
     return (
-        <Layout site={site}  user={user}>
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                <div className={classNames("main-content")} style={{width: "100%"}}>
-                    <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        <div className="h4">To apply, please create a username and password:</div>
-                        <Form.Group className="mb-3" controlId="username">
-                            <Form.Label visuallyHidden={true}>Username</Form.Label>
-                            <Form.Control
-                                className={errors && errors.username && classNames("border-danger")} {...register("username", {
-                                required: {value: true, message: "Username is required."},
-                                validate: checkUsername
-                            })} type="text" placeholder="username" maxLength={100} />
-                            {errors && errors.username && <Form.Text
-                                className={classNames("text-danger")}>{errors && errors.username.message}</Form.Text>}
-                            {errors && errors.username && errors && errors.username.type === "validate" &&
-                                <Form.Text className={classNames("text-danger")}>Username is not available.</Form.Text>}
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="password">
-                            <Form.Label visuallyHidden={true}>Password</Form.Label>
-                            <Form.Control
-                                className={errors && errors.password && classNames("border-danger")} {...register("password", {
-                                required: {value: true, message: "Password is required."},
-                                pattern: {
-                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
-                                }
-                            })} type="password" placeholder="password" onChange={(e) => setPwd(e.currentTarget.value)}/>
-                            {errors && errors.password && <Form.Text
-                                className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
-                            <Form.Text>
-                                <div>Password must contain:</div>
-                                <ul style={{listStyleType: "none"}}>
-                                    <li className={pwd.length > 8 && pwd.length < 101 ? "text-success" : "text-danger"}>Between 8 and 100 chars </li>
-                                    <li className={pwd.match(/.*\d/) ? "text-success" : "text-danger"} >At least one number</li>
-                                    <li className={pwd.match(/.*[a-z]/) ? "text-success" : "text-danger"} >At least one lower-case character</li>
-                                    <li className={pwd.match(/.*[A-Z]/) ? "text-success" : "text-danger"} >At least one upper-case character</li>
-                                    <li className={pwd.match(/.*[@$!%*?&]/) ? "text-success" : "text-danger"} >At least one special character</li>
-                                </ul>
-                            </Form.Text>
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="confirm_password">
-                            <Form.Label visuallyHidden={true}>Confirm Password</Form.Label>
-                            <Form.Control
-                                className={errors && errors.confirm_password  && classNames("border-danger")} {...register("confirm_password", {
-                                required: true,
-                                validate: (value, formValues) => {
-                                    return value === formValues.password;
-                                }
-                            })} type="password" placeholder="confirm password"/>
-                            {errors && errors.confirm_password &&
-                                <Form.Text className={classNames("text-danger")}>Must match Password.</Form.Text>}
-                        </Form.Group>
-                        <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit" disabled={!isDirty}>Next</Button>
-                        </div>
-                    </Form>
-                </div>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className={classNames("main-content")} style={{width: "100%"}}>
+                        <Form onSubmit={handleSubmit(onSubmit)} method="post">
+                            <div className="h4">To apply, please create a username and password:</div>
+                            <Form.Group className="mb-3" controlId="username">
+                                <Form.Label visuallyHidden={true}>Username</Form.Label>
+                                <Form.Control
+                                    className={errors && errors.username && classNames("border-danger")} {...register("username", {
+                                    required: {value: true, message: "Username is required."},
+                                    validate: checkUsername
+                                })} type="text" placeholder="username" maxLength={100}/>
+                                {errors && errors.username && <Form.Text
+                                    className={classNames("text-danger")}>{errors && errors.username.message}</Form.Text>}
+                                {errors && errors.username && errors && errors.username.type === "validate" &&
+                                    <Form.Text className={classNames("text-danger")}>Username is not
+                                        available.</Form.Text>}
+                            </Form.Group>
+                            <Form.Group className="mb-3" controlId="password">
+                                <Form.Label visuallyHidden={true}>Password</Form.Label>
+                                <Form.Control
+                                    className={errors && errors.password && classNames("border-danger")} {...register("password", {
+                                    required: {value: true, message: "Password is required."},
+                                    pattern: {
+                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
+                                    }
+                                })} type="password" placeholder="password"
+                                    onChange={(e) => setPwd(e.currentTarget.value)}/>
+                                {errors && errors.password && <Form.Text
+                                    className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
+                                <Form.Text>
+                                    <div>Password must contain:</div>
+                                    <ul style={{listStyleType: "none"}}>
+                                        <li className={pwd.length > 8 && pwd.length < 101 ? "text-success" : "text-danger"}>Between
+                                            8 and 100 chars
+                                        </li>
+                                        <li className={pwd.match(/.*\d/) ? "text-success" : "text-danger"}>At least one
+                                            number
+                                        </li>
+                                        <li className={pwd.match(/.*[a-z]/) ? "text-success" : "text-danger"}>At least
+                                            one lower-case character
+                                        </li>
+                                        <li className={pwd.match(/.*[A-Z]/) ? "text-success" : "text-danger"}>At least
+                                            one upper-case character
+                                        </li>
+                                        <li className={pwd.match(/.*[@$!%*?&]/) ? "text-success" : "text-danger"}>At
+                                            least one special character
+                                        </li>
+                                    </ul>
+                                </Form.Text>
+                            </Form.Group>
+                            <Form.Group className="mb-3" controlId="confirm_password">
+                                <Form.Label visuallyHidden={true}>Confirm Password</Form.Label>
+                                <Form.Control
+                                    className={errors && errors.confirm_password && classNames("border-danger")} {...register("confirm_password", {
+                                    required: true,
+                                    validate: (value, formValues) => {
+                                        return value === formValues.password;
+                                    }
+                                })} type="password" placeholder="confirm password"/>
+                                {errors && errors.confirm_password &&
+                                    <Form.Text className={classNames("text-danger")}>Must match Password.</Form.Text>}
+                            </Form.Group>
+                            <div style={{width: "100%"}}
+                                 className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                                <Button variant="primary" type="submit" disabled={!isDirty}>Next</Button>
+                            </div>
+                        </Form>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

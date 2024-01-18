@@ -29,7 +29,8 @@ const GenericExplanationModal = ({title, close, data, accept, ...restOfProps}) =
                     <Row>
                         <Form.Group controlId="description">
                             <Form.Label>Please enter description</Form.Label>
-                            <Form.Control className={errors && errors.description && classNames("border-danger")} type="text" {...register("description", {
+                            <Form.Control className={errors && errors.description && classNames("border-danger")}
+                                          type="text" {...register("description", {
                                 required: {value: true, message: "Description is required"}
                             })}></Form.Control>
                         </Form.Group>

@@ -60,75 +60,83 @@ const Home = ({site, page, links, user, ...restOfProps}) => {
 
     return (
         <Layout site={site} user={user}>
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                <div className={classNames("main-content")} style={{width: "100%"}}>
-                    {error &&
-                        <Alert variant={"danger"} dismissible onClick={() => setError(null)}>{error}</Alert>
-                    }
-                    <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                        <div className="h4">User Information:</div>
-                        <Form.Group className="mb-3" controlId="current_password">
-                            <Form.Label visuallyHidden={true}>First Name</Form.Label>
-                            <Form.Control {...register("current_password", {
-                                required: true,
-                                minLength: 8,
-                                maxLength: 100
-                            })} type="password" placeholder="current password"/>
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="password">
-                            <Form.Label visuallyHidden={true}>Last Name</Form.Label>
-                            <Form.Control
-                                className={errors && errors.password && classNames("border-danger")} {...register("password", {
-                                required: {value: true, message: "Password is required."},
-                                pattern: {
-                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
-                                }
-                            })} type="password" placeholder="password" onChange={(e) => setPwd(e.currentTarget.value)}/>
-                            {errors && errors.password && <Form.Text
-                                className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
-                            <Form.Text>
-                                <div>Password must contain:</div>
-                                <ul style={{listStyleType: "none"}}>
-                                    <li className={pwd.length > 8 && pwd.length < 101 ? "text-success" : "text-danger"}>Between
-                                        8 and 100 chars
-                                    </li>
-                                    <li className={pwd.match(/.*\d/) ? "text-success" : "text-danger"}>At least one
-                                        number
-                                    </li>
-                                    <li className={pwd.match(/.*[a-z]/) ? "text-success" : "text-danger"}>At least one
-                                        lower-case character
-                                    </li>
-                                    <li className={pwd.match(/.*[A-Z]/) ? "text-success" : "text-danger"}>At least one
-                                        upper-case character
-                                    </li>
-                                    <li className={pwd.match(/.*[@$!%*?&]/) ? "text-success" : "text-danger"}>At least
-                                        one special character
-                                    </li>
-                                </ul>
-                            </Form.Text>
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="confirm_password">
-                            <Form.Label visuallyHidden={true}>Last Name</Form.Label>
-                            <Form.Control  {...register("confirm_password",
-                                {
-                                    validate: {
-                                        passwordEqual: (value) => value === getValues().password || "Must match new password"
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className={classNames("main-content")} style={{width: "100%"}}>
+                        {error &&
+                            <Alert variant={"danger"} dismissible onClick={() => setError(null)}>{error}</Alert>
+                        }
+                        <Form onSubmit={handleSubmit(onSubmit)} method="post">
+                            <div className="h4">User Information:</div>
+                            <Form.Group className="mb-3" controlId="current_password">
+                                <Form.Label visuallyHidden={true}>First Name</Form.Label>
+                                <Form.Control {...register("current_password", {
+                                    required: true,
+                                    minLength: 8,
+                                    maxLength: 100
+                                })} type="password" placeholder="current password"/>
+                            </Form.Group>
+                            <Form.Group className="mb-3" controlId="password">
+                                <Form.Label visuallyHidden={true}>Last Name</Form.Label>
+                                <Form.Control
+                                    className={errors && errors.password && classNames("border-danger")} {...register("password", {
+                                    required: {value: true, message: "Password is required."},
+                                    pattern: {
+                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
                                     }
-                                })} type="password" placeholder="confirm new password"/>
-                            {errors && errors.confirm_password &&
-                                <Form.Text className={classNames("text-danger")}>{errors && errors.confirm_password.message}</Form.Text>
-                            }
-                        </Form.Group>
-                        <div style={{width: "100%"}}
-                             className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                            <Button variant="primary" type="submit" disabled={!isDirty}>Submit</Button>
-                        </div>
-                    </Form>
-                </div>
-                <Footer bg={bg}/>
-            </main>
+                                })} type="password" placeholder="password"
+                                    onChange={(e) => setPwd(e.currentTarget.value)}/>
+                                {errors && errors.password && <Form.Text
+                                    className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
+                                <Form.Text>
+                                    <div>Password must contain:</div>
+                                    <ul style={{listStyleType: "none"}}>
+                                        <li className={pwd.length > 8 && pwd.length < 101 ? "text-success" : "text-danger"}>Between
+                                            8 and 100 chars
+                                        </li>
+                                        <li className={pwd.match(/.*\d/) ? "text-success" : "text-danger"}>At least one
+                                            number
+                                        </li>
+                                        <li className={pwd.match(/.*[a-z]/) ? "text-success" : "text-danger"}>At least
+                                            one
+                                            lower-case character
+                                        </li>
+                                        <li className={pwd.match(/.*[A-Z]/) ? "text-success" : "text-danger"}>At least
+                                            one
+                                            upper-case character
+                                        </li>
+                                        <li className={pwd.match(/.*[@$!%*?&]/) ? "text-success" : "text-danger"}>At
+                                            least
+                                            one special character
+                                        </li>
+                                    </ul>
+                                </Form.Text>
+                            </Form.Group>
+                            <Form.Group className="mb-3" controlId="confirm_password">
+                                <Form.Label visuallyHidden={true}>Last Name</Form.Label>
+                                <Form.Control  {...register("confirm_password",
+                                    {
+                                        validate: {
+                                            passwordEqual: (value) => value === getValues().password || "Must match new password"
+                                        }
+                                    })} type="password" placeholder="confirm new password"/>
+                                {errors && errors.confirm_password &&
+                                    <Form.Text
+                                        className={classNames("text-danger")}>{errors && errors.confirm_password.message}</Form.Text>
+                                }
+                            </Form.Group>
+                            <div style={{width: "100%"}}
+                                 className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                                <Button variant="primary" type="submit" disabled={!isDirty}>Submit</Button>
+                            </div>
+                        </Form>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

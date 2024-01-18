@@ -4,7 +4,7 @@ import {Person} from "react-bootstrap-icons";
 import Login from "./login";
 import {useState} from "react";
 
-const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restOfProps }) => {
+const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restOfProps}) => {
     const [showLogin, setShowLogin] = useState(startWithLogin);
     const [actionText, setActionText] = useState(initialUser.isLoggedIn ? "Sign out" : "Sign In");
     const [user, setUser] = useState(initialUser);
@@ -112,7 +112,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
 
     return (
         <Navbar style={{display: "block", borderTopRightRadius: "50px"}} expand={true} bg={bg} variant={variant}>
-            <Navbar.Brand>presents: <span
+            <Navbar.Brand><span
                 className={classNames("h3", "sub-brand")}>{site === "snow" ? "Park Place Apartments @ Snow College" : "Stadium Way & College Way @ SUU"}</span></Navbar.Brand>
             <Navbar.Brand style={{width: "100%"}}>
                 <span className={classNames("d-inline-flex", "justify-content-end", "navbar-brand")}
@@ -122,15 +122,18 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
                     <Navbar.Text style={{cursor: "pointer"}} onClick={handleUserAction}>{actionText}</Navbar.Text>
                 }
                     <Nav style={{paddingRight: "1.5rem"}} className={classNames("justify-content-end")}>
-                        <NavDropdown align="end" style={{fontSize: "1rem"}} title={<Person className={classNames("h3")}/>}>
+                        <NavDropdown align="end" style={{fontSize: "1rem"}}
+                                     title={<Person className={classNames("h3")}/>}>
                             {user.editSite || user.manageApartment ?
                                 <NavDropdown.Item onClick={handleViewSite}>View Site</NavDropdown.Item> : <></>}
                             {user.admin && user.admin.includes(site) && !user.editSite ?
                                 <NavDropdown.Item onClick={handleEditSite}>Manage Site</NavDropdown.Item> : <></>}
                             {user.manage && user.manage.includes(site) && !user.manageApartment ?
-                                <NavDropdown.Item onClick={handleManageApartment}>Manage Apartments</NavDropdown.Item> : <></>}
-                            {!editSite ? <NavDropdown.Item href={`/tenants/${user.id}?site=${site}`} hidden={!user.isLoggedIn}>Manage
-                                Profile</NavDropdown.Item> : <></>}
+                                <NavDropdown.Item onClick={handleManageApartment}>Manage
+                                    Apartments</NavDropdown.Item> : <></>}
+                            {!editSite ?
+                                <NavDropdown.Item href={`/tenants/${user.id}?site=${site}`} hidden={!user.isLoggedIn}>Manage
+                                    Profile</NavDropdown.Item> : <></>}
                             {!editSite ? <NavDropdown.Item href={`/password?site=${site}`} hidden={!user.isLoggedIn}>Change
                                 Password</NavDropdown.Item> : <></>}
                             <NavDropdown.Item onClick={handleUserAction}>{actionText}</NavDropdown.Item>

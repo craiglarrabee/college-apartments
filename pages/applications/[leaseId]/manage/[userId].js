@@ -21,40 +21,60 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Home = ({site, navPage, links, user, tenant, currentLeases, application, userId, leaseId, content, ...restOfProps }) => {
+const Home = ({
+                  site,
+                  navPage,
+                  links,
+                  user,
+                  tenant,
+                  currentLeases,
+                  application,
+                  userId,
+                  leaseId,
+                  content,
+                  ...restOfProps
+              }) => {
 
     return (
-        <Layout site={site}  user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
-            <main>
-                <div className={classNames("main-content")}>
-                    <Tabs defaultActiveKey={1}>
-                        <Tab title="Personal Info" eventKey={1} key={1}>
-                            <TenantForm tenant={tenant} site={site} userId={userId} leaseId={leaseId} />
-                        </Tab>
-                        <Tab title="Application" eventKey={2} key={2}>
-                            <ApplicationForm {...content} application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} roomTypeId={tenant.room_type_id} />
-                        </Tab>
-                        <Tab title="Printable" eventKey={3} key={3}>
-                            <TenantForm tenant={tenant} site={site} userId={userId} leaseId={leaseId} hideButton={true} />
-                            <ApplicationForm {...content} printing={true} application={application} site={site} userId={userId} leaseId={leaseId} navPage={navPage} currentLeases={currentLeases} roomTypeId={tenant.room_type_id} />
-                            <div style={{width: "100%"}}
-                                 className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                                <Button onClick={() => window.print()}>Print</Button>
-                            </div>
-                        </Tab>
-                    </Tabs>
-                </div>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className={classNames("main-content")}>
+                        <Tabs defaultActiveKey={1}>
+                            <Tab title="Personal Info" eventKey={1} key={1}>
+                                <TenantForm tenant={tenant} site={site} userId={userId} leaseId={leaseId}/>
+                            </Tab>
+                            <Tab title="Application" eventKey={2} key={2}>
+                                <ApplicationForm {...content} application={application} site={site} userId={userId}
+                                                 leaseId={leaseId} navPage={navPage} currentLeases={currentLeases}
+                                                 roomTypeId={tenant.room_type_id}/>
+                            </Tab>
+                            <Tab title="Printable" eventKey={3} key={3}>
+                                <TenantForm tenant={tenant} site={site} userId={userId} leaseId={leaseId}
+                                            hideButton={true}/>
+                                <ApplicationForm {...content} printing={true} application={application} site={site}
+                                                 userId={userId} leaseId={leaseId} navPage={navPage}
+                                                 currentLeases={currentLeases} roomTypeId={tenant.room_type_id}/>
+                                <div style={{width: "100%"}}
+                                     className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                                    <Button onClick={() => window.print()}>Print</Button>
+                                </div>
+                            </Tab>
+                        </Tabs>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const {userId, leaseId, roomTypeId} = context.query;
-    const navPage = context.resolvedUrl.substring(0,context.resolvedUrl.indexOf("?")).replace(/\//, "")
+    const navPage = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
     const page = "application";
     const welcomePage = "welcome";

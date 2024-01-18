@@ -10,7 +10,8 @@ const LeaseForm = ({
                        navPage, site, userId, leaseId, lease, canEdit, lease_header, accommodations_header,
                        accommodations_body, rent_header, rent_body, vehicle_header, vehicle_body, lease_body,
                        lease_acceptance, rules, cleaning, repairs, rooms
-                   , ...restOfProps }) => {
+                       , ...restOfProps
+                   }) => {
     const {register, formState: {errors, isValid, isDirty}, handleSubmit} = useForm({defaultValues: lease});
     const today = new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
     const submitted = lease.lease_date !== null;

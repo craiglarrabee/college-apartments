@@ -2,12 +2,12 @@ import {Col, Form, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 
-const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit, ...restOfProps }) => {
+const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit, ...restOfProps}) => {
     const [timer, setTimer] = useState(null);
     const [rent, setRent] = useState(room_rent);
     const [desc, setDesc] = useState(room_desc);
 
-    const updateRent = async(value) => {
+    const updateRent = async (value) => {
         try {
             const options = {
                 method: "PUT",
@@ -27,7 +27,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
         }
     };
 
-    const updateDesc = async(value) => {
+    const updateDesc = async (value) => {
         try {
             const options = {
                 method: "PUT",
@@ -71,15 +71,20 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
                 <Row>
                     <Form.Group as={Col} xs={1} style={{paddingRight: "0px"}} controlId={`roomType${room_type_id}`}>
                         <Form.Label hidden={true}>Room Type</Form.Label>
-                        <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} plaintext readOnly type="text" defaultValue={`#${room_type_id}:$`}/>
+                        <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} plaintext
+                                      readOnly type="text" defaultValue={`#${room_type_id}:$`}/>
                     </Form.Group>
-                    <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "0px"}} controlId={`roomRent${room_type_id}`}>
+                    <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "0px"}}
+                                controlId={`roomRent${room_type_id}`}>
                         <Form.Label hidden={true}>Room Rent</Form.Label>
-                        <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} type="1" defaultValue={rent} onChange={rentChanged}/>
+                        <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} type="1"
+                                      defaultValue={rent} onChange={rentChanged}/>
                     </Form.Group>
-                    <Form.Group as={Col} xs={9} style={{paddingRight: "0px", paddingLeft: "0px"}} controlId={`roomDesc${room_type_id}`}>
+                    <Form.Group as={Col} xs={9} style={{paddingRight: "0px", paddingLeft: "0px"}}
+                                controlId={`roomDesc${room_type_id}`}>
                         <Form.Label hidden={true}>Room Description</Form.Label>
-                        <Form.Control type="text" style={{paddingRight: "0px", paddingLeft: "0px"}} defaultValue={desc} onChange={descChanged}/>
+                        <Form.Control type="text" style={{paddingRight: "0px", paddingLeft: "0px"}} defaultValue={desc}
+                                      onChange={descChanged}/>
                     </Form.Group>
                 </Row>
             </>

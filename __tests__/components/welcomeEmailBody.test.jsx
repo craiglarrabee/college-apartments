@@ -1,11 +1,11 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { WelcomeEmailBody } from "../../components/welcomeEmailBody";
+import {render, screen} from "@testing-library/react";
+import {WelcomeEmailBody} from "../../components/welcomeEmailBody";
 import "@testing-library/jest-dom";
 
 describe("WelcomeEmailBody", () => {
     const mockCompany = "Mock Company";
-    const mockTenant = { name: "John Doe" };
+    const mockTenant = {name: "John Doe"};
     const mockHeader = "Welcome to our community!";
     const mockSite = "mockSite";
     const mockPage = "mockPage";
@@ -30,7 +30,11 @@ describe("WelcomeEmailBody", () => {
         );
 
         // Assert that the component renders without throwing an error
-        expect(screen.getByText(`${mockCompany}     ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`)).toBeInTheDocument();
+        expect(screen.getByText(`${mockCompany}     ${new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        })}`)).toBeInTheDocument();
         expect(screen.getByText(mockHeader)).toBeInTheDocument();
         expect(screen.getByText(`Dear ${mockTenant.name}:`)).toBeInTheDocument();
         expect(screen.getByText(mockBody)).toBeInTheDocument();

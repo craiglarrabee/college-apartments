@@ -15,7 +15,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Home = ({site, user, links, navPage, ...restOfProps }) => {
+const Home = ({site, user, links, navPage, ...restOfProps}) => {
 
     const onSubmit = async (data, event) => {
 
@@ -38,15 +38,18 @@ const Home = ({site, user, links, navPage, ...restOfProps }) => {
     }
 
     return (
-        <Layout site={site}  user={user} >
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
-            <main>
-                <div className={classNames("main-content")}>
-                    <Button onClick={onSubmit} >Send</Button>
-                </div>
-                <Footer bg={bg}/>
-            </main>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    <div className={classNames("main-content")}>
+                        <Button onClick={onSubmit}>Send</Button>
+                    </div>
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

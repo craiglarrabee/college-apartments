@@ -155,14 +155,15 @@ const ApplicationFormGroups = ({
                 </Form.Group>
             </Row>
             <Row>
-            <div className={classNames("d-inline-flex")} >When roomate assignments are made, you will receive an email
-                with phone numbers and email addresses for your roommates. If you do not want us to share this
-                information with your roommates please click this box:&nbsp;</div>
-            <Form.Check
-                disabled={!canChangeApplication}
-                style={{marginLeft: "10px"}}
-                className="mb-3" {...register("do_not_share_info", {setValueAs: value => value !== null ? value.toString() : ""})}
-                type="checkbox" value="1" id="share_info_false" label="Please do not share my information." inline/>
+                <div className={classNames("d-inline-flex")}>When roomate assignments are made, you will receive an
+                    email
+                    with phone numbers and email addresses for your roommates. If you do not want us to share this
+                    information with your roommates please click this box:&nbsp;</div>
+                <Form.Check
+                    disabled={!canChangeApplication}
+                    style={{marginLeft: "10px"}}
+                    className="mb-3" {...register("do_not_share_info", {setValueAs: value => value !== null ? value.toString() : ""})}
+                    type="checkbox" value="1" id="share_info_false" label="Please do not share my information." inline/>
             </Row>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="roomate_desc">

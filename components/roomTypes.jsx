@@ -4,7 +4,17 @@ import classNames from "classnames";
 import {useForm} from "react-hook-form";
 import CurrentLeases from "./currentLeases";
 
-const RoomTypes = ({show, close, setTenantRoomType, userId, roomTypes, selectedRoomType, selectedLocation, apartment_number, ...restOfProps }) => {
+const RoomTypes = ({
+                       show,
+                       close,
+                       setTenantRoomType,
+                       userId,
+                       roomTypes,
+                       selectedRoomType,
+                       selectedLocation,
+                       apartment_number,
+                       ...restOfProps
+                   }) => {
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
 
     const handleClose = () => {
@@ -38,8 +48,9 @@ const RoomTypes = ({show, close, setTenantRoomType, userId, roomTypes, selectedR
                     <input {...register("user_id")} value={userId} type={"hidden"}/>
                     {roomTypes.map(lease =>
                         <>
-                            <CurrentLeases canChangeApplication={true} key={lease.leaseId} {...lease} register={register}
-                                           selectedRoomType={selectedRoomType} selectedLocation={selectedLocation} />
+                            <CurrentLeases canChangeApplication={true} key={lease.leaseId} {...lease}
+                                           register={register}
+                                           selectedRoomType={selectedRoomType} selectedLocation={selectedLocation}/>
                         </>
                     )}
                     <div style={{width: "100%"}}

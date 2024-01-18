@@ -21,7 +21,18 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Assignments = ({site, page, links, user, apartments, roomTypes, semester, tenants, currentLeaseRoomTypes, ...restOfProps }) => {
+const Assignments = ({
+                         site,
+                         page,
+                         links,
+                         user,
+                         apartments,
+                         roomTypes,
+                         semester,
+                         tenants,
+                         currentLeaseRoomTypes,
+                         ...restOfProps
+                     }) => {
     const [activeId, setActiveId] = useState(null);
     const [activeTabKey, setActiveTabKey] = useState(roomTypes[0].id);
     const [showRoomTypes, setShowRoomTypes] = useState(false);
@@ -54,7 +65,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
         setActiveId(event.active.id);
     };
 
-    const handleDragEnd = async ({active, over, ...restOfProps }) => {
+    const handleDragEnd = async ({active, over, ...restOfProps}) => {
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
         if (!tenant.spots && tenant.user_id != tenant.created_by_user_id && over.data?.current?.roomTypeId) {
             setShowRoomTypes(true);
@@ -71,7 +82,7 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
         setActiveId(null);
     };
 
-    const handleDragOver = async ({active, over, ...restOfProps }) => {
+    const handleDragOver = async ({active, over, ...restOfProps}) => {
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
         if (!over || over.data.current?.spots < tenant.spots) {
             return;
@@ -176,126 +187,134 @@ const Assignments = ({site, page, links, user, apartments, roomTypes, semester, 
     };
 
     return (
-        <Layout site={site}  user={user} wide={true}>
-            <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+        <Layout site={site} user={user} wide={true}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <main>
-                {error && <Alert variant={"danger"} dismissible onClose={() => setError(null)}>{error}</Alert>}
-                <Tabs activeKey={activeTabKey} onSelect={(e) => setActiveTabKey(parseInt(e))}>
-                    {roomTypes.map(type =>
-                        <Tab eventKey={type.id} key={type.id} title={type.label}>
-                            <div>{type.room_desc} (${type.room_rent})</div>
-                            <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}
-                                        onDragOver={handleDragOver}>
-                                <div style={{width: "100%"}} className={classNames("d-flex")}>
-                                    <div style={{
-                                        margin: "5px",
-                                        width: "49%",
-                                        border: "1px solid grey",
-                                        borderRadius: "5px",
-                                        height: "750px",
-                                        overflowY: "auto",
-                                        overflowX: "hidden"
-                                    }}
-                                         className={classNames("d-flex", "flex-row", "flex-wrap")}>
-                                        {apartments
-                                            .filter(apartment => apartment.room_type_id === type.id)
-                                            .map(apartment =>
-                                                <Apartment key={apartment.apartment_number}
-                                                           roomType={apartment.room_type}
-                                                           id={apartment.apartment_number}
-                                                           apartmentNumber={apartment.apartment_number}
-                                                           tenants={tenants}
-                                                           data={{
-                                                               roomTypeId: apartment.room_type_id,
-                                                               spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[apartment.apartment_number].reduce((partialSum, a) => partialSum + a.spots, 0)
-                                                           }}>
-                                                    {assignments[apartment.apartment_number].map(tenant =>
-                                                        <Tenant key={tenant.user_id} userId={tenant.user_id}>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <main>
+                    {error && <Alert variant={"danger"} dismissible onClose={() => setError(null)}>{error}</Alert>}
+                    <Tabs activeKey={activeTabKey} onSelect={(e) => setActiveTabKey(parseInt(e))}>
+                        {roomTypes.map(type =>
+                            <Tab eventKey={type.id} key={type.id} title={type.label}>
+                                <div>{type.room_desc} (${type.room_rent})</div>
+                                <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}
+                                            onDragOver={handleDragOver}>
+                                    <div style={{width: "100%"}} className={classNames("d-flex")}>
+                                        <div style={{
+                                            margin: "5px",
+                                            width: "49%",
+                                            border: "1px solid grey",
+                                            borderRadius: "5px",
+                                            height: "750px",
+                                            overflowY: "auto",
+                                            overflowX: "hidden"
+                                        }}
+                                             className={classNames("d-flex", "flex-row", "flex-wrap")}>
+                                            {apartments
+                                                .filter(apartment => apartment.room_type_id === type.id)
+                                                .map(apartment =>
+                                                    <Apartment key={apartment.apartment_number}
+                                                               roomType={apartment.room_type}
+                                                               id={apartment.apartment_number}
+                                                               apartmentNumber={apartment.apartment_number}
+                                                               tenants={tenants}
+                                                               data={{
+                                                                   roomTypeId: apartment.room_type_id,
+                                                                   spots: (apartment.room_type === "Shared" ? 2 : 1) * apartment.rooms - assignments[apartment.apartment_number].reduce((partialSum, a) => partialSum + a.spots, 0)
+                                                               }}>
+                                                        {assignments[apartment.apartment_number].map(tenant =>
+                                                            <Tenant key={tenant.user_id} userId={tenant.user_id}>
+                                                                <TenantCard visible={activeId !== tenant.user_id}
+                                                                            tenant={tenant}
+                                                                            backgroundColor={type.id === tenant.base_type_id && tenant.created_by_user_id == tenant.user_id ? roomTypeColor : (tenant.user_id != tenant.created_by_user_id ? previousColor : otherTypeColor)}/>
+                                                            </Tenant>)}
+                                                    </Apartment>
+                                                )}
+                                        </div>
+                                        <div style={{
+                                            width: "49%",
+                                            margin: "5px",
+                                            border: "1px solid grey",
+                                            borderRadius: "5px",
+                                            height: "750px",
+                                            overflowY: "auto",
+                                            overflowX: "hidden",
+                                            display: "flex",
+                                            flexDirection: "column"
+                                        }}>
+                                            <UnassignedTenants apartmentNumber="unassigned"
+                                                               roomType="type"
+                                                               additionalStyle={{backgroundColor: roomTypeColor}}
+                                                               title="Tenants applied with matching room type">
+                                                {tenants
+                                                    .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.base_type_id === type.id && !tenant.apartment_number)
+                                                    .map(tenant =>
+                                                        <Tenant key={tenant.user_id} userId={tenant.user_id}
+                                                                data="current">
                                                             <TenantCard visible={activeId !== tenant.user_id}
                                                                         tenant={tenant}
-                                                                        backgroundColor={type.id === tenant.base_type_id && tenant.created_by_user_id == tenant.user_id ? roomTypeColor : (tenant.user_id != tenant.created_by_user_id ? previousColor : otherTypeColor)}/>
-                                                        </Tenant>)}
-                                                </Apartment>
-                                            )}
+                                                                        backgroundColor={roomTypeColor}/>
+                                                        </Tenant>
+                                                    )}
+                                            </UnassignedTenants>
+                                            <UnassignedTenants apartmentNumber="unassigned"
+                                                               roomType="others"
+                                                               additionalStyle={{backgroundColor: otherTypeColor}}
+                                                               title="Tenants applied with other room type">
+                                                {tenants
+                                                    .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.base_type_id && tenant.base_type_id !== type.id && !tenant.apartment_number)
+                                                    .map(tenant =>
+                                                        <Tenant key={tenant.user_id} userId={tenant.user_id}
+                                                                data="current">
+                                                            <TenantCard visible={activeId !== tenant.user_id}
+                                                                        tenant={tenant}
+                                                                        backgroundColor={otherTypeColor}/>
+                                                        </Tenant>
+                                                    )}
+                                            </UnassignedTenants>
+                                            <UnassignedTenants apartmentNumber="unassigned"
+                                                               roomType="previous"
+                                                               additionalStyle={{backgroundColor: previousColor}}
+                                                               title="Previous tenants">
+                                                {tenants
+                                                    .filter(tenant => tenant.user_id != tenant.created_by_user_id && !tenant.apartment_number)
+                                                    .map(tenant =>
+                                                        <Tenant key={tenant.user_id} userId={tenant.user_id}
+                                                                data="previous">
+                                                            <TenantCard visible={activeId !== tenant.user_id}
+                                                                        tenant={tenant}
+                                                                        backgroundColor={previousColor}/>
+                                                        </Tenant>
+                                                    )}
+                                            </UnassignedTenants>
+                                        </div>
+                                        <DragOverlay>
+                                            {activeId ? tenants
+                                                    .filter(tenant => tenant.user_id === activeId)
+                                                    .map(tenant => <TenantCard visible={true} tenant={tenant}
+                                                                               backgroundColor={type.id === tenant.base_type_id ? roomTypeColor : (!tenant.base_type_id ? previousColor : otherTypeColor)}/>)
+                                                : null}
+                                        </DragOverlay>
                                     </div>
-                                    <div style={{
-                                        width: "49%",
-                                        margin: "5px",
-                                        border: "1px solid grey",
-                                        borderRadius: "5px",
-                                        height: "750px",
-                                        overflowY: "auto",
-                                        overflowX: "hidden",
-                                        display: "flex",
-                                        flexDirection: "column"
-                                    }}>
-                                        <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomType="type"
-                                                           additionalStyle={{backgroundColor: roomTypeColor}}
-                                                           title="Tenants applied with matching room type">
-                                            {tenants
-                                                .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.base_type_id === type.id && !tenant.apartment_number)
-                                                .map(tenant =>
-                                                    <Tenant key={tenant.user_id} userId={tenant.user_id} data="current">
-                                                        <TenantCard visible={activeId !== tenant.user_id}
-                                                                    tenant={tenant} backgroundColor={roomTypeColor}/>
-                                                    </Tenant>
-                                                )}
-                                        </UnassignedTenants>
-                                        <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomType="others"
-                                                           additionalStyle={{backgroundColor: otherTypeColor}}
-                                                           title="Tenants applied with other room type">
-                                            {tenants
-                                                .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.base_type_id && tenant.base_type_id !== type.id && !tenant.apartment_number)
-                                                .map(tenant =>
-                                                    <Tenant key={tenant.user_id} userId={tenant.user_id} data="current">
-                                                        <TenantCard visible={activeId !== tenant.user_id}
-                                                                    tenant={tenant} backgroundColor={otherTypeColor}/>
-                                                    </Tenant>
-                                                )}
-                                        </UnassignedTenants>
-                                        <UnassignedTenants apartmentNumber="unassigned"
-                                                           roomType="previous"
-                                                           additionalStyle={{backgroundColor: previousColor}}
-                                                           title="Previous tenants">
-                                            {tenants
-                                                .filter(tenant => tenant.user_id != tenant.created_by_user_id && !tenant.apartment_number)
-                                                .map(tenant =>
-                                                    <Tenant key={tenant.user_id} userId={tenant.user_id}
-                                                            data="previous">
-                                                        <TenantCard visible={activeId !== tenant.user_id}
-                                                                    tenant={tenant} backgroundColor={previousColor}/>
-                                                    </Tenant>
-                                                )}
-                                        </UnassignedTenants>
-                                    </div>
-                                    <DragOverlay>
-                                        {activeId ? tenants
-                                                .filter(tenant => tenant.user_id === activeId)
-                                                .map(tenant => <TenantCard visible={true} tenant={tenant}
-                                                                           backgroundColor={type.id === tenant.base_type_id ? roomTypeColor : (!tenant.base_type_id ? previousColor : otherTypeColor)}/>)
-                                            : null}
-                                    </DragOverlay>
-                                </div>
-                            </DndContext>
-                        </Tab>
-                    )}
-                </Tabs>
-                {showRoomTypes &&
-                    <RoomTypes
-                        selectedRoomType={activeTabKey}
-                        site={site}
-                        roomTypes={currentLeaseRoomTypes}
-                        show={showRoomTypes} close={() => setShowRoomTypes(false)}
-                        setTenantRoomType={setPreviousTenantData}
-                        userId={selectedTenantId}
-                        apartment_number={selectedApartmentNumber}
-                    />
-                }
-                <Footer bg={bg}/>
-            </main>
+                                </DndContext>
+                            </Tab>
+                        )}
+                    </Tabs>
+                    {showRoomTypes &&
+                        <RoomTypes
+                            selectedRoomType={activeTabKey}
+                            site={site}
+                            roomTypes={currentLeaseRoomTypes}
+                            show={showRoomTypes} close={() => setShowRoomTypes(false)}
+                            setTenantRoomType={setPreviousTenantData}
+                            userId={selectedTenantId}
+                            apartment_number={selectedApartmentNumber}
+                        />
+                    }
+                    <Footer bg={bg}/>
+                </main>
+
+            </div>
         </Layout>
     )
 };

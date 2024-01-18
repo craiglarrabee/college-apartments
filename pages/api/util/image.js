@@ -22,7 +22,7 @@ const image = withIronSessionApiRoute(async (req, res) => {
                 DeleteDynamicContent(req.query.site, req.query.page, req.query.fileName);
                 res.status(204).send();
                 return;
-           default:
+            default:
                 res.status(405).send();
                 return;
         }

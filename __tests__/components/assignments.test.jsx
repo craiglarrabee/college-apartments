@@ -1,7 +1,8 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { UserApartment } from "../../components/assignments";
+import {render, screen} from "@testing-library/react";
+import {UserApartment} from "../../components/assignments";
 import "@testing-library/jest-dom";
+
 describe("UserApartment", () => {
     const mockData = [
         {
@@ -21,7 +22,7 @@ describe("UserApartment", () => {
     ];
 
     test("renders UserApartment component", () => {
-        render(<UserApartment data={mockData} />);
+        render(<UserApartment data={mockData}/>);
 
         // Assert that the component renders without throwing an error
         expect(screen.getByText("Apartment 101")).toBeInTheDocument();

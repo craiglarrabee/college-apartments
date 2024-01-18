@@ -3,11 +3,16 @@ import classNames from "classnames";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 
-export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hideButton, ...restOfProps }) => {
+export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hideButton, ...restOfProps}) => {
 
     const [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? tenant.convicted_crime : false);
     const [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? tenant.charged_crime : false);
-    const {register, reset, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({defaultValues: {...tenant}});
+    const {
+        register,
+        reset,
+        formState: {isValid, isDirty, errors},
+        handleSubmit
+    } = useForm({defaultValues: {...tenant}});
 
     const handleConvicted = () => setConvictedCrime(true);
     const handleNotConvicted = () => setConvictedCrime(false);
@@ -143,7 +148,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                             className={classNames("text-danger")}>{errors && errors.cell_phone2.message}</Form.Text>}
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="home_phone">
-                        <Form.Label >Home Phone</Form.Label>
+                        <Form.Label>Home Phone</Form.Label>
                         <Form.Control
                             className={errors && errors.home_phone && classNames("border-danger")} {...register("home_phone", {})}
                             type="tel"
@@ -374,11 +379,11 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                     </Form.Group>
                 </Row>
                 {hideButton ||
-                <div style={{width: "100%"}}
-                     className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                    <Button variant="primary" type="submit"
-                            disabled={!isNewApplication && (!isDirty || !isValid)}>{isNewApplication ? "Next" : "Save"}</Button>
-                </div>
+                    <div style={{width: "100%"}}
+                         className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                        <Button variant="primary" type="submit"
+                                disabled={!isNewApplication && (!isDirty || !isValid)}>{isNewApplication ? "Next" : "Save"}</Button>
+                    </div>
                 }
             </Form>
 
