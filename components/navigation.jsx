@@ -3,22 +3,46 @@ import Image from "next/image";
 import classNames from "classnames";
 import {List} from "react-bootstrap-icons";
 import Link from "next/link";
+import {useEffect, useRef, useState} from "react";
+import {useWindowSize} from "../lib/window";
 
 const Navigation = ({bg, variant, brandUrl, links, page, site, ...restOfProps}) => {
     const navLinks = buildNavLinks(links, "", site);
+    const [width, height] = useWindowSize();
+    const [extraClass, setExtraClass] = useState("");
+    const [expandOn, setExpandOn] = useState("lg");
+    const handleToggle = (expanded) => {
+        if (width < 992 && expanded) {
+            setExtraClass("showall");
+            setExpandOn("sm");
+        } else {
+            setExtraClass("");
+            setExpandOn("lg");
+        }
+    };
+
+    useEffect(() => {
+        if (window.innerWidth < 992) {
+           document.getElementsByClassName("sidebar-menu-toggle")[0].click();
+        }
+    }, []);
+
 
     return (
         <>
             <SidebarMenu
                 bg={bg}
                 variant={variant}
-                expand="sm"
+                expand={expandOn}
                 defaultExpanded={true}
                 exclusiveExpand={true}
                 collapseOnSelect={false}
                 activeKey={page}
+                className={extraClass}
+                onToggle={handleToggle}
             >
                 <SidebarMenu.Collapse >
+                    <SidebarMenu.Toggle ><List/></SidebarMenu.Toggle>
                     <SidebarMenu.Header>
                         <SidebarMenu.Nav.Icon>
                             <Link href={"http://www.utahcollegeapartments.com"}>
@@ -29,7 +53,6 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, ...restOfProps}) 
                                           href={"http://www.utahcollegeapartments.com"}>
                                 <div>UtahCollegeApartments</div>
                         </SidebarMenu.Brand>
-                         <SidebarMenu.Toggle><List/></SidebarMenu.Toggle>
                     </SidebarMenu.Header>
                     <SidebarMenu.Body>
                         <SidebarMenu.Nav>
@@ -71,7 +94,7 @@ function buildNavLink(item, links, site) {
         return (
             <SidebarMenu.Nav.Link
                 href={`${!item.target ? "/" : ""}${item.page}?site=${site}${item.page === "user" ? ("&" + new Date().getTime()) : ""}`}
-                key={item.position} eventKey={item.page} target={item.target}>
+                key={item.position} eventKey={item.page} target={item.target} >
                 <SidebarMenu.Nav.Item>
                     <SidebarMenu.Nav.Title>{item.label}</SidebarMenu.Nav.Title>
                 </SidebarMenu.Nav.Item>

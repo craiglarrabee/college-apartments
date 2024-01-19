@@ -1,12 +1,12 @@
 $primary: #5FAFD2;
-$sidebar-menu-width-expanded: 265px;
-$app-max-width: 950px;
+$sidebar-menu-width-collapsed: 50px;
 $body-bg: white;
 $bg: #f8f9fa;
 $nav-link-font-size: 16pt;
 $nav-link-font-weight: 1000;
 $sidebar-menu-dark-color: $primary;
 $sidebar-menu-light-color: $primary;
+$bg-light: rgb(248, 249, 250);
 $sidebar-menu-light-active-color: gray;
 $sidebar-menu-dark-active-color: white;
 $sidebar-menu-nav-link-padding-y: 1px;
@@ -21,6 +21,14 @@ body,
   margin-right: 80px;
 }
 
+aside {
+  background-color: $bg-light;
+}
+
+.sidebar-menu-toggle {
+  border-width: 0px;
+}
+
 .carousel-control {
   top: 50%;
 }
@@ -28,6 +36,15 @@ body,
 .carousel-inner {
   margin-left: 55px;
   margin-right: 50px;
+}
+
+aside.showall {
+  position: absolute !important;
+  left: 0px;
+  top: 0px;
+  z-index: 1000;
+  background: $bg;
+  height: 100%;
 }
 
 .carousel-control-prev, .carousel-control-next {
@@ -45,7 +62,7 @@ body {
 
   html,
   body {
-    overflow-x: unset !important;
+    //overflow-x: unset !important;
   }
 
   button {
@@ -64,19 +81,6 @@ li.text-danger:before {
 
 body.snow {
   background-image: url("../public/images/collage.jpg");
-}
-
-.sidebar-menu-sub-collapse span.sidebar-menu-nav-title {
-  padding-left: 3.0rem;
-}
-aside {
-  width: 70px !important;
-}
-aside.show {
-  width: 350px !important;
-}
-.sidebar-menu-collapse.show {
-  width: 350px !important;
 }
 
 form div {
@@ -169,62 +173,37 @@ main {
 }
 
 @media screen and (max-width: 1200px) {
-  img {
+  img[role=carousel-image] {
     width: 480px;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  img {
+  img[role=carousel-image] {
     width: 720px;
   }
 }
 
 @media screen and (max-width: 992px) {
-  img {
+  img[role=carousel-image] {
     width: 320px;
   }
-  //aside {
-  //  position: absolute;
-  //  left: 0px;
-  //  zIndex: 1000;
-  //  background: $bg;
-  //}
 }
 
-.main-wrapper-responsive {
-  @each $breakpoint in map-keys($grid-breakpoints) {
-    $next: breakpoint-next($breakpoint, $grid-breakpoints);
-    $infix: breakpoint-infix($next, $grid-breakpoints);
-
-    &.sidebar-menu-rtl {
-      grid-template-areas:
-        "header sidebar"
-        "main sidebar";
-    }
-
-    // stylelint-disable-next-line scss/selector-no-union-class-name
-    &#{$infix} {
-      @include media-breakpoint-down($next) {
-        grid-template-areas:
-          "header header"
-          "sidebar main";
-
-        &.rtl {
-          grid-template-areas:
-            "header header"
-            "main sidebar";
-        }
-      }
-
-      &.rtl {
-        .sidebar-menu-header {
-          flex-direction: row-reverse;
-        }
-      }
-    }
+@media screen and (max-width: 600px) {
+  html,
+  body,
+  #root,
+  #myCarousel {
+    margin: 0 auto;
   }
 }
+@media screen and (max-width: 480px) {
+  img[role=carousel-image] {
+    width: 200px;
+  }
+}
+
 
 .main-header {
   grid-area: header;
@@ -257,15 +236,6 @@ table.api {
   th.description {
     width: 40%;
   }
-}
-
-.sidebar-menu {
-  padding-top: .4rem;
-  padding-left: .1rem;
-  flex-direction: column;
-  grid-area: sidebar;
-  overflow-x: hidden;
-  width: $sidebar-menu-width-expanded
 }
 
 .sidebar-menu-dark {
