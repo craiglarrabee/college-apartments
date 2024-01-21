@@ -14,7 +14,7 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, ...restOfProps}) 
     const handleToggle = (expanded) => {
         if (width < 992 && expanded) {
             setExtraClass("showall");
-            setExpandOn("sm");
+            setExpandOn("xs");
         } else {
             setExtraClass("");
             setExpandOn("lg");

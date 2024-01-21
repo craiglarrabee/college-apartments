@@ -54,7 +54,7 @@ aside.showall {
 }
 
 body {
-  display: flex;
+  display: block;
   justify-content: center;
 }
 
@@ -192,15 +192,11 @@ main {
 
 @media screen and (max-width: 600px) {
   html,
+  aside,
   body,
   #root,
   #myCarousel {
     margin: 0 auto;
-  }
-}
-@media screen and (max-width: 480px) {
-  img[role=carousel-image] {
-    width: 200px;
   }
 }
 
