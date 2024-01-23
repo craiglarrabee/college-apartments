@@ -1,4 +1,4 @@
-import {Alert, Button, Col, Form, Row} from "react-bootstrap";
+import {Alert, Button, Col, Form, FormCheck, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 import WorkFormGroups from "./workFormGroups";
@@ -24,8 +24,11 @@ const ApplicationForm = ({
                              leaseId,
                              application,
                              currentLeases,
-                             roomTypeId
-                             , ...restOfProps
+                             roomTypeId,
+                             emailAddress,
+                             company,
+                             body,
+                             ...restOfProps
                          }) => {
     application[`lease_${leaseId}_room_type_id`] = application.lease_room_type_id;
     const {
@@ -35,9 +38,12 @@ const ApplicationForm = ({
         handleSubmit
     } = useForm({defaultValues: {...application}});
     const [error, setError] = useState();
+    const [success, setSuccess] = useState();
     const [processed, setProcessed] = useState(application.processed);
+    const [sendEmail, setSendEmail] = useState(true);
     const canChangeApplication = !isTenant || !application.processed;
     const showButtons = canChangeApplication && !printing;
+    const from = `${site}@snowcollegeapartments.com`;
 
     const handleDelete = async () => {
         try {
@@ -60,6 +66,36 @@ const ApplicationForm = ({
         }
     };
 
+    const sendResponseEmail = async () => {
+        try {
+            const payload = {
+                from: from,
+                subject: `Welcome to ${company}`,
+                address: emailAddress,
+                body: body
+            };
+
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+            }
+
+            const resp = await fetch(`/api/util/email?site=${site}`, options);
+            switch (resp.status) {
+                case 400:
+                    setError("An error occurred sending the application response email.");
+                    break;
+                case 204:
+                    setSuccess(`Application response email sent.`);
+                    break;
+            }
+        } catch (e) {
+            setError(`An error occurred sending the application response email. ${e.message}`);
+            console.error(e);
+        }
+    };
+
     const handleSetProcessedStatus = async (processed) => {
 
         try {
@@ -75,6 +111,7 @@ const ApplicationForm = ({
                     setError(`An error occurred updating the application. Please try again. ${JSON.stringify(await resp.json())}`);
                     break;
                 case 204:
+                    if (sendEmail && !processed) await sendResponseEmail();
                     setProcessed(processed);
                     break;
             }
@@ -116,6 +153,8 @@ const ApplicationForm = ({
         <>
             <Form onSubmit={handleSubmit(onSubmitApplication)} method="post">
                 {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
+                {success &&
+                    <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
                 {site === "suu" ?
                     <WorkFormGroups register={register} application={application} errors={errors}
                                     canChangeApplication={canChangeApplication}/> : null}
@@ -168,8 +207,15 @@ const ApplicationForm = ({
                         {isDirty || isTenant ?
                             <Button variant="primary" disabled={!isDirty} type="submit"
                                     style={{margin: "5px"}}>{"Save"}</Button> :
-                            <Button variant="primary"
-                                    onClick={() => handleSetProcessedStatus(!processed)}>{processed ? "Mark Unprocessed" : "Mark Processed"}</Button>
+                            <>
+                            {!processed &&
+                                <div style={{height: "100%", alignSelf: "end", display: "inline-flex", }} >
+                                    <Form.Check onClick={() => setSendEmail(!sendEmail)} className="mb-3" type="checkbox" id="sendEmailBox" checked={sendEmail} />
+                                    <span>Send Email</span>
+                                </div>
+                            }
+                                <Button variant="primary" onClick={() => handleSetProcessedStatus(!processed)}>{processed ? "Mark Unprocessed" : "Mark Processed"}</Button>
+                            </>
                         }
                         {!isTenant &&
                             <Button variant="primary" onClick={handleDelete} style={{margin: "5px"}}>{"Delete"}</Button>

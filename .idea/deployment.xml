@@ -18,6 +18,7 @@
             <excludedPath local="true" path="$PROJECT_DIR$/upload" />
             <excludedPath local="true" path="$PROJECT_DIR$/.next/cache/webpack/client-development" />
             <excludedPath local="true" path="$PROJECT_DIR$/.next/cache/webpack/server-development" />
+            <excludedPath local="true" path="$PROJECT_DIR$/.next/cache/webpack/client-development-fallback" />
           </excludedPaths>
         </serverdata>
       </paths>

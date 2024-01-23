@@ -32,6 +32,8 @@ const Home = ({
                   userId,
                   leaseId,
                   content,
+                  company,
+                  body,
                   ...restOfProps
               }) => {
 
@@ -49,7 +51,7 @@ const Home = ({
                             <Tab title="Application" eventKey={2} key={2}>
                                 <ApplicationForm {...content} application={application} site={site} userId={userId}
                                                  leaseId={leaseId} navPage={navPage} currentLeases={currentLeases}
-                                                 roomTypeId={tenant.room_type_id}/>
+                                                 roomTypeId={tenant.room_type_id} emailAddress={tenant.email} company={company} body={body} />
                             </Tab>
                             <Tab title="Printable" eventKey={3} key={3}>
                                 <TenantForm tenant={tenant} site={site} userId={userId} leaseId={leaseId}
@@ -89,9 +91,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const [welcomeRows, contentRows, nav, tenant, currentLeases, application] = await Promise.all([
+    const [welcomeRows, contentRows, emailContentRows, nav, tenant, currentLeases, application] = await Promise.all([
         GetDynamicContent(site, welcomePage),
         GetDynamicContent(site, page),
+        GetDynamicContent(site, "response"),
         GetNavLinks(user, site),
         GetUserLeaseTenant(userId, leaseId, roomTypeId),
         GetLeaseRoomsMap(leaseId),
@@ -99,6 +102,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
 
     contentRows.forEach(row => content[row.name] = row.content);
+    const emailContent = [];
+    emailContentRows.forEach(row => emailContent[row.name] = row.content);
     if (application) {
         application.lease_room_type_id = `${application.lease_id}_${application.room_type_id}`;
         application.do_not_share_info = !application.share_info;
@@ -112,6 +117,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             tenant: {...tenant},
             content: content,
             ...welcomeRows,
+            ...emailContent,
             currentLeases: currentLeases,
             application: application,
             navPage: navPage,
@@ -119,6 +125,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             welcomePage: welcomePage,
             userId: userId,
             leaseId: leaseId,
+            company: company
         }
     };
 }, ironOptions);

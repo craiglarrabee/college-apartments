@@ -188,6 +188,9 @@ main {
   img[role=carousel-image] {
     width: 320px;
   }
+  div.row {
+    display: block;
+  }
 }
 
 @media screen and (max-width: 600px) {
