@@ -145,7 +145,7 @@ const ApplicationFormGroups = ({
             <Row>
                 <Form.Group as={Col} controlId="likes_dislikes">
                     <Form.Label visuallyHidden={true}>Likes and Dislikes</Form.Label>
-                    <Form.Control {...register("likes_dislikes", {maxLength: 255})} name="likes_dislikes" as="textarea"
+                    <Form.Control {...register("likes_dislikes", {maxLength: 1024})} name="likes_dislikes" as="textarea"
                                   rows={3}
                                   disabled={!canChangeApplication}
                                   placeholder="Tell us about your likes and dislikes. Also, if you were referred here by someone, please list their name here."
@@ -168,7 +168,7 @@ const ApplicationFormGroups = ({
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="roomate_desc">
                     <Form.Label visuallyHidden={true}>Roommate Description</Form.Label>
-                    <Form.Control {...register("roomate_desc", {maxLength: 255})} as="textarea" rows={3} type="text"
+                    <Form.Control {...register("roomate_desc", {maxLength: 1024})} as="textarea" rows={3} type="text"
                                   disabled={!canChangeApplication}
                                   placeholder="What are you looking for in a roomate or others who are living in your apartment?"
                     />
