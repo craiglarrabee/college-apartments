@@ -40,10 +40,56 @@ const ApplicationForm = ({
     const [error, setError] = useState();
     const [success, setSuccess] = useState();
     const [processed, setProcessed] = useState(application.processed);
+    const [depositReceived, setDepositReceived] = useState(!!application.deposit_date);
     const [sendEmail, setSendEmail] = useState(true);
     const canChangeApplication = !isTenant || !application.processed;
     const showButtons = canChangeApplication && !printing;
     const from = `${site}@snowcollegeapartments.com`;
+
+
+    const receiveDeposit = async () => {
+        try {
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+            }
+
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options)
+            switch (resp.status) {
+                case 400:
+                    setError(`An error occured receiving the deposit. Please try again. ${JSON.stringify(await resp.json())}`);
+                    break;
+                case 204:
+                case 200:
+                    setDepositReceived(true);
+                    break;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const deleteDeposit = async () => {
+        try {
+            const options = {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"},
+            }
+
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options)
+            switch (resp.status) {
+                case 400:
+                    setError(`An error occurred deleting the deposit. Please try again. ${JSON.stringify(await resp.json())}`);
+                    break;
+                case 204:
+                case 200:
+                    setDepositReceived(false);
+                    break;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     const handleDelete = async () => {
         try {
@@ -55,7 +101,7 @@ const ApplicationForm = ({
             const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${roomTypeId}`, options)
             switch (resp.status) {
                 case 400:
-                    setError(`An error occured deleting the application. Please try again. ${JSON.stringify(await resp.json())}`);
+                    setError(`An error occurred deleting the application. Please try again. ${JSON.stringify(await resp.json())}`);
                     break;
                 case 204:
                     location = `/${navPage}?site=${site}`;
@@ -208,17 +254,24 @@ const ApplicationForm = ({
                             <Button variant="primary" disabled={!isDirty} type="submit"
                                     style={{margin: "5px"}}>{"Save"}</Button> :
                             <>
-                            {!processed &&
-                                <div style={{height: "100%", alignSelf: "end", display: "inline-flex", }} >
-                                    <Form.Check onClick={() => setSendEmail(!sendEmail)} className="mb-3" type="checkbox" id="sendEmailBox" checked={sendEmail} />
-                                    <span>Send Email</span>
-                                </div>
-                            }
-                                <Button variant="primary" onClick={() => handleSetProcessedStatus(!processed)}>{processed ? "Mark Unprocessed" : "Mark Processed"}</Button>
+                                {!processed &&
+                                    <div style={{height: "100%", alignSelf: "end", display: "inline-flex",}}>
+                                        <Form.Check onClick={() => setSendEmail(!sendEmail)} className="mb-3"
+                                                    type="checkbox" id="sendEmailBox" checked={sendEmail}/>
+                                        <span>Send Email</span>
+                                    </div>
+                                }
+                                <Button variant="primary"
+                                        onClick={() => handleSetProcessedStatus(!processed)}>{processed ? "Mark Unprocessed" : "Mark Processed"}</Button>
                             </>
                         }
                         {!isTenant &&
-                            <Button variant="primary" onClick={handleDelete} style={{margin: "5px"}}>{"Delete"}</Button>
+                            <>
+                            {depositReceived ?
+                                <Button variant="primary" onClick={deleteDeposit} style={{margin: "5px"}}>{"Remove Deposit"}</Button> :
+                                <Button variant="primary" onClick={receiveDeposit} style={{margin: "5px"}}>{"Receive Deposit"}</Button> }
+                                <Button variant="primary" onClick={handleDelete} style={{margin: "5px"}}>{"Delete"}</Button>
+                            </>
                         }
                     </div>
                 }

@@ -9,7 +9,7 @@ const Password = withIronSessionApiRoute(async (req, res) => {
     try {
         switch (req.method) {
             case "POST":
-                await ChangeUserPassword(req.body.site, req.body.username, req.body.current_password, req.body.password);
+                await ChangeUserPassword(req.body.site, req.body.username, req.body.current_password, req.body.password, req.body.admin);
                 res.status(204).send();
                 return;
             default:

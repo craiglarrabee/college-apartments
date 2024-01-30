@@ -64,7 +64,7 @@ const Tenants = ({site, page, links, user, ...restOfProps}) => {
                     <ul style={{minHeight: "350px"}}>
                         {tenants.map(tenant =>
                             (<li key={tenant.user_id}>
-                                <a href={`/tenants/${tenant.user_id}?site=${site}`}>{tenant.name}</a>
+                                <a href={`tenants/${tenant.user_id}?site=${site}`}>{tenant.name}</a>
                             </li>))}
                     </ul>
                     <Footer bg={bg}/>

@@ -587,6 +587,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetDynamicContent(site, "refund")
     ]);
 
+    if (!nav.find(page => page.page === "payments")) return {notFound: true};
+
     let privacy = Object.fromEntries(privacyContent.map(it => {
         return [it.page.replace("privacy-", ""), it.content];
     }));

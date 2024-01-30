@@ -2,16 +2,21 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
-import {ReceiveDeposit} from "../../../../../../lib/db/users/application";
+import {DeleteDeposit, ReceiveDeposit} from "../../../../../../lib/db/users/application";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.isLoggedIn) res.status(403).send();
+    if (!req.session.user.manageApartment) res.status(403).send();
     try {
         switch (req.method) {
             case "POST":
-                const resp = await ReceiveDeposit(req.query.site, req.query.userId, req.query.leaseId);
-                res.json({...resp});
+                const postResp = await ReceiveDeposit(req.query.site, req.query.userId, req.query.leaseId);
+                res.json({...postResp});
                 res.status(200).send();
+                return;
+            case "DELETE":
+                const delResp = await DeleteDeposit(req.query.site, req.query.userId, req.query.leaseId);
+                res.json({...delResp});
+                res.status(204).send();
                 return;
             default:
                 res.status(405).send();

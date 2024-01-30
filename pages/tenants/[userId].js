@@ -4,7 +4,7 @@ import Title from "../../components/title";
 import Footer from "../../components/footer";
 import React, {useEffect, useState} from "react";
 import classNames from "classnames";
-import {Alert, Button, Tab, Table, Tabs} from "react-bootstrap";
+import {Alert, Button, Form, Tab, Table, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
@@ -21,6 +21,7 @@ import {GetUserDeletedPayments, GetUserPayments} from "../../lib/db/users/userPa
 import {UserApartment} from "../../components/assignments";
 import * as Constants from "../../lib/constants";
 import GenericExplanationModal from "../../components/genericExplanationModal";
+import {useForm} from "react-hook-form";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -44,6 +45,11 @@ const Tenant = ({
     const [validDeletedPayments, setvalidDeletedPayments] = useState(deletedPayments);
     const [paymentError, setPaymentError] = useState();
     const [deleteData, setDeleteData] = useState({show: false, description: null});
+    const {register, getValues, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({mode: "all"});
+    const [pwd, setPwd] = useState("");
+    const [passwordError, setPasswordError] = useState();
+    const [passwordInfo, setPasswordInfo] = useState();
+
 
     tab = (tab === "Roommates") ? 3 : 0;
 
@@ -65,7 +71,6 @@ const Tenant = ({
                             reason_deleted: deleteData.description,
                             date_deleted: new Date().toLocaleDateString()
                         };
-                        ;
                         setvalidPayments(validPayments.filter(payment => payment.id !== deleteData.paymentId));
                         setvalidDeletedPayments([...validDeletedPayments, payment]);
                         break;
@@ -84,6 +89,43 @@ const Tenant = ({
             process();
         }
     }, [deleteData.description]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const changePassword = async (data, event) => {
+        event.preventDefault();
+
+        try {
+            data.site = site;
+            data.username = tenant.username;
+            data.admin = user.manageApartment;
+
+            const options = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            }
+
+            const resp = await fetch(`/api/users/${userId}/password?site=${site}`, options)
+            switch (resp.status) {
+                case 200:
+                case 204:
+                    setPasswordInfo(`Password changed for ${tenant.username}`)
+                    break;
+                case 401:
+                case 403:
+                    setPasswordError("Your cannot change passwords");
+                    break;
+                case 400:
+                default:
+                    setPasswordError("An error occurred changing the password")
+                    break;
+            }
+
+        } catch (e) {
+
+        }
+    };
 
     return (
         <Layout site={site} user={user} wide={!isTenant}>
@@ -239,8 +281,8 @@ const Tenant = ({
                                 <Tab title="Bulk Emails" eventKey={6} key={6}>
                                     <Tabs>
                                         {emails.map(email =>
-                                            <Tab title={email.semester} eventKey={email.semester.replace(" ", "_")}
-                                                 key={email.semester.replace(" ", "_")}>
+                                            <Tab title={email.semester} eventKey={email.semester?.replace(" ", "_")}
+                                                 key={email.semester?.replace(" ", "_")}>
                                                 <Table>
                                                     <thead>
                                                     <tr>
@@ -265,6 +307,77 @@ const Tenant = ({
                                     </Tabs>
                                 </Tab>
                             }
+                            {!isTenant &&
+                                <Tab title="User Information" eventKey={7} key={7}>
+                                    {passwordError &&
+                                        <Alert variant={"danger"} dismissible onClick={() => setPasswordError(null)}>{passwordError}</Alert>
+                                    }
+                                    {passwordInfo &&
+                                        <Alert variant={"success"} dismissible onClick={() => setPasswordInfo(null)}>{passwordInfo}</Alert>
+                                    }
+                                    <Form onSubmit={handleSubmit(changePassword)} method="post">
+                                        <div className="h4">{`Username: ${tenant.username}`}</div>
+                                        <br/>
+                                        <div className="h5">Change Password</div>
+                                        <Form.Group className="mb-3" controlId="password">
+                                            <Form.Label visuallyHidden={true}>Last Name</Form.Label>
+                                            <Form.Control
+                                                className={errors && errors.password && classNames("border-danger")} {...register("password", {
+                                                required: {value: true, message: "Password is required."},
+                                                pattern: {
+                                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/,
+                                                }
+                                            })} type="password" placeholder="password"
+                                                onChange={(e) => setPwd(e.currentTarget.value)}/>
+                                            {errors && errors.password && <Form.Text
+                                                className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
+                                            <Form.Text>
+                                                <div>Password must contain:</div>
+                                                <ul style={{listStyleType: "none"}}>
+                                                    <li className={pwd.length > 8 && pwd.length < 101 ? "text-success" : "text-danger"}>Between
+                                                        8 and 100 chars
+                                                    </li>
+                                                    <li className={pwd.match(/.*\d/) ? "text-success" : "text-danger"}>At
+                                                        least one
+                                                        number
+                                                    </li>
+                                                    <li className={pwd.match(/.*[a-z]/) ? "text-success" : "text-danger"}>At
+                                                        least
+                                                        one
+                                                        lower-case character
+                                                    </li>
+                                                    <li className={pwd.match(/.*[A-Z]/) ? "text-success" : "text-danger"}>At
+                                                        least
+                                                        one
+                                                        upper-case character
+                                                    </li>
+                                                    <li className={pwd.match(/.*[@$!%*?&]/) ? "text-success" : "text-danger"}>At
+                                                        least
+                                                        one special character
+                                                    </li>
+                                                </ul>
+                                            </Form.Text>
+                                        </Form.Group>
+                                        <Form.Group className="mb-3" controlId="confirm_password">
+                                            <Form.Label visuallyHidden={true}>Last Name</Form.Label>
+                                            <Form.Control  {...register("confirm_password",
+                                                {
+                                                    validate: {
+                                                        passwordEqual: (value) => value === getValues().password || "Must match new password"
+                                                    }
+                                                })} type="password" placeholder="confirm new password"/>
+                                            {errors && errors.confirm_password &&
+                                                <Form.Text
+                                                    className={classNames("text-danger")}>{errors && errors.confirm_password.message}</Form.Text>
+                                            }
+                                        </Form.Group>
+                                        <div style={{width: "100%"}}
+                                             className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                                            <Button variant="primary" type="submit" disabled={!isDirty}>{`Change Password for ${tenant.username}`}</Button>
+                                        </div>
+                                    </Form>
+                                </Tab>
+                            }
                         </Tabs>
                     </div>
                     <Footer bg={bg}/>
@@ -279,13 +392,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const {userId} = context.query;
     const site = context.query.site || SITE;
     const user = context.req.session.user;
-    const isTenant = !user.manageApartment;
+    const isTenant = !user?.manageApartment;
     const navPage = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, isTenant ? "/" : "");
     const welcomePage = "welcome";
     let applicationContent = {};
 
-    if (!user.isLoggedIn) return {notFound: true};
+    if (!user?.isLoggedIn) return {notFound: true};
     if (user.isLoggedIn && user.editSite) {
         context.res.writeHead(302, {Location: `/application?site=${site}`});
         context.res.end();
