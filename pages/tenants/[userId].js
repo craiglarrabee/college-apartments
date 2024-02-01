@@ -12,7 +12,7 @@ import {GetTenant, GetUserRoomates} from "../../lib/db/users/tenant";
 import {TenantForm} from "../../components/tenantForm";
 import ApplicationForm from "../../components/applicationForm";
 import {GetTenantApplications} from "../../lib/db/users/application";
-import {GetLeaseRoomsMap} from "../../lib/db/users/roomType";
+import {GetLeaseRoomsMap, GetUserAvailableLeaseRooms} from "../../lib/db/users/roomType";
 import {GetTenantUserLeases} from "../../lib/db/users/userLease";
 import LeaseForm from "../../components/leaseForm";
 import {GetDynamicContent} from "../../lib/db/content/dynamicContent";
@@ -22,6 +22,7 @@ import {UserApartment} from "../../components/assignments";
 import * as Constants from "../../lib/constants";
 import GenericExplanationModal from "../../components/genericExplanationModal";
 import {useForm} from "react-hook-form";
+import NewApplicationForm from "../../components/newApplicationForm";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -32,7 +33,8 @@ const brandUrl = process.env.BRAND_URL;
 const Tenant = ({
                     isTenant, site, navPage, links, user, tenant, currentLeasesMap,
                     applications, userId, leases, leaseContentMap, deletedPayments,
-                    emails, applicationContent, payments, roommates, tab
+                    emails, applicationContent, payments, roommates, tab, currentLeases, page,
+                    rules, previous_rental, esa_packet, disclaimer, guaranty
                     , ...restOfProps
                 }) => {
     const roommateSemesters = roommates.map(it => it.semester).reduce(function (acc, curr) {
@@ -157,6 +159,23 @@ const Tenant = ({
                                                                  {...applicationContent} />
                                             </Tab>);
                                     })}
+                                    <Tab title="New Application"
+                                         eventKey="new"
+                                         key="new">
+                                        <NewApplicationForm site={site}
+                                                            tenant={tenant}
+                                                            page={page}
+                                                            userId={userId}
+                                                            user={user}
+                                                            canEdit={false}
+                                                            disclaimer={disclaimer}
+                                                            currentLeases={currentLeases}
+                                                            esa_packet={esa_packet}
+                                                            guaranty={guaranty}
+                                                            rules={rules}
+                                                            previous_rental={previous_rental}/>
+
+                                    </Tab>
                                 </Tabs>
                             </Tab>
                             <Tab title="Leases" eventKey={2} key={2}>
@@ -310,10 +329,12 @@ const Tenant = ({
                             {!isTenant &&
                                 <Tab title="User Information" eventKey={7} key={7}>
                                     {passwordError &&
-                                        <Alert variant={"danger"} dismissible onClick={() => setPasswordError(null)}>{passwordError}</Alert>
+                                        <Alert variant={"danger"} dismissible
+                                               onClick={() => setPasswordError(null)}>{passwordError}</Alert>
                                     }
                                     {passwordInfo &&
-                                        <Alert variant={"success"} dismissible onClick={() => setPasswordInfo(null)}>{passwordInfo}</Alert>
+                                        <Alert variant={"success"} dismissible
+                                               onClick={() => setPasswordInfo(null)}>{passwordInfo}</Alert>
                                     }
                                     <Form onSubmit={handleSubmit(changePassword)} method="post">
                                         <div className="h4">{`Username: ${tenant.username}`}</div>
@@ -373,7 +394,8 @@ const Tenant = ({
                                         </Form.Group>
                                         <div style={{width: "100%"}}
                                              className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                                            <Button variant="primary" type="submit" disabled={!isDirty}>{`Change Password for ${tenant.username}`}</Button>
+                                            <Button variant="primary" type="submit"
+                                                    disabled={!isDirty}>{`Change Password for ${tenant.username}`}</Button>
                                         </div>
                                     </Form>
                                 </Tab>
@@ -395,8 +417,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const isTenant = !user?.manageApartment;
     const navPage = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, isTenant ? "/" : "");
-    const welcomePage = "welcome";
     let applicationContent = {};
+    const page = "application";
 
     if (!user?.isLoggedIn) return {notFound: true};
     if (user.isLoggedIn && user.editSite) {
@@ -404,17 +426,28 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         context.res.end();
         return {};
     }
-    const [nav, tenant, applications, leases, emails, applicationContentRows, payments, deletedPayments, roommates] = await Promise.all([
-        GetNavLinks(user, site),
-        GetTenant(site, userId),
-        GetTenantApplications(site, userId),
-        GetTenantUserLeases(site, userId),
-        GetTenantBulkEmails(site, userId),
-        GetDynamicContent(site, "application"),
-        GetUserPayments(site, userId),
-        GetUserDeletedPayments(site, userId),
-        user && user.isLoggedIn ? GetUserRoomates(user.id) : [],
-    ]);
+    const [nav,
+        tenant,
+        applications,
+        leases,
+        emails,
+        applicationContentRows,
+        payments,
+        deletedPayments,
+        roommates,
+        currentRooms] = await Promise.all(
+        [
+            GetNavLinks(user, site),
+            GetTenant(site, userId),
+            GetTenantApplications(site, userId),
+            GetTenantUserLeases(site, userId),
+            GetTenantBulkEmails(site, userId),
+            GetDynamicContent(site, page),
+            GetUserPayments(site, userId),
+            GetUserDeletedPayments(site, userId),
+            user && user.isLoggedIn ? GetUserRoomates(userId) : [],
+            GetUserAvailableLeaseRooms(site, userId),
+        ]);
     applicationContentRows.forEach(row => applicationContent[row.name] = row.content);
     const currentLeasesMap = await Promise.all(applications.map(async application => {
         return {leaseId: application.lease_id, currentLeases: await GetLeaseRoomsMap(application.lease_id)}
@@ -430,6 +463,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         application.lease_room_type_id = `${application.lease_id}_${application.room_type_id}`;
         application.do_not_share_info = !application.share_info;
     });
+    let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
+    currentLeases = currentLeases.map(lease => {
+        let rooms = currentRooms.filter(room => room.lease_id === lease);
+        return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};
+    });
 
     return {
         props: {
@@ -440,9 +478,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             tenant: {...tenant},
             applications: applications,
             navPage: navPage,
-            page: welcomePage,
+            page: page,
             userId: userId,
             currentLeasesMap: currentLeasesMap,
+            currentLeases: currentLeases,
             leases: leases,
             leaseContentMap: leaseContentMap,
             emails: emails,
