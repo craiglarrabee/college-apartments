@@ -1,6 +1,6 @@
 import {Button, Modal, OverlayTrigger, Table, Tooltip} from "react-bootstrap";
 import React, {useState} from "react";
-import {Printer} from "react-bootstrap-icons";
+import {Dot, Printer} from "react-bootstrap-icons";
 import * as Constants from "../lib/constants";
 
 const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
@@ -20,58 +20,31 @@ const ReceiptModal = ({show, close, content, site, ...restOfProps}) => {
                     <Button variant="primary-outline" size="lg" onClick={() => window.print()}><Printer/></Button>
                 </div>
             </Modal.Header>
-
-            {site === "snow" ?
-                <Modal.Body>
+               <Modal.Body>
                     <Table className="h3">
                         <tr>
                             <td colSpan={2}>{Constants.locations[content.location]}</td>
                         </tr>
                         <br/>
                         <tr>
-                            <td style={{width: "300px"}}>Date:</td>
+                            <td>Date:</td>
                             <td>{content.date}</td>
                         </tr>
-                        <tr>
-                            <td style={{width: "300px"}}>Payment Description:</td>
-                            <td>{content.description}</td>
-                        </tr>
-                        <tr>
-                            <td style={{width: "300px"}}>Payment Amount:</td>
-                            <td>{currency.format(content.amount)}</td>
-                        </tr>
-                        <tr>
-                            <td style={{width: "300px"}}>Surcharge Amount:</td>
-                            <td>{currency.format(content.surcharge)}</td>
-                        </tr>
-                        <tr>
-                            <td style={{width: "300px"}}>Total:</td>
+                        {content.items?.map(item => (
+                            <>
+                                <tr>
+                                    <td><Dot/>{item.description}</td>
+                                    <td>{currency.format(item.unitPrice)}</td>
+                                </tr>
+                            </>
+                        ))
+                        }
+                        <tr style={{borderTopWidth: "2px"}}>
+                            <td>Total:</td>
                             <td>{currency.format(content.total)}</td>
                         </tr>
                     </Table>
                 </Modal.Body>
-                :
-                <Modal.Body>
-                    <Table className="h3">
-                        <tr>
-                            <td colSpan={2}>{Constants.locations[content.location]}</td>
-                        </tr>
-                        <br/>
-                        <tr>
-                            <td style={{width: "300px"}}>Date:</td>
-                            <td>{content.date}</td>
-                        </tr>
-                        <tr>
-                            <td style={{width: "300px"}}>Payment Description:</td>
-                            <td>{content.description}</td>
-                        </tr>
-                        <tr>
-                            <td style={{width: "300px"}}>Amount:</td>
-                            <td>{currency.format(content.total)}</td>
-                        </tr>
-                    </Table>
-                </Modal.Body>
-            }
             <Modal.Footer>
                 <Button onClick={close}>OK</Button>
             </Modal.Footer>

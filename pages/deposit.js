@@ -36,9 +36,13 @@ const Home = ({site, page, top, bottom, links, images, canEdit, user, ...restOfP
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    if (!user?.isLoggedIn) return {notFound: true};
     const page = "deposit";
     const site = context.query.site || SITE;
+    if (!user?.isLoggedIn) {
+        context.res.writeHead(302, {Location: `/index?site=${site}`});
+        context.res.end();
+        return {};
+    }
     const content = {};
     const editing = !!user && !!user.editSite;
     const [contentRows, imageContent, nav] = await Promise.all([GetDynamicContent(site, page), GetDynamicImageContent(site, page), GetNavLinks(user, site)]);

@@ -2,7 +2,7 @@ import Layout from "../components/layout";
 import Navigation from "../components/navigation";
 import Title from "../components/title";
 import Footer from "../components/footer";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import classNames from "classnames";
 import {Alert, Button, Col, Form, Row, Tab, Table, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
@@ -17,6 +17,8 @@ import * as Constants from "../lib/constants";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import AcknowledgePaymentModal from "../components/acknowledgePaymentModal";
+import {PaymentLineItem} from "../components/paymentLineItem";
+import {Plus, Trash} from "react-bootstrap-icons";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -44,10 +46,10 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [aptLocation, setAptLocation] = useState(site === "snow" ? "pp" : "");
     const [selectedPrivacyContent, setSelectedPrivacyContent] = useState(privacyContent[aptLocation]);
-    const [amount, setAmount] = useState("");
-    const [surcharge, setSurcharge] = useState("");
-    const [total, setTotal] = useState("");
     const [payment, setPayment] = useState("");
+    const [lineItems, setLineItems] = useState([{itemId: 1, description: "", unitPrice: "", quantity: "1"}])
+    const [total, setTotal] = useState("");
+    const [maxItemId, setMaxItemId] = useState(1);
 
     const formatCardNumber = (event) => {
         let v = event.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -93,15 +95,6 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
         setCode(event.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, ""));
     }
 
-    const formatAmount = (event) => {
-        let amt = event.target.value.replaceAll(",", "").replace("$", "");
-        let chg = getSurcharge(amt);
-
-        setAmount(currency.format(amt));
-        setSurcharge(currency.format(chg));
-
-        setTotal(currency.format((1 * amt) + (chg)));
-    }
 
     const getSurcharge = (amt) => {
         if (site === "snow") {
@@ -115,18 +108,51 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
         setSelectedPrivacyContent(privacyContent[event.currentTarget.value]);
     };
 
+    const updateItem = (id, description, amount) => {
+        const item = lineItems.find(item => item.itemId === id);
+        item.unitPrice = amount;
+        item.description = description;
+        setTotal(currency.format(lineItems.reduce((partialSum, item) => partialSum + 1*item.unitPrice, 0)));
+    };
+
+    const removeItem = (itemId) => {
+        updateItem(itemId, "", "");
+        let newItems = lineItems.filter(item => item.itemId !== itemId);
+        if (newItems.length === 0) {
+            newItems.push({itemId: maxItemId + 1, description: "", unitPrice: "", quantity: "1"});
+            setMaxItemId(maxItemId + 1);
+        }
+        setLineItems(newItems);
+    }
+
+    const addItem = () => {
+        let newItems = [...lineItems];
+        newItems.push({itemId: maxItemId + 1, description: "", unitPrice: "", quantity: "1"});
+        setMaxItemId(maxItemId + 1);
+        setLineItems(newItems);
+    }
+
     const submitForm = async (data, event) => {
         event.preventDefault();
         // remove dollar formatting and recalculate total deal with race condition
-        data.amount = data.amount.replaceAll(",", "").replace("$", "");
-        data.surcharge = getSurcharge(data.amount);
-        data.total = (1 * data.amount) + (1 * data.surcharge);
+        // data.amount = data.amount.replaceAll(",", "").replace("$", "");
+        // data.surcharge = getSurcharge(data.amount);
+        // data.total = (1 * data.amount) + (1 * data.surcharge);
+        data.total = total.replaceAll(",", "").replace("$", "");
+        data.email = tenant.email;
+        data.tenantFirstName = tenant.first_name;
+        data.tenantLastName = tenant.last_name;
+        data.items = lineItems;
 
         // now store form data for use after confirmation
         setPayment({...data, date: new Date().toLocaleDateString()});
-        // now show confirmation dialog
-        setShowConfirmation(true);
     };
+
+    useEffect(() => {
+        // now show confirmation dialog
+        if (payment.total)
+            setShowConfirmation(true);
+    }, [payment]);
 
     const makePayment = async () => {
         try {
@@ -147,7 +173,6 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                 amount: payment.amount,
                                 surcharge: payment.surcharge,
                                 total: payment.total,
-                                description: payment.description,
                                 location: payment.location
                             }
                         ]
@@ -179,10 +204,14 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                         location = `/index?site=${site}`;
                         setShowReceipt(false);
                     }} show={showReceipt}/>
-                    <AcknowledgePaymentModal content={payment} acknowledge={async () => {
-                        setShowConfirmation(false);
-                        await makePayment();
-                    }} site={site} close={() => setShowConfirmation(false)} show={showConfirmation}/>
+                    <AcknowledgePaymentModal
+                        content={payment}
+                        acknowledge={async () => {
+                            setShowConfirmation(false);
+                            await makePayment();
+                        }}
+                        site={site} close={() => setShowConfirmation(false)}
+                        show={showConfirmation}/>
 
                     {paymentInfo &&
                         <Alert dismissible={true} variant={"primary"}
@@ -410,7 +439,49 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                             </Form.Group>
                                         </Row>
                                         <hr/>
-                                        <Form.Text>Payment Information</Form.Text>
+                                        <Form.Text>Items</Form.Text>
+                                        <Table style={{width: "100%"}}>
+                                            <body style={{width: "90%"}}>
+                                            {lineItems.map(item => (
+                                                    <tr className="align-middle">
+                                                        <td>
+                                                            <PaymentLineItem
+                                                                register={register}
+                                                                getSurcharge={getSurcharge}
+                                                                errors={errors}
+                                                                site={site}
+                                                                updateItem={updateItem}
+                                                                itemId={item.itemId}
+                                                                removeItem={removeItem}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            )}
+                                            { lineItems.length >= 1 && lineItems[lineItems.length-1]?.unitPrice && lineItems[lineItems.length-1]?.description &&
+                                            <tr>
+                                                <td><Button variant="light" onClick={addItem} ><Plus/></Button></td>
+                                                <td/>
+                                            </tr>
+                                            }
+                                            <tr>
+                                                <td>
+                                                    <Row className={classNames("align-items-end")}>
+                                                        <Col/>
+                                                        <Form.Label as={Col} xs={1}>Total</Form.Label>
+                                                        <Form.Group as={Col} xs={3} controlId={"orderTotal"}>
+                                                            <Form.Control
+                                                                readOnly
+                                                                {...register("orderTotal")} type="text"
+                                                                value={total}/>
+                                                        </Form.Group>
+                                                    </Row>
+                                                </td>
+                                                <td/>
+                                            </tr>
+                                            </body>
+                                        </Table>
+                                        <hr/>
                                         <Row>
                                             {site === "suu" ?
                                                 <>
@@ -441,66 +512,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                                 </>
                                             }
                                         </Row>
-                                        <Row>
-                                            <Form.Label as={Col} xs={2}
-                                                        className="required">Description</Form.Label>
-                                            <Form.Group as={Col} xs={9} controlId="description">
-                                                <Form.Control
-                                                    className={errors && errors.description && classNames("border-danger")} {...register("description", {
-                                                    required: {
-                                                        value: true,
-                                                        message: "Required"
-                                                    }, maxLength: 250
-                                                })} type="text"
-                                                    placeholder="Reason for payment"/>
-                                                {errors && errors.description && <Form.Text
-                                                    className={classNames("text-danger")}>{errors && errors.description.message}</Form.Text>}
-                                            </Form.Group>
-                                        </Row>
                                         <br/>
-                                        <Row>
-                                            <Form.Label className="required" as={Col} xs={1}>Amount</Form.Label>
-                                            <Form.Group as={Col} xs={4} controlId="amount">
-                                                <Form.Control
-                                                    className={errors && errors.amount && classNames("border-danger")} {...register("amount", {
-                                                    pattern: {
-                                                        value: /^\$?\d{0,2},?\d{0,3}(\.?\d{0,2})?$/,
-                                                        message: "Must be a valid amount between $1.00 and $99999.99"
-                                                    },
-                                                    required: {
-                                                        value: true,
-                                                        message: "Must be a valid amount between $1.00 and $99999.99"
-                                                    },
-                                                    onChange: (event) => setAmount(event.target.value),
-                                                    onBlur: formatAmount
-                                                })} type="text"
-                                                    value={amount}
-                                                    placeholder="Amount of payment"/>
-                                                {errors && errors.amount && <Form.Text
-                                                    className={classNames("text-danger")}>{errors && errors.amount.message}</Form.Text>}
-                                            </Form.Group>
-                                            {site === "snow" ?
-                                                <>
-                                                    <Form.Label as={Col} xs={1}
-                                                                style={{marginRight: "5px"}}>Surcharge</Form.Label>
-                                                    <Form.Group as={Col} xs={2} controlId="surcharge">
-                                                        <Form.Control
-                                                            readOnly
-                                                            {...register("surcharge")} type="text"
-                                                            value={surcharge}/>
-                                                    </Form.Group>
-                                                </> :
-                                                <>
-                                                </>
-                                            }
-                                            <Form.Label as={Col} xs={1}>Total</Form.Label>
-                                            <Form.Group as={Col} xs={2} controlId="total">
-                                                <Form.Control
-                                                    readOnly
-                                                    {...register("total")} type="text"
-                                                    value={total}/>
-                                            </Form.Group>
-                                        </Row>
                                         <Row>
                                             {aptLocation &&
                                                 <div className="align-content-center">
@@ -576,8 +588,11 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const site = context.query.site || SITE;
     const user = context.req.session.user;
-
-    if (!user?.isLoggedIn) return {notFound: true};
+    if (!user?.isLoggedIn) {
+        context.res.writeHead(302, {Location: `/index?site=${site}`});
+        context.res.end();
+        return {};
+    }
     const userId = user.id;
     const [nav, tenant, payments, privacyContent, refundContent] = await Promise.all([
         GetNavLinks(user, site),

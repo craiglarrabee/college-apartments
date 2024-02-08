@@ -72,9 +72,13 @@ const Application = ({
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    if (!user?.isLoggedIn) return {notFound: true};
     const page = "application";
     const site = context.query.site || SITE;
+    if (!user?.isLoggedIn) {
+        context.res.writeHead(302, {Location: `/index?site=${site}`});
+        context.res.end();
+        return {};
+    }
     const content = {};
     const editing = !!user && !!user.editSite;
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";

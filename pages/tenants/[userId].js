@@ -420,7 +420,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     let applicationContent = {};
     const page = "application";
 
-    if (!user?.isLoggedIn) return {notFound: true};
+    if (!user?.isLoggedIn) {
+        context.res.writeHead(302, {Location: `/index?site=${site}`});
+        context.res.end();
+        return {};
+    }
     if (user.isLoggedIn && user.editSite) {
         context.res.writeHead(302, {Location: `/application?site=${site}`});
         context.res.end();

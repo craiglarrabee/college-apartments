@@ -37,9 +37,13 @@ const Tenant = ({site, navPage, links, user, tenant, isNewApplication = false}) 
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     const user = context.req.session.user;
-    if (!user?.isLoggedIn) return {notFound: true};
     const newApplication = context.query && context.query.hasOwnProperty("newApplication");
     const site = context.query.site || SITE;
+    if (!user?.isLoggedIn) {
+        context.res.writeHead(302, {Location: `/index?site=${site}`});
+        context.res.end();
+        return {};
+    }
     if (user.isLoggedIn && user.editSite) {
         context.res.writeHead(302, {Location: `/application?site=${site}&${new Date().getTime()}`});
         context.res.end();

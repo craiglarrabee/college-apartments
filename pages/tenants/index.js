@@ -79,7 +79,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         const user = context.req.session.user;
         const page = "tenants";
         const site = context.query.site || SITE;
-        if (!user?.isLoggedIn) return {notFound: true};
+        if (!user?.isLoggedIn) {
+            context.res.writeHead(302, {Location: `/index?site=${site}`});
+            context.res.end();
+            return {};
+        }
         if (!user?.manageApartment) {
             context.res.writeHead(302, {Location: `/tenants/${user.id}?site=${site}`});
             context.res.end();
