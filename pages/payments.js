@@ -13,18 +13,15 @@ import GenericModal from "../components/genericModal";
 import {GetDynamicContent} from "../lib/db/content/dynamicContent";
 import ReceiptModal from "../components/receiptModal";
 import Link from "next/link";
-import * as Constants from "../lib/constants";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import AcknowledgePaymentModal from "../components/acknowledgePaymentModal";
-import {PaymentLineItem} from "../components/paymentLineItem";
-import {Plus, Trash} from "react-bootstrap-icons";
+import {PaymentLineItems} from "../components/paymentLineItems";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
 const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
-const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
 
 
 const Payments = ({site, navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
@@ -32,7 +29,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
         register,
         formState: {isValid, isDirty, errors},
         handleSubmit
-    } = useForm();
+    } = useForm({mode: "all"});
 
     const [paymentError, setPaymentError] = useState();
     const [paymentInfo, setPaymentInfo] = useState();
@@ -47,9 +44,8 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
     const [aptLocation, setAptLocation] = useState(site === "snow" ? "pp" : "");
     const [selectedPrivacyContent, setSelectedPrivacyContent] = useState(privacyContent[aptLocation]);
     const [payment, setPayment] = useState("");
-    const [lineItems, setLineItems] = useState([{itemId: 1, description: "", unitPrice: "", quantity: "1"}])
+    const [paymentItems, setPaymentItems] = useState([{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}]);
     const [total, setTotal] = useState("");
-    const [maxItemId, setMaxItemId] = useState(1);
 
     const formatCardNumber = (event) => {
         let v = event.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -93,56 +89,20 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
 
     const formatCode = (event) => {
         setCode(event.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, ""));
-    }
-
-
-    const getSurcharge = (amt) => {
-        if (site === "snow") {
-            return Math.round(amt * 2.25) / 100;
-        }
-        return 0;
-    }
+    };
 
     const changeLocation = (event) => {
         setAptLocation(event.currentTarget.value);
         setSelectedPrivacyContent(privacyContent[event.currentTarget.value]);
     };
 
-    const updateItem = (id, description, amount) => {
-        const item = lineItems.find(item => item.itemId === id);
-        item.unitPrice = amount;
-        item.description = description;
-        setTotal(currency.format(lineItems.reduce((partialSum, item) => partialSum + 1*item.unitPrice, 0)));
-    };
-
-    const removeItem = (itemId) => {
-        updateItem(itemId, "", "");
-        let newItems = lineItems.filter(item => item.itemId !== itemId);
-        if (newItems.length === 0) {
-            newItems.push({itemId: maxItemId + 1, description: "", unitPrice: "", quantity: "1"});
-            setMaxItemId(maxItemId + 1);
-        }
-        setLineItems(newItems);
-    }
-
-    const addItem = () => {
-        let newItems = [...lineItems];
-        newItems.push({itemId: maxItemId + 1, description: "", unitPrice: "", quantity: "1"});
-        setMaxItemId(maxItemId + 1);
-        setLineItems(newItems);
-    }
-
     const submitForm = async (data, event) => {
         event.preventDefault();
-        // remove dollar formatting and recalculate total deal with race condition
-        // data.amount = data.amount.replaceAll(",", "").replace("$", "");
-        // data.surcharge = getSurcharge(data.amount);
-        // data.total = (1 * data.amount) + (1 * data.surcharge);
         data.total = total.replaceAll(",", "").replace("$", "");
         data.email = tenant.email;
         data.tenantFirstName = tenant.first_name;
         data.tenantLastName = tenant.last_name;
-        data.items = lineItems;
+        data.items = paymentItems;
 
         // now store form data for use after confirmation
         setPayment({...data, date: new Date().toLocaleDateString()});
@@ -440,47 +400,14 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                         </Row>
                                         <hr/>
                                         <Form.Text>Items</Form.Text>
-                                        <Table style={{width: "100%"}}>
-                                            <body style={{width: "90%"}}>
-                                            {lineItems.map(item => (
-                                                    <tr className="align-middle">
-                                                        <td>
-                                                            <PaymentLineItem
-                                                                register={register}
-                                                                getSurcharge={getSurcharge}
-                                                                errors={errors}
-                                                                site={site}
-                                                                updateItem={updateItem}
-                                                                itemId={item.itemId}
-                                                                removeItem={removeItem}
-                                                            />
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            )}
-                                            { lineItems.length >= 1 && lineItems[lineItems.length-1]?.unitPrice && lineItems[lineItems.length-1]?.description &&
-                                            <tr>
-                                                <td><Button variant="light" onClick={addItem} ><Plus/></Button></td>
-                                                <td/>
-                                            </tr>
-                                            }
-                                            <tr>
-                                                <td>
-                                                    <Row className={classNames("align-items-end")}>
-                                                        <Col/>
-                                                        <Form.Label as={Col} xs={1}>Total</Form.Label>
-                                                        <Form.Group as={Col} xs={3} controlId={"orderTotal"}>
-                                                            <Form.Control
-                                                                readOnly
-                                                                {...register("orderTotal")} type="text"
-                                                                value={total}/>
-                                                        </Form.Group>
-                                                    </Row>
-                                                </td>
-                                                <td/>
-                                            </tr>
-                                            </body>
-                                        </Table>
+                                            <PaymentLineItems
+                                                site={site}
+                                                register={register}
+                                                errors={errors}
+                                                paymentItems={paymentItems}
+                                                setParentPaymentItems={setPaymentItems}
+                                                setParentTotal={setTotal}
+                                            />
                                         <hr/>
                                         <Row>
                                             {site === "suu" ?
