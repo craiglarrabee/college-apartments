@@ -19,6 +19,7 @@ import {GetApplications} from "../../../../lib/db/users/application";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
+import {getIronSession} from "iron-session";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -295,13 +296,16 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const user = context.req.session.user;
+    await context.req.session.save();
+	const user = context.req.session.user;
     const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
     const welcomePage = "welcome";
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
-    if (!user.manage?.includes(site)) {
-        return {notFound: true};
+    if (!user?.manage?.includes(site)) {
+        context.res.writeHead(302, {Location: `/index?site=${site}`});
+        context.res.end();
+        return {};
     }
     const editing = !!user && !!user.editSite;
     const [contentRows, nav, applications, emailContentRows] = await Promise.all([

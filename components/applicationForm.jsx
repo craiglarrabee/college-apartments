@@ -33,7 +33,6 @@ const ApplicationForm = ({
     application[`lease_${leaseId}_room_type_id`] = application.lease_room_type_id;
     const {
         register,
-        reset,
         formState: {isValid, isDirty, errors},
         handleSubmit
     } = useForm({defaultValues: {...application}});

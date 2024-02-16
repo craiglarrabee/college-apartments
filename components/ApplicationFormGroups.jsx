@@ -14,8 +14,16 @@ const ApplicationFormGroups = ({
                                    application
                                    , ...restOfProps
                                }) => {
-    let [hideEsa, setHideEsa] = useState(!application?.esa);
+    const [hideEsa, setHideEsa] = useState(!application?.esa);
+    const [referredBy, setReferredBy] = useState(application?.referred_by);
+    const [referredDesc, setReferredDesc] = useState(application?.referred_desc);
 
+    const handleChangeReferred = (event) => {
+        setReferredBy(event.target.value);
+        if (event.target.value !== "Other") {
+            setReferredDesc("");
+        }
+    }
     const handleShowEsa = () => setHideEsa(false);
     const handleHideEsa = () => setHideEsa(true);
     return (
@@ -184,8 +192,8 @@ const ApplicationFormGroups = ({
                             value: true,
                             message: "Please select your year in school."
                         }
-                    })}>
-                        <option value="School Year" disabled={true}></option>
+                    })} >
+                        <option value="" disabled>School Year</option>
                         <option value="Freshman">Freshman</option>
                         <option value="Sophmore">Sophomore</option>
                         <option value="Junior">Junior</option>
@@ -196,6 +204,57 @@ const ApplicationFormGroups = ({
                         className={classNames("text-danger")}>{errors && errors.school_year.message}</Form.Text>}
                 </Form.Group>
             </Row>
+            <Row>
+                <Form.Group as={Col} className="mb-3" controlId="referred_by">
+                    <Form.Label className="required">Referred by</Form.Label>
+                    <Form.Select disabled={!canChangeApplication}  {...register("referred_by", {
+                        required: {
+                            value: true,
+                            message: "Please tell us how you heard about us."
+                        },
+                        onChange: handleChangeReferred
+                    })} value={referredBy}
+                        defaultValue=""
+                    >
+                        <option value="" disabled>Referred by</option>
+                        <option value="Mail">Direct Mail Flyer</option>
+                        <option value="Snow">Snow College Website</option>
+                        <option value="Search">Internet Search</option>
+                        <option value="Tenant">Prior or Current Tenant</option>
+                        <option value="Summer">Stayed Here with Summer Group</option>
+                        <option value="Snowblast">Snowblast</option>
+                        <option value="Ambassador">Ambassador</option>
+                        <option value="Coach">Sports Coach</option>
+                        <option value="Other">Other</option>
+                    </Form.Select>
+
+                    {errors && errors.referred_by && <Form.Text
+                        className={classNames("text-danger")}>{errors && errors.referred_by.message}</Form.Text>}
+                </Form.Group>
+            </Row>
+            {referredBy === "Other" ?
+                <Row>
+                    <Form.Group as={Col} controlId="referred_desc">
+                        <Form.Label visuallyHidden={true}>Referred by description</Form.Label>
+                        <Form.Control
+                            disabled={!canChangeApplication}
+                            className={errors && errors.referred_desc && classNames("border-danger")} {...register("referred_desc", {
+                            maxLength: {
+                                value: 256,
+                                message: "Too long."
+                            }
+                        })}
+                            type="text"
+                            placeholder="Who were you referred by?"
+                            value={referredDesc}
+                        />
+                        {errors && errors.referred_desc &&
+                            <Form.Text className={classNames("text-danger")}>{errors && errors.referred_desc.message}</Form.Text>}
+                    </Form.Group>
+                </Row> :
+                <></>
+            }
+            <br/>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="previous_manager">
                     <Form.Label>

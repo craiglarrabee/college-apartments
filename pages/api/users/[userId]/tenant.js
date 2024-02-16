@@ -5,7 +5,7 @@ import {ironOptions} from "../../../../lib/session/options";
 import {AddTenant, GetTenant, UpdateUserLeaseTenant} from "../../../../lib/db/users/tenant";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.isLoggedIn) res.status(403).send();
+    if (!req.session?.user?.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "GET":

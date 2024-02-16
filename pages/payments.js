@@ -27,6 +27,7 @@ const brandUrl = process.env.BRAND_URL;
 const Payments = ({site, navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
     const {
         register,
+        resetField,
         formState: {isValid, isDirty, errors},
         handleSubmit
     } = useForm({mode: "all"});
@@ -404,6 +405,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
                                                 site={site}
                                                 register={register}
                                                 errors={errors}
+                                                resetField={resetField}
                                                 paymentItems={paymentItems}
                                                 setParentPaymentItems={setPaymentItems}
                                                 setParentTotal={setTotal}
@@ -513,7 +515,8 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const site = context.query.site || SITE;
+    await context.req.session.save();
+	const site = context.query.site || SITE;
     const user = context.req.session.user;
     if (!user?.isLoggedIn) {
         context.res.writeHead(302, {Location: `/index?site=${site}`});

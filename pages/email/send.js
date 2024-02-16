@@ -130,7 +130,8 @@ const Send = ({site, page, links, user, semesters, tenants, apartments, ...restO
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-        const user = context.req.session.user;
+        await context.req.session.save();
+	const user = context.req.session.user;
         const page = "email/send";
         const site = context.query.site || SITE;
         if (!user.manage.includes(site)) {

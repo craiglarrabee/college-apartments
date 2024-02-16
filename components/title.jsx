@@ -112,6 +112,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
 
     return (
         <Navbar style={{display: "block", borderTopRightRadius: "50px"}} expand={true} bg={bg} variant={variant}>
+            <div className={classNames("d-inline-flex", "flex-column")} style={{width: "100%"}}>
             <Navbar.Brand><span
                 className={classNames("h3", "sub-brand")}>{site === "snow" ? "Park Place Apartments @ Snow College" : "Stadium Way & College Way @ SUU"}</span></Navbar.Brand>
             <Navbar.Brand style={{width: "100%"}}>
@@ -142,6 +143,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
                 </span>
             </Navbar.Brand>
             <Login close={handleCloseLogin} setNewUser={setNewUser} show={showLogin} site={site}/>
+            </div>
         </Navbar>
     );
 };

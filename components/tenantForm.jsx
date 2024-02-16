@@ -12,7 +12,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
         reset,
         formState: {isValid, isDirty, errors},
         handleSubmit
-    } = useForm({defaultValues: {...tenant}});
+    } = useForm({mode: "all", defaultValues: {...tenant}});
 
     const handleConvicted = () => setConvictedCrime(true);
     const handleNotConvicted = () => setConvictedCrime(false);
@@ -382,11 +382,10 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                     <div style={{width: "100%"}}
                          className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                         <Button variant="primary" type="submit"
-                                disabled={!isNewApplication && (!isDirty || !isValid)}>{isNewApplication ? "Next" : "Save"}</Button>
+                                disabled={false}>{isNewApplication ? "Next" : "Save"}</Button>
                     </div>
                 }
             </Form>
-
         </>
     );
 }

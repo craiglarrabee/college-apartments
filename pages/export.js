@@ -47,12 +47,17 @@ const Export = ({site, page, links, user, semesters, tenants, ...restOfProps}) =
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-        const user = context.req.session.user;
+        await context.req.session.save();
+	const user = context.req.session.user;
         const page = "export";
         const site = context.query.site || SITE;
         const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
 
-        if (!user.admin.includes(site)) return {notFound: true};
+        if (!user?.admin?.includes(site)) {
+            context.res.writeHead(302, {Location: `/index?site=${site}`});
+            context.res.end();
+            return {};
+        }
         const [nav, tenants, semesters] = await Promise.all([
             GetNavLinks(user, site),
             GetActiveSemesterTenants(site),

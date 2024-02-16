@@ -39,15 +39,18 @@ const Lease = ({site, navPage, lease, links, user, userId, rooms, content, ...re
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const user = context.req.session.user;
+    await context.req.session.save();
+	const user = context.req.session.user;
     const {userId, leaseId} = context.query;
 
     const navPage = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
     const page = navPage.replace("/manage", "");
     const site = context.query.site || SITE;
-    if (!user.admin.includes(site)) {
-        return {notFound: true};
+    if (!user?.admin?.includes(site)) {
+        context.res.writeHead(302, {Location: `/index?site=${site}`});
+        context.res.end();
+        return {};
     }
     const content = {};
     const [lease, contentRows, nav, rooms] = await Promise.all([

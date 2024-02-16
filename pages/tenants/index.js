@@ -64,7 +64,7 @@ const Tenants = ({site, page, links, user, ...restOfProps}) => {
                     <ul style={{minHeight: "350px"}}>
                         {tenants.map(tenant =>
                             (<li key={tenant.user_id}>
-                                <a href={`tenants/${tenant.user_id}?site=${site}`}>{tenant.name}</a>
+                                <a href={`tenants/${tenant.user_id}?site=${site}&t=${new Date().getTime()}`}>{tenant.name}</a>
                             </li>))}
                     </ul>
                     <Footer bg={bg}/>
@@ -76,6 +76,7 @@ const Tenants = ({site, page, links, user, ...restOfProps}) => {
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
+        await context.req.session.save();
         const user = context.req.session.user;
         const page = "tenants";
         const site = context.query.site || SITE;

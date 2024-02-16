@@ -148,7 +148,8 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const site = context.query.site || SITE;
+    await context.req.session.save();
+	const site = context.query.site || SITE;
     const user = context.req.session.user;
     if (!user?.isLoggedIn || !user?.admin.includes(site) || !user?.manageApartment) {
         context.res.writeHead(302, {Location: `/index?site=${site}`});

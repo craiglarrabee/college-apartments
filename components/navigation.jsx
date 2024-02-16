@@ -93,7 +93,7 @@ function buildNavLink(item, links, site) {
     } else {
         return (
             <SidebarMenu.Nav.Link
-                href={`${!item.target ? "/" : ""}${item.page}?site=${site}${item.page === "user" ? ("&" + new Date().getTime()) : ""}`}
+                href={`${!item.target ? "/" : ""}${item.page}?site=${site}&t=${new Date().getTime()}`}
                 key={item.position} eventKey={item.page} target={item.target} >
                 <SidebarMenu.Nav.Item>
                     <SidebarMenu.Nav.Title>{item.label}</SidebarMenu.Nav.Title>

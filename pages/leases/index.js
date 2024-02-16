@@ -108,7 +108,8 @@ const Leases = ({site, links, page, user, leases, ...restOfProps}) => {
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const user = context.req.session.user;
+    await context.req.session.save();
+	const user = context.req.session.user;
     const site = context.query.site || SITE;
     const editing = !!user && !!user.editSite;
     if (!editing) return {notFound: true};

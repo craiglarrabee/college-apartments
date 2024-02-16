@@ -75,7 +75,8 @@ const Home = ({
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const {userId, leaseId, roomTypeId} = context.query;
+    await context.req.session.save();
+	const {userId, leaseId, roomTypeId} = context.query;
     const navPage = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, "");
     const page = "application";

@@ -2,11 +2,11 @@ import {Button, Col, Form, Row, Table} from "react-bootstrap";
 import classNames from "classnames";
 import React, {useEffect, useState} from "react";
 import {Plus, Trash} from "react-bootstrap-icons";
-import {useForm} from "react-hook-form";
 
 const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
 
 export const PaymentLineItems = ({
+                                     resetField,
                                      register,
                                      errors,
                                      site,
@@ -19,14 +19,14 @@ export const PaymentLineItems = ({
     const [lineItems, setLineItems] = useState(paymentItems);
     const [total, setTotal] = useState(paymentTotal);
 
-    useEffect(() => {
-        if (lineItems[lineItems.length-1].remove) {
-             setLineItems([...lineItems.filter(item => !item.remove)]);
-        }
-    }, [lineItems]);
-
     const addItem = () => {
-        const newItems = [...lineItems, {id: lineItems.length, description: "", amount: "", surcharge: "", unitPrice: "", adding:true}];
+        const newItems = [...lineItems, {
+            id: lineItems.length,
+            description: "",
+            amount: "",
+            surcharge: "",
+            unitPrice: ""
+        }];
         setLineItems(newItems);
         setParentPaymentItems(newItems);
     };
@@ -51,7 +51,7 @@ export const PaymentLineItems = ({
         if (lineItems.length === 1) {
             newItems = [{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}];
         } else {
-            newItems = [...lineItems.filter(item => item.id !== id), {description: "", amount: "", surcharge: "", unitPrice: "", remove: true}];
+            newItems = [...lineItems.filter(item => item.id !== id)];
         }
         newItems.map((item, i) => item.id = i);
         setLineItems(newItems);
@@ -75,6 +75,7 @@ export const PaymentLineItems = ({
                 {
                     lineItems.map((item, i) => (
                             <PaymentLineItem
+                                resetField={resetField}
                                 register={register}
                                 errors={errors}
                                 site={site}
@@ -103,7 +104,8 @@ export const PaymentLineItems = ({
                             <Form.Group as={Col} xs={3} controlId={"orderTotal"}>
                                 <Form.Control
                                     readOnly
-                                    {...register("orderTotal")} type="text"
+                                    {...register("orderTotal")}
+                                    type="text"
                                     value={total}/>
                             </Form.Group>
                         </Row>
@@ -116,6 +118,9 @@ export const PaymentLineItems = ({
     )
 };
 export const PaymentLineItem = ({
+                                    register,
+                                    errors,
+                                    resetField,
                                     site,
                                     id,
                                     updateLineItem,
@@ -127,10 +132,6 @@ export const PaymentLineItem = ({
                                     chg
                                 }) => {
 
-    const {
-        register,
-        formState: {errors}
-    } = useForm({mode: "all"});
 
     const [itemId, setItemId] = useState(id);
     const [amount, setAmount] = useState(amt);
@@ -147,7 +148,7 @@ export const PaymentLineItem = ({
     };
 
     useEffect(() => {
-        if(isUpdating) {
+        if (isUpdating) {
             setIsUpdating(false);
             return;
         }
@@ -156,6 +157,8 @@ export const PaymentLineItem = ({
         setSurcharge(chg ? currency.format(chg) : "");
         setTotal(tot ? currency.format(tot) : "");
         setDescription(desc);
+        if (amt === "") resetField(`amount_${itemId}`);
+        if (desc === "") resetField(`description_${itemId}`);
     }, [id, desc, amt, chg]);
 
     const handleChangeAmount = (event, formatAmount = false) => {
@@ -252,21 +255,21 @@ export const PaymentLineItem = ({
                             <Form.Control
                                 className={errors && errors[`amount_${itemId}`] && classNames("border-danger")}
                                 {...register(`amount_${itemId}`, {
-                                pattern: {
-                                    value: /^\$?\d{0,2},?\d{0,3}(\.?\d{0,2})?$/,
-                                    message: "Must be a valid amount between 1.00 and 99999.99"
-                                },
-                                required: {
-                                    value: true,
-                                    message: "Amount is required."
-                                },
-                                onChange: (event) => {
-                                    handleChangeAmount(event);
-                                },
-                                onBlur: (event) => {
-                                    handleChangeAmount(event, true);
-                                }
-                            })} type="text"
+                                    pattern: {
+                                        value: /^\$?\d{0,2},?\d{0,3}(\.?\d{0,2})?$/,
+                                        message: "Must be a valid amount between 1.00 and 99999.99"
+                                    },
+                                    required: {
+                                        value: true,
+                                        message: "Amount is required."
+                                    },
+                                    onChange: (event) => {
+                                        handleChangeAmount(event);
+                                    },
+                                    onBlur: (event) => {
+                                        handleChangeAmount(event, true);
+                                    }
+                                })} type="text"
                                 value={amount}
                                 placeholder="Amount"/>
                             {errors && errors[`amount_${itemId}`] && <Form.Text

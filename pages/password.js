@@ -142,7 +142,8 @@ const Home = ({site, page, links, user, ...restOfProps}) => {
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const user = context.req.session.user;
+    await context.req.session.save();
+	const user = context.req.session.user;
     if (!user || !user.isLoggedIn) {
         context.res.writeHead(302, {Location: `/index.js?site=${site}`});
         context.res.end();

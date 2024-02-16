@@ -74,11 +74,16 @@ const Home = ({site, page, header, body, links, canEdit, user, company, tenant, 
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-        const user = context.req.session.user;
+        await context.req.session.save();
+	const user = context.req.session.user;
         const page = "welcome";
         const site = context.query.site || SITE;
         const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
-        if (!user.admin.includes(site)) return {notFound: true};
+        if (!user?.admin?.includes(site)) {
+            context.res.writeHead(302, {Location: `/index?site=${site}`});
+            context.res.end();
+            return {};
+        }
         const content = {};
         const editing = !!user && !!user.editSite;
         const [contentRows, nav, tenant] = await Promise.all([

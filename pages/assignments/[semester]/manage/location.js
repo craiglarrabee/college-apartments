@@ -334,12 +334,15 @@ const Assignments = ({
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const user = context.req.session.user;
+    await context.req.session.save();
+	const user = context.req.session.user;
     const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
 
-    if (!user.manage.includes(site)) {
-        return {notFound: true};
+    if (!user?.manage?.includes(site)) {
+        context.res.writeHead(302, {Location: `/index?site=${site}`});
+        context.res.end();
+        return {};
     }
     const semester = context.query.semester.replace("_", " ");
 

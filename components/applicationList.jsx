@@ -26,7 +26,7 @@ export const UnprocessedApplicationList = ({
                 </thead>
                 <tbody>
                 {data.map(row => (<tr key={row.user_id}>
-                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a>
                     </td>
                     <td>{row.submit_date}</td>
                     <td><Button onClick={(e) => handleProcess(row.user_id, site, leaseId, true)}>Process</Button></td>
@@ -65,7 +65,7 @@ export const ProcessedApplicationList = ({
                     data.map(row => (
                         <tr key={row.user_id}>
                             <td><a
-                                href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a>
+                                href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a>
                             </td>
                             <td>{row.submit_date}</td>
                             <td><Button onClick={(e) => handleDeposit(row.user_id, site, leaseId)}>Deposit</Button></td>
@@ -95,7 +95,7 @@ export const DepositReceivedApplicationList = ({data, page, site, leaseId, ...re
                 </thead>
                 <tbody>
                 {data.map(row => (<tr>
-                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a>
+                    <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a>
                     </td>
                     <td>{row.deposit_date}</td>
                 </tr>))}
@@ -111,7 +111,7 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
     addResetHook(row.user_id, reset);
     return (
         <tr>
-            <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
+            <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a></td>
             <td>{row.apartment_number}</td>
             <td>
                 <Form onSubmit={handleSubmit(handleWelcome)} method="post">
@@ -169,7 +169,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfPr
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/users/${row.user_id}/leases/${leaseId}/tenant?site=${site}`, options);
+            const resp = await fetch(`/api/users/${row.user_id}/leases/${leaseId}/tenant?site=${site}&t=${new Date().getTime()}`, options);
             switch (resp.status) {
                 case 400:
                     break;
@@ -183,7 +183,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfPr
 
     return (
         <tr>
-            <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}`}>{row.name}</a></td>
+            <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a></td>
             <td>{row.lease_date}</td>
             <td>
                 <Form method="post">

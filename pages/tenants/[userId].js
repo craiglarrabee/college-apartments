@@ -411,7 +411,8 @@ const Tenant = ({
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
-    const {userId} = context.query;
+    await context.req.session.save();
+	const {userId} = context.query;
     const site = context.query.site || SITE;
     const user = context.req.session.user;
     const isTenant = !user?.manageApartment;
