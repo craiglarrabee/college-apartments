@@ -49,7 +49,17 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         data.resultMessage = payResp.messages?.message[0]?.text;
                         data.accountType = payResp.transactionResponse.accountType;
                         data.accountNumber = payResp.transactionResponse.accountNumber;
-                        await AddUserPayment(req.query.site, req.query.userId, data);
+                        // create a payment record for each line item
+                        // they will all have the same transactionId for grouping
+                        await Promise.allSettled(data.items.map(item =>
+                            AddUserPayment(req.query.site, req.query.userId,
+                                {
+                                    ...data,
+                                    amount: item.amount,
+                                    surcharge: item.surcharge,
+                                    total: item.unitPrice,
+                                    description: item.description
+                                })));
                         res.status(200).send();
                     } catch (e) {
                         // if we successfully processed the payment

@@ -20,7 +20,7 @@ const login = withIronSessionApiRoute(async (req, res) => {
             manage: manageSites,
             editSite: false,
             email: userData.email,
-            processedSites: processedForSites
+            processedSites: processedForSites.map(site => site.site)
         };
         req.session.user = user;
         await req.session.save();

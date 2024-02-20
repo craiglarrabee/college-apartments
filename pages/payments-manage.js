@@ -36,7 +36,13 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
             switch (resp.status) {
                 case 204:
                 case 200:
-                    setvalidPayments(validPayments.filter(payment => payment.id !== paymentId));
+                    const thisPayment = validPayments.find(payment => payment.id === paymentId);
+                    const relatedPayments = (validPayments.filter(payment => payment.trans_id === thisPayment.trans_id));
+                    if (relatedPayments.length === 2) {
+                        setvalidPayments(validPayments.filter(payment => payment.trans_id !== thisPayment.trans_id));
+                    } else {
+                        setvalidPayments(validPayments.filter(payment => payment.id !== paymentId));
+                    }
                     break;
                 case 400:
                 default:
@@ -126,20 +132,28 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
                                     <td>{row.trans_id}</td>
                                     <td>{row.date}</td>
                                     <td>{Constants.locations[row.location]}</td>
-                                    <td>{row.amount}</td>
+                                    <td>{row.total}</td>
                                     <td>{row.account_type}</td>
                                     <td>{row.account_number}</td>
                                     <td>{row.description}</td>
-                                    <td><Button onClick={() => markPaymentReviewed(row.id)}>Reviewed</Button></td>
-                                    <td><Button
-                                        onClick={() => setDeleteData({show: true, paymentId: row.id})}>Delete</Button>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </Table>
-                    </div>
-                    <Footer bg={bg}/>
+                                    {row.description !== "TOTAL" &&
+                                        <>
+                                            <td><Button onClick={() => markPaymentReviewed(row.id)}>Reviewed</Button>
+                                            </td>
+                                            <td><Button
+                                                onClick={() => setDeleteData({
+                                                    show: true,
+                                                    paymentId: row.id
+                                                })}>Delete</Button>
+                                            </td>
+                                        </>
+                                    }
+                                        </tr>
+                                        ))}
+                                </tbody>
+                                </Table>
+                                </div>
+                                <Footer bg={bg}/>
                 </main>
 
             </div>
@@ -149,7 +163,7 @@ const Payments = ({site, navPage, links, user, payments, ...restOfProps}) => {
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     await context.req.session.save();
-	const site = context.query.site || SITE;
+    const site = context.query.site || SITE;
     const user = context.req.session.user;
     if (!user?.isLoggedIn || !user?.admin.includes(site) || !user?.manageApartment) {
         context.res.writeHead(302, {Location: `/index?site=${site}`});

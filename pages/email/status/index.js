@@ -61,7 +61,7 @@ const Index = ({site, page, links, user, semesters, emails, ...restOfProps}) => 
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
         await context.req.session.save();
-	const user = context.req.session.user;
+        const user = context.req.session.user;
         const page = "email/status";
         const site = context.query.site || SITE;
         if (!user.manage.includes(site)) {
