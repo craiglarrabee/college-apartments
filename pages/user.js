@@ -86,7 +86,7 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
                                     className={errors && errors.username && classNames("border-danger")} {...register("username", {
                                     required: {value: true, message: "Username is required."},
                                     validate: checkUsername
-                                })} type="text" placeholder="username" maxLength={100}/>
+                                })} type="text" placeholder="username" maxLength={255}/>
                                 {errors && errors.username && <Form.Text
                                     className={classNames("text-danger")}>{errors && errors.username.message}</Form.Text>}
                                 {errors && errors.username && errors && errors.username.type === "validate" &&
