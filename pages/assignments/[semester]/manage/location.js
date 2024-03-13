@@ -354,6 +354,9 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetPreviousLeaseTenants(site, semester),
         GetVisibleSemesterLeaseRoomsMap(site, semester)
     ]);
+    //filter tenants without deposit for suu
+    //suu uses this page, snow uses /assignments/{semester}/manage/index
+    tenants = tenants.filter(tenant => tenant.deposit_date !== null)
     tenants = [...tenants, ...previousTenants];
     return {
         props: {
