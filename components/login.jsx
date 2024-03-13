@@ -70,7 +70,7 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
                     <Form.Group className="mb-3" controlId="username">
                         <Form.Label visuallyHidden={true}>Username</Form.Label>
                         <Form.Control {...register("username", {required: "This is required."})} type="text"
-                                      placeholder="username" maxLength={25}/>
+                                      placeholder="username" maxLength={255}/>
                     </Form.Group>
                     <Form.Group controlId="site">
                         <Form.Control {...register("site")} type="hidden" value={site}/>
@@ -78,7 +78,7 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
                     <Form.Group className="mb-3" controlId="password">
                         <Form.Label visuallyHidden={true}>Password</Form.Label>
                         <Form.Control {...register("password", {required: "This is required."})} type="password"
-                                      placeholder="password" maxLength={100}/>
+                                      placeholder="password" maxLength={1024}/>
                     </Form.Group>
                     <div style={{width: "100%"}}
                          className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
