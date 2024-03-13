@@ -41,7 +41,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
     const [welcomedApplications, setWelcomedApplications] = useState(allApplications.filter(app => app.lease_date));
     const [error, setError] = useState();
     const [success, setSuccess] = useState();
-    const from = `${site}@snowcollegeapartments.com`;
+    const from = `${site}@uca.snowcollegeapartments.com`;
 
     const sendResponseEmail = async (emailAddress) => {
         try {
@@ -257,8 +257,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                 <main>
                     <div className={classNames("main-content")}>
                         {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
-                        {success &&
-                            <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
+                        {success && <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
                         <Tabs defaultActiveKey={1}>
                             <Tab eventKey={1} title={`Unprocessed (${unprocessedApplications.length})`}>
                                 <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site}

@@ -43,7 +43,7 @@ const ApplicationForm = ({
     const [sendEmail, setSendEmail] = useState(true);
     const canChangeApplication = !isTenant || !application.processed;
     const showButtons = canChangeApplication && !printing;
-    const from = `${site}@snowcollegeapartments.com`;
+    const from = `${site}@uca.snowcollegeapartments.com`;
 
 
     const receiveDeposit = async () => {
@@ -128,11 +128,13 @@ const ApplicationForm = ({
 
             const resp = await fetch(`/api/util/email?site=${site}`, options);
             switch (resp.status) {
-                case 400:
-                    setError("An error occurred sending the application response email.");
-                    break;
                 case 204:
+                case 200:
                     setSuccess(`Application response email sent.`);
+                    break;
+                case 400:
+                default:
+                    setError("An error occurred sending the application response email.");
                     break;
             }
         } catch (e) {
@@ -141,13 +143,13 @@ const ApplicationForm = ({
         }
     };
 
-    const handleSetProcessedStatus = async (processed) => {
+    const handleSetProcessedStatus = async (prcoessedVal) => {
 
         try {
             const options = {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({processed: processed}),
+                body: JSON.stringify({processed: prcoessedVal}),
             }
 
             const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
@@ -156,8 +158,8 @@ const ApplicationForm = ({
                     setError(`An error occurred updating the application. Please try again. ${JSON.stringify(await resp.json())}`);
                     break;
                 case 204:
-                    if (sendEmail && !processed) await sendResponseEmail();
-                    setProcessed(processed);
+                    if (sendEmail && prcoessedVal) await sendResponseEmail();
+                    setProcessed(prcoessedVal);
                     break;
             }
         } catch (e) {
@@ -198,8 +200,7 @@ const ApplicationForm = ({
         <>
             <Form onSubmit={handleSubmit(onSubmitApplication)} method="post">
                 {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
-                {success &&
-                    <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
+                {success && <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
                 {site === "suu" ?
                     <WorkFormGroups register={register} application={application} errors={errors}
                                     canChangeApplication={canChangeApplication}/> : null}
