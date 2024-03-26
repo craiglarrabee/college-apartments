@@ -8,7 +8,7 @@ import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import classNames from "classnames";
 import {Tab, Tabs} from "react-bootstrap";
-import {SentLeaseList, SignedLeaseList, WelcomedApplicationList} from "../../../../components/applicationList";
+import {SignedLeaseList, WelcomedApplicationList} from "../../../../components/applicationList";
 import {GetUserLeases} from "../../../../lib/db/users/userLease";
 
 const SITE = process.env.SITE;

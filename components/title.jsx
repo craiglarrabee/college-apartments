@@ -4,7 +4,7 @@ import {Person} from "react-bootstrap-icons";
 import Login from "./login";
 import {useState} from "react";
 
-const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restOfProps}) => {
+const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogin = () => {}, ...restOfProps}) => {
     const [showLogin, setShowLogin] = useState(startWithLogin);
     const [actionText, setActionText] = useState(initialUser.isLoggedIn ? "Sign out" : "Sign In");
     const [user, setUser] = useState(initialUser);
@@ -13,6 +13,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, ...restO
     const setNewUser = (newUser) => {
         setUser(newUser);
         setActionText(newUser.isLoggedIn ? "Sign out" : "Sign In");
+        if (newUser.isLoggedIn && postLogin) postLogin();
     };
 
     const handleEditSite = async () => {

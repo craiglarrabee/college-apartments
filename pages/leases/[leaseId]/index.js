@@ -16,6 +16,7 @@ import {GetLease} from "../../../lib/db/users/lease";
 import {GetLeaseRooms} from "../../../lib/db/users/roomType";
 import LeaseRoom from "../../../components/leaseRoom";
 import {GetUserLease} from "../../../lib/db/users/userLease";
+import Router from "next/router";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -58,12 +59,16 @@ const Lease = ({
         }
     }
 
+    const refresh = () => {
+        Router.reload();
+    };
+
     return (
         <Layout site={site} user={user}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}
-                       startWithLogin={!user.isLoggedIn}/>
+                       startWithLogin={!user.isLoggedIn} postLogin={refresh}/>
                 <main>
                     {leaseError &&
                         <Alert variant={"danger"} dismissible onClick={() => setLeaseError(null)}>{leaseError}</Alert>
@@ -315,11 +320,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetNavLinks(user, site),
         GetLeaseRooms(context.query.leaseId)
     ]);
+
     if (!lease) return {notFound: true};
     const signed = !!lease.signed_date;
     if (!signed) lease.signed_date = today;
     contentRows.forEach(row => content[row.name] = row.content);
-    const label = nav.filter(link => link.page === page)[0].label;
+    const link = nav.filter(link => link.page === page)[0];
+    const label = link ? link.label : "";
 
     return {
         props: {

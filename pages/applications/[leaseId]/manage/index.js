@@ -282,7 +282,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                             <Tab eventKey={5} title={`Welcomed (${welcomedApplications.length})`}>
                                 <WelcomedApplicationList data={welcomedApplications} page={page} leaseId={leaseId}
                                                          site={site} header={header} company={company} body={body}
-                                                         handleDelete={deleteApplication}/>
+                                                         handleDelete={deleteApplication} handleWelcome={welcome}/>
                             </Tab>
                         </Tabs>
                     </div>

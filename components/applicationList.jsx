@@ -146,7 +146,7 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
 };
 
 
-export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfProps}) => {
+export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelcome, ...restOfProps}) => {
     const [semester1Selected, setSemester1Selected] = useState(row.semester1_selected);
     const [semester2Selected, setSemester2Selected] = useState(row.semester2_selected);
     const {register} = useForm();
@@ -188,7 +188,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfPr
             <td>
                 <Form method="post">
                     <Row>
-                        <Col>
+                        <Col xs={7}>
                             {row.semester1 ?
                                 <Form.Check
                                     className="mb-3" {...register("semester1", {onChange: (e) => setSemester1Selected(e.target.checked)})}
@@ -202,9 +202,12 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, ...restOfPr
                                     inline/>
                                 : <></>}
                         </Col>
-                        {handleDelete && <td><Button
-                            onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button>
-                        </td>}
+                        {handleDelete &&
+                            <>
+                                <Col><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></Col>
+                                <Col><Button onClick={() => handleWelcome()} style={{maxHeight: "38px", maxWidth: "100px"}} xs="3" >Resend</Button></Col>
+                            </>
+                        }
 
                     </Row>
                 </Form>
@@ -243,7 +246,7 @@ export const AssignedApplicationList = ({
         </>
     );
 };
-export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete, ...restOfProps}) => {
+export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete, handleWelcome,...restOfProps}) => {
     return (
         <>
             <Table>
@@ -256,7 +259,7 @@ export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete
                 </thead>
                 <tbody>
                 {data.map(row => (
-                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleDelete={handleDelete}/>))}
+                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleDelete={handleDelete} handleWelcome={handleWelcome}/>))}
                 </tbody>
             </Table>
         </>
