@@ -54,7 +54,7 @@ const Assignments = ({
 
         assignments.unassigned_type = tenants.filter(tenant => tenant.location === activeTabKey && !tenant.apartment_number);
         assignments.unassigned_others = tenants.filter(tenant => tenant.location && tenant.location !== activeTabKey && !tenant.apartment_number);
-        assignments.unassigned_previous = tenants.filter(tenant => tenant.user_id != tenant.created_by_user_id && !tenant.apartment_number);
+        assignments.unassigned_previous = tenants.filter(tenant => !tenant.current_tenant &&  !tenant.apartment_number);
 
         return assignments;
     };
@@ -70,13 +70,13 @@ const Assignments = ({
             return;
         }
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
-        if (!tenant.spots && tenant.user_id != tenant.created_by_user_id && over?.data?.current?.roomTypeId) {
+        if (!tenant.spots && !tenant.current_tenant && over?.data?.current?.roomTypeId) {
             setShowRoomTypes(true);
             setSelectedTenantId(active.id);
             setActiveId(null);
             return;
         }
-        if (tenant.user_id != tenant.created_by_user_id && !over.data?.current?.roomTypeId) {
+        if (!tenant.current_tenant && !over.data?.current?.roomTypeId) {
             deletePreviousTenantData(tenant.user_id, tenant.lease_id);
         }
         if (!await updateApartmentNumber(tenant, tenant.lease_id, over?.data?.current?.apartmentNumber, over?.data?.current?.roomTypeId || tenant.room_type_id)) {
@@ -261,7 +261,7 @@ const Assignments = ({
                                                                additionalStyle={{backgroundColor: roomTypeColor}}
                                                                title={`Tenants applied to ${activeTabKey}`}>
                                                 {tenants
-                                                    .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.location === activeTabKey && !tenant.apartment_number)
+                                                    .filter(tenant => tenant.current_tenant && tenant.location === activeTabKey && !tenant.apartment_number)
                                                     .map(tenant =>
                                                         <Tenant key={tenant.user_id} userId={tenant.user_id}
                                                                 data="current">
@@ -276,7 +276,7 @@ const Assignments = ({
                                                                additionalStyle={{backgroundColor: otherTypeColor}}
                                                                title="Tenants applied to different location">
                                                 {tenants
-                                                    .filter(tenant => tenant.created_by_user_id == tenant.user_id && tenant.location !== activeTabKey && !tenant.apartment_number)
+                                                    .filter(tenant => tenant.current_tenant && tenant.location !== activeTabKey && !tenant.apartment_number)
                                                     .map(tenant =>
                                                         <Tenant key={tenant.user_id} userId={tenant.user_id}
                                                                 data="current">
@@ -291,7 +291,7 @@ const Assignments = ({
                                                                additionalStyle={{backgroundColor: previousColor}}
                                                                title="Previous tenants">
                                                 {tenants
-                                                    .filter(tenant => tenant.user_id != tenant.created_by_user_id && !tenant.apartment_number)
+                                                    .filter(tenant => !tenant.current_tenant && !tenant.apartment_number)
                                                     .map(tenant =>
                                                         <Tenant key={tenant.user_id} userId={tenant.user_id}
                                                                 data="previous">
@@ -306,7 +306,7 @@ const Assignments = ({
                                             {activeId ? tenants
                                                     .filter(tenant => tenant.user_id === activeId)
                                                     .map(tenant => <TenantCard visible={true} tenant={tenant}
-                                                                               backgroundColor={activeTabKey === tenant.location ? roomTypeColor : (tenant.user_id != tenant.created_by_user_id ? previousColor : otherTypeColor)}/>)
+                                                                               backgroundColor={activeTabKey === tenant.location ? roomTypeColor : (!tenant.current_tenant ? previousColor : otherTypeColor)}/>)
                                                 : null}
                                         </DragOverlay>
                                     </div>
