@@ -149,7 +149,7 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
 export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelcome, ...restOfProps}) => {
     const [semester1Selected, setSemester1Selected] = useState(row.semester1_selected);
     const [semester2Selected, setSemester2Selected] = useState(row.semester2_selected);
-    const {register} = useForm();
+    const {register, handleSubmit} = useForm();
 
     useEffect(() => {
         saveTenantSemesters({
@@ -186,7 +186,16 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
             <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a></td>
             <td>{row.lease_date}</td>
             <td>
-                <Form method="post">
+                <Form onSubmit={handleSubmit(handleWelcome)} method="post">
+                    <Form.Group controlId="site">
+                        <Form.Control {...register("site")} type="hidden" value={site}/>
+                    </Form.Group>
+                    <Form.Group controlId="userId">
+                        <Form.Control {...register("userId")} type="hidden" value={row.user_id}/>
+                    </Form.Group>
+                    <Form.Group controlId="leaseId">
+                        <Form.Control {...register("leaseId")} type="hidden" value={leaseId}/>
+                    </Form.Group>
                     <Row>
                         <Col xs={7}>
                             {row.semester1 ?
@@ -205,7 +214,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
                         {handleDelete &&
                             <>
                                 <Col><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></Col>
-                                <Col><Button onClick={() => handleWelcome()} style={{maxHeight: "38px", maxWidth: "100px"}} xs="3" >Resend</Button></Col>
+                                <Col><Button type="submit" style={{maxHeight: "38px", maxWidth: "100px"}} xs="3" >Resend</Button></Col>
                             </>
                         }
 

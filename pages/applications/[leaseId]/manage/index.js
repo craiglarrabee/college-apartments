@@ -19,7 +19,6 @@ import {GetApplications} from "../../../../lib/db/users/application";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
-import {getIronSession} from "iron-session";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -32,7 +31,7 @@ const addResetHook = (userId, hook) => {
     resetHooks[userId] = hook;
 }
 
-const Applications = ({leaseId, site, page, links, user, applications, header, body, company, ...restOfProps}) => {
+const Applications = ({leaseId, site, page, links, user, applications, welcome_header, welcome_body, response_body, company, ...restOfProps}) => {
     const [allApplications, setAllApplications] = useState(applications);
     const [unprocessedApplications, setUnprocessedApplications] = useState(allApplications.filter(app => app.processed === 0));
     const [processedApplications, setProcessedApplications] = useState(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
@@ -49,7 +48,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                 from: from,
                 subject: `Welcome to ${company}`,
                 address: emailAddress,
-                body: body
+                body: response_body
             };
 
             const options = {
@@ -206,7 +205,7 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
         event.preventDefault();
 
         const thisApp = allApplications.find(app => app.user_id == data.userId);
-        const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={header} body={body}
+        const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={welcome_header} body={welcome_body}
                                             canEdit={false} company={`${company}, LLC`}
                                             site={data.site} page={page}
                                             semester={thisApp.semester1}></WelcomeEmailBody>;
@@ -277,11 +276,11 @@ const Applications = ({leaseId, site, page, links, user, applications, header, b
                             <Tab eventKey={4} title={`Assignment Made (${assignedApplications.length})`}>
                                 <AssignedApplicationList data={assignedApplications} page={page} leaseId={leaseId}
                                                          site={site} handleWelcome={welcome} addResetHook={addResetHook}
-                                                         header={header} company={company} body={body}/>
+                                                         company={company}/>
                             </Tab>
                             <Tab eventKey={5} title={`Welcomed (${welcomedApplications.length})`}>
                                 <WelcomedApplicationList data={welcomedApplications} page={page} leaseId={leaseId}
-                                                         site={site} header={header} company={company} body={body}
+                                                         site={site} company={company}
                                                          handleDelete={deleteApplication} handleWelcome={welcome}/>
                             </Tab>
                         </Tabs>
@@ -307,16 +306,16 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
     const editing = !!user && !!user.editSite;
-    const [contentRows, nav, applications, emailContentRows] = await Promise.all([
+    const [welcomeContentRows, nav, applications, responseEmailContentRows] = await Promise.all([
         GetDynamicContent(site, welcomePage),
         GetNavLinks(user, site),
         GetApplications(site, context.query.leaseId),
         GetDynamicContent(site, "response"),
     ]);
-    let content = {};
-    const emailContent = [];
-    contentRows.forEach(row => content[row.name] = row.content);
-    emailContentRows.forEach(row => emailContent[row.name] = row.content);
+    let welcomeContent = {};
+    const responseEmailContent = [];
+    welcomeContentRows.forEach(row => welcomeContent[`welcome_${row.name}`] = row.content);
+    responseEmailContentRows.forEach(row => responseEmailContent[`response_${row.name}`] = row.content);
 
     return {
         props: {
@@ -324,8 +323,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             site: site,
             page: page,
             links: nav,
-            ...content,
-            ...emailContent,
+            ...welcomeContent,
+            ...responseEmailContent,
             canEdit: editing,
             user: {...user},
             applications: [...applications],
