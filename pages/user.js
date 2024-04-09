@@ -99,7 +99,7 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
                                     className={errors && errors.password && classNames("border-danger")} {...register("password", {
                                     required: {value: true, message: "Password is required."},
                                     pattern: {
-                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\.@$!%*?&])[A-Za-z\d\.@$!%*?&]{8,100}$/,
+                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\.@$!%*?&#])[A-Za-z\d\.@$!%*?&#]{8,100}$/,
                                     }
                                 })} type="password" placeholder="password"
                                     onChange={(e) => setPwd(e.currentTarget.value)}/>
@@ -120,7 +120,7 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
                                         <li className={pwd.match(/.*[A-Z]/) ? "text-success" : "text-danger"}>At least
                                             one upper-case character
                                         </li>
-                                        <li className={pwd.match(/.*[\.@$!%*?&]/) ? "text-success" : "text-danger"}>At
+                                        <li className={pwd.match(/.*[\.@$!%*?&#]/) ? "text-success" : "text-danger"}>At
                                             least one special character
                                         </li>
                                     </ul>
