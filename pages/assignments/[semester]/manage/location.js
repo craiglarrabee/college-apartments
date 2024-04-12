@@ -48,7 +48,7 @@ const Assignments = ({
         const assignments = apartments.reduce((obj, item) => {
             return {
                 ...obj,
-                [`${item.apartment_number}_${item.room_type}`]: tenants.filter(tenant => tenant.apartment_number === item.apartment_number && tenant.base_room_type === item.room_type)
+                [`${item.apartment_number}_${item.room_type}`]: tenants.filter(tenant => tenant.apartment_number === item.apartment_number /*&& tenant.base_room_type === item.room_type*/)
             }
         }, {});
 
@@ -258,7 +258,7 @@ const Assignments = ({
                                         }}>
                                             <UnassignedTenants apartmentNumber="unassigned"
                                                                roomType="type"
-                                                               additionalStyle={{backgroundColor: roomTypeColor}}
+                                                               additionalStyle={{backgroundColor: roomTypeColor, minHeight: "50%"}}
                                                                title={`Tenants applied to ${activeTabKey}`}>
                                                 {tenants
                                                     .filter(tenant => tenant.current_tenant && tenant.location === activeTabKey && !tenant.apartment_number)
@@ -273,7 +273,7 @@ const Assignments = ({
                                             </UnassignedTenants>
                                             <UnassignedTenants apartmentNumber="unassigned"
                                                                roomType="others"
-                                                               additionalStyle={{backgroundColor: otherTypeColor}}
+                                                               additionalStyle={{backgroundColor: otherTypeColor, minHeight: "20%", maxHeight:"40%"}}
                                                                title="Tenants applied to different location">
                                                 {tenants
                                                     .filter(tenant => tenant.current_tenant && tenant.location !== activeTabKey && !tenant.apartment_number)
@@ -288,7 +288,7 @@ const Assignments = ({
                                             </UnassignedTenants>
                                             <UnassignedTenants apartmentNumber="unassigned"
                                                                roomType="previous"
-                                                               additionalStyle={{backgroundColor: previousColor}}
+                                                               additionalStyle={{backgroundColor: previousColor, minHeight: "15%", maxHeight: "25%"}}
                                                                title="Previous tenants">
                                                 {tenants
                                                     .filter(tenant => !tenant.current_tenant && !tenant.apartment_number)

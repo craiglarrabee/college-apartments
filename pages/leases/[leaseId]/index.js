@@ -120,6 +120,11 @@ const Lease = ({
                                     less a discount per semester of
                                     $0 .
                                 </div>
+                                {lease.apartment_number &&
+                                <div style={{fontWeight: "bold"}}>
+                                    I will reside in apartment number: {lease.apartment_number}
+                                </div>
+                                }
                                 <PageContent
                                     initialContent={rent_body}
                                     site={site}
