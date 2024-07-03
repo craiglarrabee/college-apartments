@@ -170,10 +170,13 @@ const ApplicationForm = ({
     const onSubmitApplication = async (data, event) => {
         event.preventDefault();
         data.site = site;
-        let ids = data.lease_room_type_id.split("_");
+        data.old_room_type_id = data.room_type_id;
+        let ids = data[`lease_${leaseId}_room_type_id`].split("_");
         data.lease_id = ids[0];
         data.room_type_id = ids[1];
         data.share_info = data.do_not_share_info === "1" ? "0" : "1";
+        data.submit_date = application.submit_date;
+        data.deposit_date = application.deposit_date;
 
         try {
             const options = {

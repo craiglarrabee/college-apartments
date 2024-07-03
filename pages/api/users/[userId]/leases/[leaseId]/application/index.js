@@ -2,7 +2,12 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../../lib/session/options";
-import {AddApplication, DeleteApplication, ProcessApplication} from "../../../../../../../lib/db/users/application";
+import {
+    AddApplication,
+    DeleteApplication,
+    ModifyApplication,
+    ProcessApplication
+} from "../../../../../../../lib/db/users/application";
 import {DeleteUserLease} from "../../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
@@ -14,14 +19,14 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     for (const lease of req.body.leases) {
                         const data = {...req.body, lease_id: lease.lease_id, room_type_id: lease.room_type_id};
                         try {
-                            await AddApplication(data.site, req.query.userId, req.query.leaseId, data);
+                            await ModifyApplication(data.site, req.query.userId, req.query.leaseId, data);
                         } catch (e) {
                             console.error(e);
                         }
                     }
                 } else {
                     try {
-                        await AddApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
+                        await ModifyApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
                     } catch (e) {
                         console.error(e);
                     }

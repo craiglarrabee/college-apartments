@@ -192,7 +192,7 @@ const ApplicationFormGroups = ({
                             value: true,
                             message: "Please select your year in school."
                         }
-                    })} >
+                    })} value={application?.school_year} defaultValue="" >
                         <option value="" disabled>School Year</option>
                         <option value="Freshman">Freshman</option>
                         <option value="Sophmore">Sophomore</option>

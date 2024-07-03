@@ -21,8 +21,11 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
 
     const isValidBirthdate = (date) => {
         const sixteenYearsAgo = new Date();
+        const eightyYearsAgo = new Date();
         sixteenYearsAgo.setFullYear(sixteenYearsAgo.getFullYear() - 16);
-        return new Date(date) <= sixteenYearsAgo;
+        eightyYearsAgo.setFullYear(eightyYearsAgo.getFullYear() - 80);
+        const bDate = new Date(date);
+        return bDate <= sixteenYearsAgo && bDate >= eightyYearsAgo;
     };
 
     const onSubmitPersonal = async (data, event) => {

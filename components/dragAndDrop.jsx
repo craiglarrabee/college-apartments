@@ -30,13 +30,14 @@ export const Apartment = ({apartmentNumber, id, data, tenants, children, roomTyp
 export const UnassignedTenants = ({children, apartmentNumber, additionalStyle, title, roomType, ...restOfProps}) => {
     const id = `${apartmentNumber}_${roomType}`;
     const {isOver, setNodeRef} = useDroppable({data: {apartmentNumber: apartmentNumber, roomType: roomType}, id: id});
-    const [showTenants, setShowTenants] = useState(true);
+    const [showTenants, setShowTenants] = useState(children.length > 0);
 
     const style = {
         opacity: isOver ? 1 : 0.6,
         margin: "5px",
         padding: "3px",
         width: "98%",
+        minHeight: showTenants ? "30%" : "5%",
         border: "1px solid grey",
         borderRadius: "5px",
         alignContent: "start",
