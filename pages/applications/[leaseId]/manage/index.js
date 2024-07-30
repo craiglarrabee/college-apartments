@@ -31,13 +31,25 @@ const addResetHook = (userId, hook) => {
     resetHooks[userId] = hook;
 }
 
-const Applications = ({leaseId, site, page, links, user, applications, welcome_header, welcome_body, response_body, company, ...restOfProps}) => {
+const Applications = ({
+                          leaseId,
+                          site,
+                          page,
+                          links,
+                          user,
+                          applications,
+                          welcome_header,
+                          welcome_body,
+                          response_body,
+                          company,
+                          ...restOfProps
+                      }) => {
     const [allApplications, setAllApplications] = useState(applications);
     const [unprocessedApplications, setUnprocessedApplications] = useState(allApplications.filter(app => app.processed === 0));
     const [processedApplications, setProcessedApplications] = useState(allApplications.filter(app => app.processed === 1 && !app.deposit_date));
     const [depositReceivedApplications, setDepositReceivedApplications] = useState(allApplications.filter(app => app.deposit_date && !app.apartment_number));
-    const [assignedApplications, setAssignedApplications] = useState(allApplications.filter(app => app.apartment_number && !app.lease_date));
-    const [welcomedApplications, setWelcomedApplications] = useState(allApplications.filter(app => app.lease_date));
+    const [assignedApplications, setAssignedApplications] = useState(allApplications.filter(app => app.apartment_number && !app.welcome_date));
+    const [welcomedApplications, setWelcomedApplications] = useState(allApplications.filter(app => app.welcome_date));
     const [error, setError] = useState();
     const [success, setSuccess] = useState();
     const from = `${site}@uca.snowcollegeapartments.com`;
@@ -113,8 +125,6 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
 
             const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}`, options)
             switch (resp.status) {
-                case 400:
-                    break;
                 case 204:
                     // now remove from the applications on this page components
                     const newApplications = await Promise.all(allApplications.map(async (app) => {
@@ -132,8 +142,13 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
                     setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
                     if (processed) await sendResponseEmail(thisApp.email)
                     break;
+                case 400:
+                default:
+                    setError("An error occurred modifying the application.");
+                    break;
             }
         } catch (e) {
+            setError("An error occurred modifying the application.");
             console.error(e);
         }
     };
@@ -155,8 +170,8 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
-                    setWelcomedApplications(newApplications.filter(app => app.lease_date));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.welcome_date));
+                    setWelcomedApplications(newApplications.filter(app => app.welcome_date));
                     break;
                 case 400:
                 default:
@@ -175,11 +190,15 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
                 headers: {"Content-Type": "application/json"},
             }
 
-            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options)
+            let resp = await fetch(`/api/users/${userId}/leases/${leaseId}?site=${site}`, options);
             switch (resp.status) {
-                case 400:
-                    break;
                 case 200:
+                case 204:
+                    resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options);
+                    if (resp.status !== 200) {
+                        setError("An error occurred modifying the application. Please try again.");
+                        break;
+                    }
                     // now remove from the applications on this page components
                     const updatedApplication = await resp.json();
                     const newApplications = await Promise.all(allApplications.map(async (app) => {
@@ -195,6 +214,10 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
                     setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
                     break;
+                case 400:
+                default:
+                    setError("An error occurred creating the lease. Please try again.");
+                    break;
             }
         } catch (e) {
             console.error(e);
@@ -205,7 +228,8 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
         event.preventDefault();
 
         const thisApp = allApplications.find(app => app.user_id == data.userId);
-        const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={welcome_header} body={welcome_body}
+        const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={welcome_header}
+                                            body={welcome_body}
                                             canEdit={false} company={`${company}, LLC`}
                                             site={data.site} page={page}
                                             semester={thisApp.semester1}></WelcomeEmailBody>;
@@ -213,20 +237,18 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
 
         try {
             const options = {
-                method: "POST",
+                method: "PUT",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(data)
             }
-
-            const resp = await fetch(`/api/users/${data.userId}/leases/${data.leaseId}?site=${data.site}`, options);
+            const resp = await fetch(`/api/users/${data.userId}/leases/${data.leaseId}/welcome?site=${data.site}`, options);
             switch (resp.status) {
                 case 400:
                     break;
                 case 204:
-                    // now remove from the applications on this page components
                     const newApplications = allApplications.map((app) => {
                         if (app.user_id == data.userId) {
-                            return {...app, lease_date: new Date().toLocaleDateString()};
+                            return {...app, welcome_date: new Date().toLocaleDateString()};
                         } else {
                             return app
                         }
@@ -235,8 +257,8 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
-                    setWelcomedApplications(newApplications.filter(app => app.lease_date));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.welcome_date));
+                    setWelcomedApplications(newApplications.filter(app => app.welcome_date));
                     delete resetHooks[data.userId];
                     Object.values(resetHooks).forEach(hook => hook());
                     await sendWelcomeEmail(thisApp.email, emailBodyString);
@@ -249,14 +271,15 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
     };
 
     return (
-        <Layout site={site} user={user}>
+        <Layout site={site} user={user} wide={true}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
                     <div className={classNames("main-content")}>
                         {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
-                        {success && <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
+                        {success &&
+                            <Alert dismissible variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
                         <Tabs defaultActiveKey={1}>
                             <Tab eventKey={1} title={`Unprocessed (${unprocessedApplications.length})`}>
                                 <UnprocessedApplicationList data={unprocessedApplications} page={page} site={site}
@@ -295,7 +318,7 @@ const Applications = ({leaseId, site, page, links, user, applications, welcome_h
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     await context.req.session.save();
-	const user = context.req.session.user;
+    const user = context.req.session.user;
     const page = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "");
     const site = context.query.site || SITE;
     const welcomePage = "welcome";

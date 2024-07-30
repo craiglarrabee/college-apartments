@@ -118,7 +118,7 @@ const Lease = ({
                                     #{lease.room_type_id ? lease.room_type_id : "__"} ABOVE FOR THE RENT PER SEMESTER
                                     SET FORTH
                                     less a discount per semester of
-                                    $0 .
+                                    ${lease.lease_discount} .
                                 </div>
                                 {lease.apartment_number &&
                                 <div style={{fontWeight: "bold"}}>

@@ -23,6 +23,8 @@ import * as Constants from "../../lib/constants";
 import GenericExplanationModal from "../../components/genericExplanationModal";
 import {useForm} from "react-hook-form";
 import NewApplicationForm from "../../components/newApplicationForm";
+import UsernameForm from "../../components/usernameForm";
+import PasswordForm from "../../components/passwordForm";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -47,10 +49,8 @@ const Tenant = ({
     const [validDeletedPayments, setvalidDeletedPayments] = useState(deletedPayments);
     const [paymentError, setPaymentError] = useState();
     const [deleteData, setDeleteData] = useState({show: false, description: null});
-    const {register, getValues, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({mode: "all"});
-    const [pwd, setPwd] = useState("");
-    const [passwordError, setPasswordError] = useState();
-    const [passwordInfo, setPasswordInfo] = useState();
+    const [userInfoError, setUserInfoError] = useState();
+    const [userInfoSuccess, setUserInfoSuccess] = useState();
 
 
     tab = (tab === "Roommates") ? 3 : 0;
@@ -92,42 +92,6 @@ const Tenant = ({
         }
     }, [deleteData.description]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const changePassword = async (data, event) => {
-        event.preventDefault();
-
-        try {
-            data.site = site;
-            data.username = tenant.username;
-            data.admin = user.manageApartment;
-
-            const options = {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            }
-
-            const resp = await fetch(`/api/users/${userId}/password?site=${site}`, options)
-            switch (resp.status) {
-                case 200:
-                case 204:
-                    setPasswordInfo(`Password changed for ${tenant.username}`)
-                    break;
-                case 401:
-                case 403:
-                    setPasswordError("Your cannot change passwords");
-                    break;
-                case 400:
-                default:
-                    setPasswordError("An error occurred changing the password")
-                    break;
-            }
-
-        } catch (e) {
-
-        }
-    };
 
     return (
         <Layout site={site} user={user} wide={!isTenant}>
@@ -159,23 +123,25 @@ const Tenant = ({
                                                                  {...applicationContent} />
                                             </Tab>);
                                     })}
-                                    <Tab title="New Application"
-                                         eventKey="new"
-                                         key="new">
-                                        <NewApplicationForm site={site}
-                                                            tenant={tenant}
-                                                            page={page}
-                                                            userId={userId}
-                                                            user={user}
-                                                            canEdit={false}
-                                                            disclaimer={disclaimer}
-                                                            currentLeases={currentLeases}
-                                                            esa_packet={esa_packet}
-                                                            guaranty={guaranty}
-                                                            rules={rules}
-                                                            previous_rental={previous_rental}/>
+                                    {currentLeases.length > 0 &&
+                                        <Tab title="New Application"
+                                             eventKey="new"
+                                             key="new">
+                                            <NewApplicationForm site={site}
+                                                                tenant={tenant}
+                                                                page={page}
+                                                                userId={userId}
+                                                                user={user}
+                                                                canEdit={false}
+                                                                disclaimer={disclaimer}
+                                                                currentLeases={currentLeases}
+                                                                esa_packet={esa_packet}
+                                                                guaranty={guaranty}
+                                                                rules={rules}
+                                                                previous_rental={previous_rental}/>
 
-                                    </Tab>
+                                        </Tab>
+                                    }
                                 </Tabs>
                             </Tab>
                             <Tab title="Leases" eventKey={2} key={2}>
@@ -328,76 +294,18 @@ const Tenant = ({
                             }
                             {!isTenant &&
                                 <Tab title="User Information" eventKey={7} key={7}>
-                                    {passwordError &&
+                                    {userInfoError &&
                                         <Alert variant={"danger"} dismissible
-                                               onClick={() => setPasswordError(null)}>{passwordError}</Alert>
+                                               onClick={() => setUserInfoError(null)}>{userInfoError}</Alert>
                                     }
-                                    {passwordInfo &&
+                                    {userInfoSuccess &&
                                         <Alert variant={"success"} dismissible
-                                               onClick={() => setPasswordInfo(null)}>{passwordInfo}</Alert>
+                                               onClick={() => setUserInfoSuccess(null)}>{userInfoSuccess}</Alert>
                                     }
-                                    <Form onSubmit={handleSubmit(changePassword)} method="post">
-                                        <div className="h4">{`Username: ${tenant.username}`}</div>
-                                        <br/>
-                                        <div className="h5">Change Password</div>
-                                        <Form.Group className="mb-3" controlId="password">
-                                            <Form.Label visuallyHidden={true}>Last Name</Form.Label>
-                                            <Form.Control
-                                                className={errors && errors.password && classNames("border-danger")} {...register("password", {
-                                                required: {value: true, message: "Password is required."},
-                                                pattern: {
-                                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,100}$/,
-                                                }
-                                            })} type="password" placeholder="password"
-                                                onChange={(e) => setPwd(e.currentTarget.value)}/>
-                                            {errors && errors.password && <Form.Text
-                                                className={classNames("text-danger")}>{errors && errors.password.message}</Form.Text>}
-                                            <Form.Text>
-                                                <div>Password must contain:</div>
-                                                <ul style={{listStyleType: "none"}}>
-                                                    <li className={pwd.length > 8 && pwd.length < 101 ? "text-success" : "text-danger"}>Between
-                                                        8 and 100 chars
-                                                    </li>
-                                                    <li className={pwd.match(/.*\d/) ? "text-success" : "text-danger"}>At
-                                                        least one
-                                                        number
-                                                    </li>
-                                                    <li className={pwd.match(/.*[a-z]/) ? "text-success" : "text-danger"}>At
-                                                        least
-                                                        one
-                                                        lower-case character
-                                                    </li>
-                                                    <li className={pwd.match(/.*[A-Z]/) ? "text-success" : "text-danger"}>At
-                                                        least
-                                                        one
-                                                        upper-case character
-                                                    </li>
-                                                    <li className={pwd.match(/.*[@$!%*?&#]/) ? "text-success" : "text-danger"}>At
-                                                        least
-                                                        one special character
-                                                    </li>
-                                                </ul>
-                                            </Form.Text>
-                                        </Form.Group>
-                                        <Form.Group className="mb-3" controlId="confirm_password">
-                                            <Form.Label visuallyHidden={true}>Last Name</Form.Label>
-                                            <Form.Control  {...register("confirm_password",
-                                                {
-                                                    validate: {
-                                                        passwordEqual: (value) => value === getValues().password || "Must match new password"
-                                                    }
-                                                })} type="password" placeholder="confirm new password"/>
-                                            {errors && errors.confirm_password &&
-                                                <Form.Text
-                                                    className={classNames("text-danger")}>{errors && errors.confirm_password.message}</Form.Text>
-                                            }
-                                        </Form.Group>
-                                        <div style={{width: "100%"}}
-                                             className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                                            <Button variant="primary" type="submit"
-                                                    disabled={!isDirty}>{`Change Password for ${tenant.username}`}</Button>
-                                        </div>
-                                    </Form>
+                                    <div className="h4">{`Username: ${tenant.username}`}</div>
+                                    <br/>
+                                    <UsernameForm site={site} userId={userId} username={tenant.username} setUserInfoError={setUserInfoError} setUserInfoSuccess={setUserInfoSuccess}/>
+                                    <PasswordForm site={site} userId={userId} admin={user.manageApartment} username={tenant.username} setUserInfoError={setUserInfoError} setUserInfoSuccess={setUserInfoSuccess}/>
                                 </Tab>
                             }
                         </Tabs>
@@ -412,7 +320,7 @@ const Tenant = ({
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     await context.req.session.save();
-	const {userId} = context.query;
+    const {userId} = context.query;
     const site = context.query.site || SITE;
     const user = context.req.session.user;
     const isTenant = !user?.manageApartment;

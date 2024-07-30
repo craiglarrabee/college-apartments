@@ -71,10 +71,8 @@ const NewApplicationForm = ({
                                     errors={errors}/> : null}
                 <div className="h4">Room Type:</div>
                 <br/>
-                {currentLeases.map(lease => <CurrentLeases canChangeApplication={true} {...lease}
-                                                           register={register}/>)}
-                {errors && errors.lease_room_type_id && <Form.Text
-                    className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
+                {currentLeases.map(lease => <CurrentLeases canChangeApplication={true} {...lease} register={register}/>)}
+                {errors && errors.lease_room_type_id && <Form.Text className={classNames("text-danger")}>{errors && errors.lease_room_type_id.message}</Form.Text>}
                 <ApplicationFormGroups canChangeApplication={true} register={register} errors={errors}
                                        esa_packet={esa_packet} previousRentalLabel={previous_rental}
                                        site={site}

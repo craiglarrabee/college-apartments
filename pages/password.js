@@ -9,6 +9,8 @@ import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {useForm} from "react-hook-form";
+const util = require("util");
+const sleep = util.promisify(setTimeout);
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -20,6 +22,7 @@ const Home = ({site, page, links, user, ...restOfProps}) => {
 
     const {register, getValues, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({mode: "all"});
     const [error, setError] = useState();
+    const [success, setSuccess] = useState("");
     const [pwd, setPwd] = useState("");
 
     const onSubmit = async (data, event) => {
@@ -41,6 +44,8 @@ const Home = ({site, page, links, user, ...restOfProps}) => {
             switch (resp.status) {
                 case 200:
                 case 204:
+                    setSuccess("Successfully changed password");
+                    sleep(3000);
                     location = `/index?site=${site}`;
                     break;
                 case 401:
@@ -67,6 +72,9 @@ const Home = ({site, page, links, user, ...restOfProps}) => {
                     <div className={classNames("main-content")} style={{width: "100%"}}>
                         {error &&
                             <Alert variant={"danger"} dismissible onClick={() => setError(null)}>{error}</Alert>
+                        }
+                        {success &&
+                            <Alert variant={"success"} dismissible onClick={() => setSuccess(null)}>{success}</Alert>
                         }
                         <Form onSubmit={handleSubmit(onSubmit)} method="post">
                             <div className="h4">User Information:</div>

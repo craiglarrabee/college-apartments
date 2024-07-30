@@ -3,7 +3,7 @@ import Navigation from "../../../../components/navigation";
 import Title from "../../../../components/title";
 import React, {useState} from "react";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
-import {Alert, Tab, Tabs} from "react-bootstrap";
+import {Alert, Button, Modal, Tab, Tabs} from "react-bootstrap";
 import Footer from "../../../../components/footer";
 import {GetApartments} from "../../../../lib/db/users/apartments";
 import {ironOptions} from "../../../../lib/session/options";
@@ -14,6 +14,7 @@ import classNames from "classnames";
 import {DndContext, DragOverlay} from "@dnd-kit/core";
 import {GetLocations, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/users/roomType";
 import RoomTypes from "../../../../components/roomTypes";
+import Router from "next/router";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -30,11 +31,13 @@ const Assignments = ({
                          locations,
                          tenants,
                          currentLeaseRoomTypes,
+                         leaseIds,
                          ...restOfProps
                      }) => {
     const [activeId, setActiveId] = useState(null);
     const [activeTabKey, setActiveTabKey] = useState(locations[0].location);
     const [showRoomTypes, setShowRoomTypes] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [error, setError] = useState();
     const [selectedTenantId, setSelectedTenantId] = useState();
     const [selectedApartmentNumber, setSelectedApartmentNumber] = useState();
@@ -79,7 +82,7 @@ const Assignments = ({
         if (!tenant.current_tenant && !over.data?.current?.roomTypeId) {
             deletePreviousTenantData(tenant.user_id, tenant.lease_id);
         }
-        if (!await updateApartmentNumber(tenant, tenant.lease_id, over?.data?.current?.apartmentNumber, over?.data?.current?.roomTypeId || tenant.room_type_id)) {
+        if (!await updateApartmentNumber(tenant, tenant.lease_id, over?.data?.current?.apartmentNumber, tenant.room_type_id)) {
             return;
         }
         setActiveId(null);
@@ -196,6 +199,32 @@ const Assignments = ({
         }
     };
 
+    const resetAssignments = async () => {
+        let resps;
+        try {
+            const options = {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"},
+            }
+            resps = await Promise.all(leaseIds.map(async (leaseId) => await fetch(`/api/assignments/${leaseId}?site=${site}`, options)));
+            for (const resp of resps) {
+                switch (resp.status) {
+                    case 204:
+                        break;
+                    case 400:
+                    default:
+                        setError("An error occurred resetting all assignments");
+                        return false;
+                }
+            }
+            Router.reload();
+        } catch (e) {
+            setError("An error occurred resetting all assignments");
+            console.error(e);
+            return false;
+        }
+    };
+
     return (
         <Layout site={site} user={user} wide={true}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
@@ -203,6 +232,8 @@ const Assignments = ({
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
                     {error && <Alert variant={"danger"} dismissible onClose={() => setError(null)}>{error}</Alert>}
+                    <Button style={{width: "200px"}} onClick={()=>setShowConfirm(true)}>Reset Assignments</Button>
+                    <br/>
                     <Tabs activeKey={activeTabKey} onSelect={(e) => setActiveTabKey(e)}>
                         {locations.map(location =>
                             <Tab eventKey={location.location} key={location.location} title={location.location}>
@@ -325,6 +356,24 @@ const Assignments = ({
                             apartment_number={selectedApartmentNumber}
                         />
                     }
+                    <Modal show={showConfirm}
+                           onHide={()=>setShowConfirm(false)}
+                           size="sm"
+                           aria-labelledby="contained-modal-title-vcenter"
+                           centered
+                    >
+                        <Modal.Header closeButton>
+                            <Modal.Title>Confirm</Modal.Title>
+                        </Modal.Header>
+
+                        <Modal.Body>
+                            <div>Are you sure you want to reset all assignments?</div>
+                            <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                                <Button style={{marginRight: "20px"}} variant="primary" type="button" onClick={resetAssignments}>Yes</Button>
+                                <Button style={{marginLeft: "20px"}} variant="primary" type="button" onClick={()=>setShowConfirm(false)}>No</Button>
+                            </div>
+                        </Modal.Body>
+                    </Modal>
                     <Footer bg={bg}/>
                 </main>
 
@@ -358,6 +407,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     //suu uses this page, snow uses /assignments/{semester}/manage/index
     tenants = tenants.filter(tenant => tenant.deposit_date !== null)
     tenants = [...tenants, ...previousTenants];
+    let leaseIds = [...new Set(tenants.map(t => t.lease_id))];
     return {
         props: {
             site: site,
@@ -368,7 +418,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             tenants: [...tenants],
             user: {...user},
             semester: semester,
-            currentLeaseRoomTypes: currentLeaseRooms
+            currentLeaseRoomTypes: currentLeaseRooms,
+            leaseIds: leaseIds
         }
     };
 }, ironOptions);

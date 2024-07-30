@@ -136,6 +136,8 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
                             {!editSite ?
                                 <NavDropdown.Item href={`/tenants/${user.id}?site=${site}`} hidden={!user.isLoggedIn}>Manage
                                     Profile</NavDropdown.Item> : <></>}
+                            {!editSite ? <NavDropdown.Item href={`/username?site=${site}`} hidden={!user.isLoggedIn}>Change
+                                Username</NavDropdown.Item> : <></>}
                             {!editSite ? <NavDropdown.Item href={`/password?site=${site}`} hidden={!user.isLoggedIn}>Change
                                 Password</NavDropdown.Item> : <></>}
                             <NavDropdown.Item onClick={handleUserAction}>{actionText}</NavDropdown.Item>

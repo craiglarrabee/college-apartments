@@ -3,7 +3,7 @@ import Navigation from "../../../../components/navigation";
 import Title from "../../../../components/title";
 import React, {useState} from "react";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
-import {Alert, Tab, Tabs} from "react-bootstrap";
+import {Alert, Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import Footer from "../../../../components/footer";
 import {GetApartments} from "../../../../lib/db/users/apartments";
 import {ironOptions} from "../../../../lib/session/options";
@@ -14,6 +14,8 @@ import classNames from "classnames";
 import {DndContext, DragOverlay} from "@dnd-kit/core";
 import {GetBaseRoomTypes, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/users/roomType";
 import RoomTypes from "../../../../components/roomTypes";
+import Router from "next/router";
+import CurrentLeases from "../../../../components/currentLeases";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -31,11 +33,13 @@ const Assignments = ({
                          semester,
                          tenants,
                          currentLeaseRoomTypes,
+                         leaseIds,
                          ...restOfProps
                      }) => {
     const [activeId, setActiveId] = useState(null);
     const [activeTabKey, setActiveTabKey] = useState(roomTypes[0].id);
     const [showRoomTypes, setShowRoomTypes] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [error, setError] = useState();
     const [selectedTenantId, setSelectedTenantId] = useState();
     const [selectedApartmentNumber, setSelectedApartmentNumber] = useState();
@@ -67,6 +71,7 @@ const Assignments = ({
 
     const handleDragEnd = async ({active, over, ...restOfProps}) => {
         let tenant = tenants.find(tenant => tenant.user_id === active.id);
+        let roomTypeId = !over.data?.current?.roomTypeId ||over.data?.current?.roomTypeId == tenant.base_type_id ? tenant.room_type_id : over.data?.current?.roomTypeId;
         if (!tenant.spots && tenant.user_id != tenant.created_by_user_id && over.data?.current?.roomTypeId) {
             setShowRoomTypes(true);
             setSelectedTenantId(active.id);
@@ -76,7 +81,7 @@ const Assignments = ({
         if (tenant.user_id != tenant.created_by_user_id && !over.data?.current?.roomTypeId) {
             deletePreviousTenantData(tenant.user_id, tenant.lease_id);
         }
-        if (!await updateApartmentNumber(tenant, tenant.lease_id, over.id, over.data?.current?.roomTypeId || tenant.room_type_id)) {
+        if (!await updateApartmentNumber(tenant, tenant.lease_id, over.id, roomTypeId)) {
             return;
         }
         setActiveId(null);
@@ -113,7 +118,7 @@ const Assignments = ({
             },
         }
         let tenant = tenants.find(tenant => tenant.user_id === parseInt(userId));
-        await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${room_type_id}`, options);
+        await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${tenant.room_type_id}`, options);
         delete tenant.spots;
         delete tenant.lease_id;
         delete tenant.room_type;
@@ -186,6 +191,32 @@ const Assignments = ({
         }
     };
 
+    const resetAssignments = async () => {
+        let resps;
+        try {
+            const options = {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"},
+            }
+            resps = await Promise.all(leaseIds.map(async (leaseId) => await fetch(`/api/assignments/${leaseId}?site=${site}`, options)));
+            for (const resp of resps) {
+                switch (resp.status) {
+                    case 204:
+                        break;
+                    case 400:
+                    default:
+                        setError("An error occurred resetting all assignments");
+                        return false;
+                }
+            }
+            Router.reload();
+        } catch (e) {
+            setError("An error occurred resetting all assignments");
+            console.error(e);
+            return false;
+        }
+    };
+
     return (
         <Layout site={site} user={user} wide={true}>
             <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
@@ -193,6 +224,8 @@ const Assignments = ({
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
                     {error && <Alert variant={"danger"} dismissible onClose={() => setError(null)}>{error}</Alert>}
+                    <Button style={{width: "200px"}} onClick={()=>setShowConfirm(true)}>Reset Assignments</Button>
+                    <br/>
                     <Tabs activeKey={activeTabKey} onSelect={(e) => setActiveTabKey(parseInt(e))}>
                         {roomTypes.map(type =>
                             <Tab eventKey={type.id} key={type.id} title={type.label}>
@@ -311,6 +344,24 @@ const Assignments = ({
                             apartment_number={selectedApartmentNumber}
                         />
                     }
+                        <Modal show={showConfirm}
+                               onHide={()=>setShowConfirm(false)}
+                               size="sm"
+                               aria-labelledby="contained-modal-title-vcenter"
+                               centered
+                        >
+                            <Modal.Header closeButton>
+                                <Modal.Title>Confirm</Modal.Title>
+                            </Modal.Header>
+
+                            <Modal.Body>
+                                <div>Are you sure you want to reset all assignments?</div>
+                                <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                                    <Button style={{marginRight: "20px"}} variant="primary" type="button" onClick={resetAssignments}>Yes</Button>
+                                    <Button style={{marginLeft: "20px"}} variant="primary" type="button" onClick={()=>setShowConfirm(false)}>No</Button>
+                                </div>
+                            </Modal.Body>
+                        </Modal>
                     <Footer bg={bg}/>
                 </main>
 
@@ -349,6 +400,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     //snow uses this page, suu uses /assignments/{semester}/manage/location
     tenants = tenants.filter(tenant => tenant.deposit_date !== null)
     tenants = [...tenants, ...previousTenants];
+    let leaseIds = [...new Set(tenants.map(t => t.lease_id))];
     return {
         props: {
             site: site,
@@ -359,7 +411,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             tenants: [...tenants],
             user: {...user},
             semester: semester,
-            currentLeaseRoomTypes: currentLeaseRooms
+            currentLeaseRoomTypes: currentLeaseRooms,
+            leaseIds: leaseIds
         }
     };
 }, ironOptions);

@@ -2,6 +2,7 @@ import {Button, Col, Form, Row, Table} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import React, {useEffect, useState} from "react";
 import classNames from "classnames";
+import welcome from "../pages/welcome";
 
 
 export const UnprocessedApplicationList = ({
@@ -126,11 +127,11 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
                     </Form.Group>
                     <Row>
                         <div className={classNames("col-1")} style={{maxWidth: "5px"}}>$</div>
-                        <Form.Group as={Col} xs="2" className="mb-3" controlId="discount">
+                        <Form.Group as={Col} xs="3" className="mb-3" controlId="discount">
                             <Form.Label visuallyHidden={true}>Last Name</Form.Label>
                             <Form.Control {...register("discount", {
                                 pattern: {
-                                    value: /^\d{0,3}$/,
+                                    value: /^\d{0,4}$/,
                                     message: "Please enter a valid amount"
                                 }
                             })} type="text"/>
@@ -149,7 +150,7 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
 export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelcome, ...restOfProps}) => {
     const [semester1Selected, setSemester1Selected] = useState(row.semester1_selected);
     const [semester2Selected, setSemester2Selected] = useState(row.semester2_selected);
-    const {register, handleSubmit} = useForm();
+    const {register, formState: {errors}, handleSubmit} = useForm({defaultValues:row});
 
     useEffect(() => {
         saveTenantSemesters({
@@ -184,7 +185,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
     return (
         <tr>
             <td><a href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a></td>
-            <td>{row.lease_date}</td>
+            <td>{row.signed_date || row.lease_date}</td>
             <td>
                 <Form onSubmit={handleSubmit(handleWelcome)} method="post">
                     <Form.Group controlId="site">
@@ -196,8 +197,17 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
                     <Form.Group controlId="leaseId">
                         <Form.Control {...register("leaseId")} type="hidden" value={leaseId}/>
                     </Form.Group>
+                    <Form.Group controlId="leaseId">
+                        <Form.Control {...register("signature")} type="hidden" value=""/>
+                    </Form.Group>
+                    <Form.Group controlId="leaseId">
+                        <Form.Control {...register("signature")} type="hidden" value=""/>
+                    </Form.Group>
+                    <Form.Group controlId="leaseId">
+                        <Form.Control {...register("signed_date")} type="hidden" value=""/>
+                    </Form.Group>
                     <Row>
-                        <Col xs={7}>
+                        <Col xs={5}>
                             {row.semester1 ?
                                 <Form.Check
                                     className="mb-3" {...register("semester1", {onChange: (e) => setSemester1Selected(e.target.checked)})}
@@ -211,11 +221,27 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
                                     inline/>
                                 : <></>}
                         </Col>
+                        {handleWelcome &&
+                            <>
+                                <div className={classNames("col-1")} style={{maxWidth: "5px"}}>$</div>
+                                <Form.Group as={Col} xs="2" className="mb-3" controlId="discount">
+                                    <Form.Label visuallyHidden={true}>Last Name</Form.Label>
+                                    <Form.Control {...register("discount", {
+                                        pattern: {
+                                            value: /^\d{0,4}$/,
+                                            message: "Please enter a valid amount"
+                                        }
+                                    })} type="text"/>
+                                    {errors && errors.discount && <Form.Text
+                                        className={classNames("text-danger")}>{errors && errors.discount.message}</Form.Text>}
+                                </Form.Group>
+                            <Col><Button type="submit" style={{maxHeight: "38px", maxWidth: "100px"}} xs="2" >Resend</Button></Col>
+                                </>
+                        }
                         {handleDelete &&
                             <>
-                                <Col><Button onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></Col>
-                                <Col><Button type="submit" style={{maxHeight: "38px", maxWidth: "100px"}} xs="3" >Resend</Button></Col>
-                            </>
+                            <Col><Button xs="2" onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button></Col>
+                        </>
                         }
 
                     </Row>
@@ -263,7 +289,7 @@ export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete
                 <tr>
                     <th>Tenant</th>
                     <th>Welcome Sent Date</th>
-                    <th>Semesters</th>
+                    <th><Row><Col>Semesters</Col><Col>Discount</Col></Row></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -274,7 +300,7 @@ export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete
         </>
     );
 };
-export const SignedLeaseList = ({data, page, site, leaseId, ...restOfProps}) => {
+export const SignedLeaseList = ({data, page, site, leaseId, handleDelete, handleWelcome, ...restOfProps}) => {
     return (
         <>
             <Table>
@@ -282,12 +308,12 @@ export const SignedLeaseList = ({data, page, site, leaseId, ...restOfProps}) => 
                 <tr>
                     <th>Tenant</th>
                     <th>Lease Signed Date</th>
-                    <th>Semesters</th>
+                    <th><Row><Col>Semesters</Col><Col>Discount</Col></Row></th>
                 </tr>
                 </thead>
                 <tbody>
                 {data.map(row => (
-                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId}/>))}
+                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleWelcome={handleWelcome} handleDelete={handleDelete}/>))}
                 </tbody>
             </Table>
         </>
