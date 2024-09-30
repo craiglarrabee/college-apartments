@@ -57,7 +57,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
 
     if (newApplication && (!leases || leases.length === 0)) {
-        console.error("redirecting to deposit from tenant due to no leases");
+        console.error(new Date().toISOString() + " - " +"redirecting to deposit from tenant due to no leases");
         context.res.writeHead(302, {Location: `/deposit?site=${site}`});
         context.res.end();
         return {};

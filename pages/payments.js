@@ -148,7 +148,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
             }
         } catch (e) {
             setPaymentError("There was an error processing your payment.");
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 

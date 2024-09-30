@@ -147,7 +147,7 @@ export const AssignedRow = ({page, site, row, leaseId, handleWelcome, addResetHo
 };
 
 
-export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelcome, ...restOfProps}) => {
+export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelcome, handleWelcomeAdmin, ...restOfProps}) => {
     const [semester1Selected, setSemester1Selected] = useState(row.semester1_selected);
     const [semester2Selected, setSemester2Selected] = useState(row.semester2_selected);
     const {register, formState: {errors}, handleSubmit} = useForm({defaultValues:row});
@@ -178,7 +178,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -207,7 +207,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
                         <Form.Control {...register("signed_date")} type="hidden" value=""/>
                     </Form.Group>
                     <Row>
-                        <Col xs={5}>
+                        <Col xs={4}>
                             {row.semester1 ?
                                 <Form.Check
                                     className="mb-3" {...register("semester1", {onChange: (e) => setSemester1Selected(e.target.checked)})}
@@ -237,6 +237,11 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
                                 </Form.Group>
                             <Col><Button type="submit" style={{maxHeight: "38px", maxWidth: "100px"}} xs="2" >Resend</Button></Col>
                                 </>
+                        }
+                        {handleWelcomeAdmin &&
+                            <>
+                                <Col><Button type="button" style={{maxHeight: "38px", maxWidth: "150px"}} xs="2" onClick={async () => await handleWelcomeAdmin(row.user_id)}>Send to me</Button></Col>
+                            </>
                         }
                         {handleDelete &&
                             <>
@@ -281,7 +286,7 @@ export const AssignedApplicationList = ({
         </>
     );
 };
-export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete, handleWelcome,...restOfProps}) => {
+export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete, handleWelcome, handleWelcomeAdmin, ...restOfProps}) => {
     return (
         <>
             <Table>
@@ -289,18 +294,18 @@ export const WelcomedApplicationList = ({data, page, site, leaseId, handleDelete
                 <tr>
                     <th>Tenant</th>
                     <th>Welcome Sent Date</th>
-                    <th><Row><Col>Semesters</Col><Col>Discount</Col></Row></th>
+                    <th><Row><Col>Semesters</Col><Col>Discount</Col><Col></Col></Row></th>
                 </tr>
                 </thead>
                 <tbody>
                 {data.map(row => (
-                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleDelete={handleDelete} handleWelcome={handleWelcome}/>))}
+                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleDelete={handleDelete} handleWelcome={handleWelcome} handleWelcomeAdmin={handleWelcomeAdmin}/>))}
                 </tbody>
             </Table>
         </>
     );
 };
-export const SignedLeaseList = ({data, page, site, leaseId, handleDelete, handleWelcome, ...restOfProps}) => {
+export const SignedLeaseList = ({data, page, site, leaseId, handleDelete, handleWelcome, handleWelcomeAdmin, ...restOfProps}) => {
     return (
         <>
             <Table>
@@ -308,12 +313,12 @@ export const SignedLeaseList = ({data, page, site, leaseId, handleDelete, handle
                 <tr>
                     <th>Tenant</th>
                     <th>Lease Signed Date</th>
-                    <th><Row><Col>Semesters</Col><Col>Discount</Col></Row></th>
+                    <th><Row><Col>Semesters</Col><Col>Discount</Col><Col></Col></Row></th>
                 </tr>
                 </thead>
                 <tbody>
                 {data.map(row => (
-                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleWelcome={handleWelcome} handleDelete={handleDelete}/>))}
+                    <WelcomedRow row={row} page={page} site={site} leaseId={leaseId} handleWelcome={handleWelcome} handleDelete={handleDelete} handleWelcomeAdmin={handleWelcomeAdmin}/>))}
                 </tbody>
             </Table>
         </>

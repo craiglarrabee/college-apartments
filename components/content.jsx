@@ -42,7 +42,7 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
             }
 
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -144,7 +144,7 @@ function Uploader({handleClose, title, show, site, page}) {
             }
 
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
     const uploadImage = async (data, uri, fileName, fileType) => {
@@ -172,7 +172,7 @@ function Uploader({handleClose, title, show, site, page}) {
             }
 
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 

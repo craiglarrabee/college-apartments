@@ -44,7 +44,7 @@ const Tenants = ({site, page, links, user, ...restOfProps}) => {
             }
         } catch (e) {
             setMessage({value: "An error occurred searching for the user.", type: "error"});
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 

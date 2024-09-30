@@ -34,7 +34,7 @@ const LeaseForm = ({
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -52,9 +52,7 @@ const LeaseForm = ({
                 <Form.Group controlId="lease_date">
                     <Form.Control name="lease_date" type="hidden" value={submitted ? lease.lease_date : today}/>
                 </Form.Group>
-                <div>This Contract is entered into on <strong>{submitted ? lease.lease_date : today}</strong>, between
-                    Stadium Way/College Way
-                    Apartments, LLC, L.L.C.
+                <div>This Contract is entered into on <strong>{lease.signed_date}</strong>, {site === "suu" ? "between Stadium Way/College Way" : "between Park Place Apartments, L.L.C."}Apartments, LLC, L.L.C.
                     (hereinafter &quot;Landlord&quot;),
                     and <strong>{lease.name ? lease.name : "____________________________"}</strong> (hereinafter &quot;Resident&quot;).
                 </div>

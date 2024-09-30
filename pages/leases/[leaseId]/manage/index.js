@@ -31,6 +31,16 @@ const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcom
     const from = `${site}@uca.snowcollegeapartments.com`;
 
 
+    const getEmailBodyString = (thisLease) => {
+        const emailBody = <WelcomeEmailBody tenant={thisLease} leaseId={leaseId} header={welcome_header}
+                                            body={welcome_body}
+                                            canEdit={false} company={`${company}, LLC`}
+                                            site={site} page={page}
+                                            semester={thisLease.semester1}></WelcomeEmailBody>;
+        const emailBodyString = ReactDomServer.renderToString(emailBody);
+        return emailBodyString;
+    };
+
     const deleteLease = async (userId, site, leaseId) => {
         try {
             const options = {
@@ -38,7 +48,8 @@ const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcom
                 headers: {"Content-Type": "application/json"}
             }
 
-            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${room_type_id}`, options)
+            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${room_type_id}`, options);
+            console.log(new Date().toISOString() + " - " +`Lease was deleted for user: ${userId} and lease: ${leaseId} in leases.manage.deleteLease.`);
             switch (resp.status) {
                 case 400:
                     break;
@@ -49,7 +60,7 @@ const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcom
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -59,13 +70,7 @@ const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcom
         const thisLease = leases.find(lease => lease.user_id == data.userId);
         delete data.signed_date;
         delete data.signature;
-
-        const emailBody = <WelcomeEmailBody tenant={thisLease} leaseId={leaseId} header={welcome_header}
-                                            body={welcome_body}
-                                            canEdit={false} company={`${company}, LLC`}
-                                            site={site} page={page}
-                                            semester={thisLease.semester1}></WelcomeEmailBody>;
-        const emailBodyString = ReactDomServer.renderToString(emailBody);
+        const emailBodyString = getEmailBodyString(thisLease);
 
         try {
             const options = {
@@ -84,14 +89,23 @@ const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcom
                     setPendingLeases(leases.filter(lease => !lease.signed_date));
                     setSignedLeases(leases.filter(lease => lease.signed_date));
                     await sendWelcomeEmail(thisLease.lease_email, emailBodyString);
-                    sleep(3000);
+                    await sleep(3000);
                     Router.reload();
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
 
+    };
+
+    const sendWelcomeToAdmin = async (userId) => {
+        const thisLease = leases.find(lease => lease.user_id == userId);
+        const emailBodyString = getEmailBodyString(thisLease);
+
+        await sendWelcomeEmail(user.email, emailBodyString);
+        await sleep(3000);
+        Router.reload();
     };
 
     const sendWelcomeEmail = async (emailAddress, emailBodyString) => {
@@ -111,16 +125,20 @@ const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcom
 
             const resp = await fetch(`/api/util/email?site=${site}`, options);
             switch (resp.status) {
-                case 400:
-                    setError("An error occurred sending the welcome email.");
-                    break;
                 case 204:
-                    setSuccess("Welcome email sent.");
+                case 200:
+                    setSuccess(`Welcome email sent to ${emailAddress}`);
+                    break;
+                case 400:
+                default:
+                    setError("An error occurred sending the welcome email.");
+                    console.error(new Date().toISOString() + " - " +`Error occurred sending welcome email to ${emailAddress}`);
                     break;
             }
         } catch (e) {
             setError(`An error occurred sending the welcome email. ${e.message}`);
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +`Error occurred sending welcome email to ${emailAddress}`);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -137,11 +155,11 @@ const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcom
                         <Tabs defaultActiveKey={1}>
                             <Tab eventKey={1} title="Welcomed">
                                 <WelcomedApplicationList data={pendingLeases} page={page} site={site} leaseId={leaseId}
-                                                         handleDelete={deleteLease} handleWelcome={welcome}/>
+                                                         handleDelete={deleteLease} handleWelcome={welcome} /*handleWelcomeAdmin={sendWelcomeToAdmin}*//>
                             </Tab>
                             <Tab eventKey={2} title="Signed">
                                 <SignedLeaseList data={signedLeases} page={page} site={site} leaseId={leaseId}
-                                                 handleWelcome={welcome} handleDelete={deleteLease}/>
+                                                 handleWelcome={welcome} handleDelete={deleteLease} /*handleWelcomeAdmin={sendWelcomeToAdmin}*//>
                             </Tab>
                         </Tabs>
                     </div>

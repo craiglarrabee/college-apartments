@@ -5,7 +5,7 @@ import {ironOptions} from "../../../../../../lib/session/options";
 import {AddUserLease, DeleteUserLease, GetUserLease, UpdateUserLease} from "../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.isLoggedIn) res.status(403).send();
+    if (!req.session?.user?.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "GET":
@@ -31,7 +31,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.error(e);
+        console.error(new Date().toISOString() + " - " +e);
     }
 }, ironOptions);
 

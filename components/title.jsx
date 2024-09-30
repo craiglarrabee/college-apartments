@@ -39,7 +39,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
                 await fetch(endpoint, options);
                 location = `/index?site=${site}`;
             } catch (e) {
-                console.error(e);
+                console.error(new Date().toISOString() + " - " +e);
             }
         }
     }
@@ -57,7 +57,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
                 await fetch(endpoint, options);
                 location = `/index?site=${site}`;
             } catch (e) {
-                console.error(e);
+                console.error(new Date().toISOString() + " - " +e);
             }
         }
     }
@@ -75,7 +75,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
                 await fetch(endpoint, options);
                 location = `/index?site=${site}`;
             } catch (e) {
-                console.error(e);
+                console.error(new Date().toISOString() + " - " +e);
             }
         }
     }
@@ -107,7 +107,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
             setNewUser(user);
             location = `/index?site=${site}`;
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 

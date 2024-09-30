@@ -47,7 +47,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                     if (isNewApplication) location = `/application?site=${site}`;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     }
 

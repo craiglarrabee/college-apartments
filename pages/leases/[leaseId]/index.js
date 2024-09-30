@@ -55,7 +55,7 @@ const Lease = ({
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     }
 

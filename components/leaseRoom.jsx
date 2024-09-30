@@ -23,7 +23,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -43,7 +43,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 

@@ -9,7 +9,7 @@ const maintain = withIronSessionApiRoute(async (req, res) => {
                 if (req?.session?.user?.admin?.includes(req.query.site) && req.body.editSite) {
                     req.session.user.editSite = true;
                     req.session.user.manageApartment = false;
-                } else {
+                } else if (req.session && req.session.user) {
                     req.session.user.editSite = false;
                     req.session.user.manageApartment = false;
                 }
@@ -21,7 +21,7 @@ const maintain = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        console.error(e);
+        console.error(new Date().toISOString() + " - " +e);
     }
 }, ironOptions);
 

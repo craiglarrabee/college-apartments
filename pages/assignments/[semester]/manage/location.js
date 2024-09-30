@@ -103,7 +103,7 @@ const Assignments = ({
 
         setTenantAssignment(tenant, over.data.current.apartmentNumber, over.data.current.roomType);
         setSelectedApartmentNumber(over.data.current.apartmentNumber);
-        setSelectedRoomType(over.data.current.room_type);
+        setSelectedRoomType(tenant.room_type_id || over.data.current.room_type);
     };
 
     const setTenantAssignment = (tenant, apartment_number, room_type) => {
@@ -125,6 +125,8 @@ const Assignments = ({
         }
         let tenant = tenants.find(tenant => tenant.user_id === parseInt(userId));
         await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${room_type_id}`, options);
+        console.log(new Date().toISOString() + " - " +`Application and lease were deleted for user: ${userId} and lease: ${leaseId} in assignments[location].deletePreviousTenantData.`);
+        console.log(new Date().toISOString() + " - " +`Application and lease were deleted for user: ${userId} and lease: ${leaseId}`);
         delete tenant.spots;
         delete tenant.lease_id;
         delete tenant.room_type;
@@ -194,7 +196,7 @@ const Assignments = ({
             }
         } catch (e) {
             setError(`An error occurred setting apartment assignment for ${tenant.first_name} ${tenant.last_name}`);
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
             return false;
         }
     };
@@ -220,7 +222,7 @@ const Assignments = ({
             Router.reload();
         } catch (e) {
             setError("An error occurred resetting all assignments");
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
             return false;
         }
     };

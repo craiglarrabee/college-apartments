@@ -45,7 +45,7 @@ const Home = ({site, page, links, user, ...restOfProps}) => {
                 case 200:
                 case 204:
                     setSuccess("Successfully changed password");
-                    sleep(3000);
+                    await sleep(3000);
                     location = `/index?site=${site}`;
                     break;
                 case 401:

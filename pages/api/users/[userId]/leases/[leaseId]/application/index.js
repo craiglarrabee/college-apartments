@@ -11,7 +11,7 @@ import {
 import {DeleteUserLease} from "../../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.isLoggedIn) res.status(403).send();
+    if (!req.session?.user?.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "POST":
@@ -21,14 +21,14 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         try {
                             await ModifyApplication(data.site, req.query.userId, req.query.leaseId, data);
                         } catch (e) {
-                            console.error(e);
+                            console.error(new Date().toISOString() + " - " +e);
                         }
                     }
                 } else {
                     try {
                         await ModifyApplication(req.body.site, req.query.userId, req.query.leaseId, req.body);
                     } catch (e) {
-                        console.error(e);
+                        console.error(new Date().toISOString() + " - " +e);
                     }
                 }
                 res.status(204).send();
@@ -49,7 +49,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.error(e);
+        console.error(new Date().toISOString() + " - " +e);
     }
 }, ironOptions);
 

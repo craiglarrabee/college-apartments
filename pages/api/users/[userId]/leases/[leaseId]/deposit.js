@@ -5,7 +5,7 @@ import {ironOptions} from "../../../../../../lib/session/options";
 import {DeleteDeposit, ReceiveDeposit} from "../../../../../../lib/db/users/application";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.manageApartment) res.status(403).send();
+    if (!req.session.user?.manageApartment) res.status(403).send();
     try {
         switch (req.method) {
             case "POST":
@@ -25,7 +25,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.error(e);
+        console.error(new Date().toISOString() + " - " +e);
     }
 }, ironOptions);
 

@@ -42,7 +42,7 @@ const processBulkEmail = withIronSessionApiRoute(async (req, res) => {
             }
         } catch (e) {
             await MarkEmailRecipientComplete(tenant.message_id, tenant.user_id, "failure", e.response || e.message);
-            console.error(e.message);
+            console.error(new Date().toISOString() + " - " +e.message);
             res.status(400).send();
             return;
         }

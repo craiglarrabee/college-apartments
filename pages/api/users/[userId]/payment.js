@@ -6,7 +6,7 @@ import {AddUserPayment, MarkPaymentDeleted, MarkPaymentReviewed} from "../../../
 import chargeCreditCard from "../../../../lib/payment/chargeCreditCard";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-            if (!req.session.user.isLoggedIn) res.status(403).send();
+            if (!req.session?.user?.isLoggedIn) res.status(403).send();
             switch (req.method) {
                 case "POST":
                     let payResp;
@@ -27,7 +27,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         delete data.city;
                         delete data.state;
                         delete data.zip;
-                        console.error(e);
+                        console.error(new Date().toISOString() + " - " +e);
                         return;
                     }
 
@@ -67,7 +67,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         // but don't send a failure
                         res.body = data;
                         res.status(200).send();
-                        console.error(`Failed to record payment: ${JSON.stringify(data)}\n with error: ${e}`);
+                        console.error(new Date().toISOString() + " - " +`Failed to record payment: ${JSON.stringify(data)}\n with error: ${e}`);
                         return;
                     }
                     return;
@@ -78,7 +78,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     } catch (e) {
                         res.body = {error: e.code, description: e.message};
                         res.status(400).send();
-                        console.error(e);
+                        console.error(new Date().toISOString() + " - " +e);
                     }
                     return;
                 case "DELETE":
@@ -88,7 +88,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     } catch (e) {
                         res.body = {error: e.code, description: e.message};
                         res.status(400).send();
-                        console.error(e);
+                        console.error(new Date().toISOString() + " - " +e);
                     }
                     return;
                 default:

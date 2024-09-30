@@ -19,11 +19,14 @@ import {GetApplications} from "../../../../lib/db/users/application";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
+import Router from "next/router";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
 const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
+const util = require("util");
+const sleep = util.promisify(setTimeout);
 
 let resetHooks = {};
 
@@ -71,18 +74,41 @@ const Applications = ({
 
             const resp = await fetch(`/api/util/email?site=${site}`, options);
             switch (resp.status) {
-                case 400:
-                    setError("An error occurred sending the application response email.");
-                    break;
                 case 204:
+                case 200:
                     setSuccess(`Application response email sent.`);
+                    break;
+                case 400:
+                default:
+                    setError("An error occurred sending the application response email.");
+                    console.error(new Date().toISOString() + " - " +`Error occurred sending response email to ${emailAddress}`);
                     break;
             }
         } catch (e) {
             setError(`An error occurred sending the application response email. ${e.message}`);
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +`Error occurred sending response email to ${emailAddress}`);
+            console.error(new Date().toISOString() + " - " +e);
         }
-    }
+    };
+
+    const getEmailBodyString = (thisLease) => {
+        const emailBody = <WelcomeEmailBody tenant={thisLease} leaseId={leaseId} header={welcome_header}
+                                            body={welcome_body}
+                                            canEdit={false} company={`${company}, LLC`}
+                                            site={site} page={page}
+                                            semester={thisLease.semester1}></WelcomeEmailBody>;
+        const emailBodyString = ReactDomServer.renderToString(emailBody);
+        return emailBodyString;
+    };
+
+    const sendWelcomeToAdmin = async (userId) => {
+        const thisApp = allApplications.find(app => app.user_id == userId);
+        const emailBodyString = getEmailBodyString(thisApp);
+
+        await sendWelcomeEmail(user.email, emailBodyString);
+        await sleep(3000);
+        Router.reload();
+    };
 
     const sendWelcomeEmail = async (emailAddress, emailBodyString) => {
         try {
@@ -101,16 +127,20 @@ const Applications = ({
 
             const resp = await fetch(`/api/util/email?site=${site}`, options);
             switch (resp.status) {
-                case 400:
-                    setError("An error occurred sending the welcome email.");
-                    break;
                 case 204:
-                    setSuccess("Welcome email sent.");
+                case 200:
+                    setSuccess(`Welcome email sent to ${emailAddress}`);
+                    break;
+                case 400:
+                default:
+                    setError("An error occurred sending the welcome email.");
+                    console.error(new Date().toISOString() + " - " +`Error occurred sending welcome email to ${emailAddress}`);
                     break;
             }
         } catch (e) {
             setError(`An error occurred sending the welcome email. ${e.message}`);
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +`Error occurred sending welcome email to ${emailAddress}`);
+            console.error(new Date().toISOString() + " - " +e);
         }
     }
 
@@ -149,7 +179,7 @@ const Applications = ({
             }
         } catch (e) {
             setError("An error occurred modifying the application.");
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -164,6 +194,7 @@ const Applications = ({
             switch (resp.status) {
                 case 204:
                 case 200:
+                    console.log(new Date().toISOString() + " - " +`Application and lease were deleted for user: ${userId} and lease: ${leaseId} in manageApplications.deleteApplication.`);
                     // now remove from the applications on this page components
                     const newApplications = allApplications.filter(app => !(app.user_id == userId && app.pending_application == leaseId && app.room_type_id == roomTypeId));
                     setAllApplications(newApplications);
@@ -178,7 +209,7 @@ const Applications = ({
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -197,6 +228,7 @@ const Applications = ({
                     resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options);
                     if (resp.status !== 200) {
                         setError("An error occurred modifying the application. Please try again.");
+                        console.error(new Date().toISOString() + " - " +`An API 400 error occurred modifying the application for user: ${userId} and lease: ${leaseId}`);
                         break;
                     }
                     // now remove from the applications on this page components
@@ -217,10 +249,13 @@ const Applications = ({
                 case 400:
                 default:
                     setError("An error occurred creating the lease. Please try again.");
+                    console.error(new Date().toISOString() + " - " +`An API 400 error occurred creating lease for user: ${userId} and lease: ${leaseId}`);
                     break;
             }
         } catch (e) {
-            console.error(e);
+            setError("An error occurred creating the lease. Please try again.");
+            console.error(new Date().toISOString() + " - " +e);
+            console.error(new Date().toISOString() + " - " +`An error occurred creating lease for user: ${userId} and lease: ${leaseId}`);
         }
     };
 
@@ -228,12 +263,7 @@ const Applications = ({
         event.preventDefault();
 
         const thisApp = allApplications.find(app => app.user_id == data.userId);
-        const emailBody = <WelcomeEmailBody tenant={thisApp} leaseId={leaseId} header={welcome_header}
-                                            body={welcome_body}
-                                            canEdit={false} company={`${company}, LLC`}
-                                            site={data.site} page={page}
-                                            semester={thisApp.semester1}></WelcomeEmailBody>;
-        const emailBodyString = ReactDomServer.renderToString(emailBody);
+        const emailBodyString = getEmailBodyString(thisApp);
 
         try {
             const options = {
@@ -265,7 +295,7 @@ const Applications = ({
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
 
     };
@@ -304,7 +334,7 @@ const Applications = ({
                             <Tab eventKey={5} title={`Welcomed (${welcomedApplications.length})`}>
                                 <WelcomedApplicationList data={welcomedApplications} page={page} leaseId={leaseId}
                                                          site={site} company={company}
-                                                         handleDelete={deleteApplication} handleWelcome={welcome}/>
+                                                         handleDelete={deleteApplication} handleWelcome={welcome} /*handleWelcomeAdmin={sendWelcomeToAdmin}*//>
                             </Tab>
                         </Tabs>
                     </div>

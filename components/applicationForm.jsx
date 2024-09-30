@@ -46,6 +46,7 @@ const ApplicationForm = ({
     const from = `${site}@uca.snowcollegeapartments.com`;
 
 
+
     const receiveDeposit = async () => {
         try {
             const options = {
@@ -53,18 +54,28 @@ const ApplicationForm = ({
                 headers: {"Content-Type": "application/json"},
             }
 
-            const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options)
+            let resp = await fetch(`/api/users/${userId}/leases/${leaseId}?site=${site}`, options);
             switch (resp.status) {
-                case 400:
-                    setError(`An error occured receiving the deposit. Please try again. ${JSON.stringify(await resp.json())}`);
-                    break;
-                case 204:
                 case 200:
+                case 204:
+                    resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options);
+                    if (resp.status !== 200) {
+                        setError("An error occurred modifying the application. Please try again.");
+                        console.error(new Date().toISOString() + " - " +`An API 400 error occurred modifying the application for user: ${userId} and lease: ${leaseId}`);
+                        break;
+                    }
                     setDepositReceived(true);
+                    break;
+                case 400:
+                default:
+                    setError("An error occurred creating the lease. Please try again.");
+                    console.error(new Date().toISOString() + " - " +`An API 400 error occurred creating lease for user: ${userId} and lease: ${leaseId}`);
                     break;
             }
         } catch (e) {
-            console.error(e);
+            setError("An error occurred creating the lease. Please try again.");
+            console.error(new Date().toISOString() + " - " +e);
+            console.error(new Date().toISOString() + " - " +`An error occurred creating lease for user: ${userId} and lease: ${leaseId}`);
         }
     };
 
@@ -86,7 +97,7 @@ const ApplicationForm = ({
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -104,10 +115,11 @@ const ApplicationForm = ({
                     break;
                 case 204:
                     location = `/${navPage}?site=${site}`;
+                    console.log(new Date().toISOString() + " - " +`Application and lease were deleted for user: ${userId} and lease: ${leaseId} in applicationForm.handleDelete.`);
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -139,7 +151,7 @@ const ApplicationForm = ({
             }
         } catch (e) {
             setError(`An error occurred sending the application response email. ${e.message}`);
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -163,7 +175,7 @@ const ApplicationForm = ({
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 
@@ -195,7 +207,7 @@ const ApplicationForm = ({
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 

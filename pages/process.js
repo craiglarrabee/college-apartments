@@ -33,7 +33,7 @@ const Home = ({site, user, links, navPage, ...restOfProps}) => {
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     }
 

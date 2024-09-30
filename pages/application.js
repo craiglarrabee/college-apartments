@@ -85,7 +85,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
 
     if (!currentRooms || currentRooms.length === 0) {
-        console.error("redirecting to deposit due to no current rooms");
+        console.error(new Date().toISOString() + " - " +"redirecting to deposit due to no current rooms");
         context.res.writeHead(302, {Location: `/deposit?site=${site}`});
         context.res.end();
         return {};

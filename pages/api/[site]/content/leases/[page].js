@@ -5,7 +5,7 @@ import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../lib/session/options";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.isLoggedIn) res.status(403).send();
+    if (!req.session?.user?.isLoggedIn) res.status(403).send();
     const dbPage = `leases/${req.query.page}`;
     try {
         switch (req.method) {
@@ -27,7 +27,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        console.error(e);
+        console.error(new Date().toISOString() + " - " +e);
     }
 }, ironOptions);
 

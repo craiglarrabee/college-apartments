@@ -16,6 +16,6 @@ export default async function handler(req, res) {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.error(e);
+        console.error(new Date().toISOString() + " - " +e);
     }
 }

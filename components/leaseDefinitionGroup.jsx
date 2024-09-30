@@ -67,7 +67,7 @@ const LeaseDefinitionGroup = ({
                     break;
             }
         } catch (e) {
-            console.error(e);
+            console.error(new Date().toISOString() + " - " +e);
         }
     };
 

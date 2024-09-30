@@ -5,7 +5,7 @@ import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 
 const Username = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user.isLoggedIn) res.status(403).send();
+    if (!req.session?.user?.isLoggedIn) res.status(403).send();
     try {
         switch (req.method) {
             case "POST":

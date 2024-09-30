@@ -83,7 +83,7 @@ const Tenant = ({
                 }
             } catch (e) {
                 setPaymentError("There was an error removing this payment. Please try again.");
-                console.error(e);
+                console.error(new Date().toISOString() + " - " +e);
             }
         }
 

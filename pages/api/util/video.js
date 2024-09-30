@@ -28,29 +28,29 @@ const video = withIronSessionApiRoute(async (req, res) => {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.error(e);
+        console.error(new Date().toISOString() + " - " +e);
     }
 }, ironOptions);
 
 const uploadVideo = async (req) => {
     const busboy = new Busboy({headers: req.headers});
-    console.log(JSON.stringify(req.headers, null, 2));
+    console.log(new Date().toISOString() + " - " +JSON.stringify(req.headers, null, 2));
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
-        console.log(
+        console.log(new Date().toISOString() + " - " +
             'File [' + fieldname + ']: filename: ' + filename + ', encoding: ' + encoding + ', mimetype: ' + mimetype,
         );
         file.on('data', function (data) {
-            console.log('File [' + fieldname + '] got ' + data.length + ' bytes');
+            console.log(new Date().toISOString() + " - " +'File [' + fieldname + '] got ' + data.length + ' bytes');
         });
         file.on('end', function () {
-            console.log('File [' + fieldname + '] Finished');
+            console.log(new Date().toISOString() + " - " +'File [' + fieldname + '] Finished');
         });
     });
     busboy.on('field', function (fieldname, val) {
-        console.log('Field [' + fieldname + ']: value: ' + inspect(val));
+        console.log(new Date().toISOString() + " - " +'Field [' + fieldname + ']: value: ' + inspect(val));
     });
     busboy.on('finish', function () {
-        console.log('Done parsing form!');
+        console.log(new Date().toISOString() + " - " +'Done parsing form!');
 
         resolve(1);
     });
