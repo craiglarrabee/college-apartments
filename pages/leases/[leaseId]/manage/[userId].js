@@ -11,6 +11,7 @@ import classNames from "classnames";
 import {GetLeaseRooms} from "../../../../lib/db/users/roomType";
 import {GetUserLease} from "../../../../lib/db/users/userLease";
 import LeaseForm from "../../../../components/leaseForm";
+import {isBot} from "../../../../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -18,11 +19,11 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Lease = ({site, navPage, lease, links, user, userId, rooms, content, ...restOfProps}) => {
+const Lease = ({site, isABot,  navPage, lease, links, user, userId, rooms, content, ...restOfProps}) => {
 
     return (
         <Layout site={site} user={user}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -68,6 +69,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             navPage: navPage,
             content: content,
             links: nav,
+            isABot: isBot(context),
             canEdit: false,
             user: {...user},
             rooms: rooms,

@@ -4,6 +4,9 @@ import {GetUserAdminSites, GetUserAndVerifyPassword} from "../../lib/db/users/us
 import {GetTenantProcessedApplicationSites} from "../../lib/db/users/application";
 
 const login = withIronSessionApiRoute(async (req, res) => {
+    if (req.headers["user-agent"].toLowerCase().includes("bot") && req.headers["user-agent"] !== "Cubot") {
+        res.status(403).send({});
+    }
     // get user from database
     try {
         const userData = await GetUserAndVerifyPassword(req.body.username, req.body.password);

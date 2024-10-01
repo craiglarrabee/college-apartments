@@ -17,6 +17,7 @@ import {GetLeaseRooms} from "../../../lib/db/users/roomType";
 import LeaseRoom from "../../../components/leaseRoom";
 import {GetUserLease} from "../../../lib/db/users/userLease";
 import Router from "next/router";
+import {isBot} from "../../../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -25,7 +26,7 @@ const brandUrl = process.env.BRAND_URL;
 
 
 const Lease = ({
-                   site, page, lease_header, accommodations_header, accommodations_body, rent_header,
+                   site, isABot,  page, lease_header, accommodations_header, accommodations_body, rent_header,
                    rent_body, vehicle_header, vehicle_body, lease, signed, label,
                    lease_body, lease_acceptance, rules, cleaning, repairs, links, canEdit, user, rooms
                    , ...restOfProps
@@ -65,7 +66,7 @@ const Lease = ({
 
     return (
         <Layout site={site} user={user}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}
                        startWithLogin={!user.isLoggedIn} postLogin={refresh}/>
@@ -340,6 +341,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             page: page,
             ...content,
             links: nav,
+            isABot: isBot(context),
             canEdit: editing,
             user: {...user},
             rooms: rooms,

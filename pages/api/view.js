@@ -5,10 +5,12 @@ const view = withIronSessionApiRoute(async (req, res) => {
             try {
                 switch (req.method) {
                     case "POST":
-                        req.session.user.manageApartment = false;
-                        req.session.user.editSite = false;
+                        if (req.session?.user) {
+                            req.session.user.manageApartment = false;
+                            req.session.user.editSite = false;
 
-                        await req.session.save();
+                            await req.session.save();
+                        }
                         res.status(204).send();
                         return;
                     default:

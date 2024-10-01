@@ -1,5 +1,6 @@
 import Layout from "../components/layout";
 import Navigation from "../components/navigation";
+import {isBot} from "../lib/bots";
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
@@ -16,7 +17,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Home = ({site, page, body, links, canEdit, user, company, ...restOfProps}) => {
+const Home = ({site, isABot,  page, body, links, canEdit, user, company, ...restOfProps}) => {
     const from = `${site}@uca.snowcollegeapartments.com`;
     const brandUrl = "http://www.utahcollegeapartments.com";
 
@@ -54,7 +55,7 @@ const Home = ({site, page, body, links, canEdit, user, company, ...restOfProps})
 
     return (
         <Layout site={site} user={user}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -94,6 +95,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             site: site,
             page: page, ...content,
             links: nav,
+            isABot: isBot(context),
             canEdit: editing,
             user: {...user},
             company: company

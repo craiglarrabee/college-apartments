@@ -5,7 +5,7 @@ import {ironOptions} from "../../../../../../lib/session/options";
 import {DeleteDeposit, ReceiveDeposit} from "../../../../../../lib/db/users/application";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user?.manageApartment) res.status(403).send();
+    if (!req.session?.user?.manageApartment) res.status(403).send();
     try {
         switch (req.method) {
             case "POST":

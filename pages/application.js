@@ -1,5 +1,6 @@
 import Layout from "../components/layout";
 import Navigation from "../components/navigation";
+import {isBot} from "../lib/bots";
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
@@ -22,6 +23,7 @@ const Application = ({
                          site,
                          page,
                          navPage,
+    isABot,
                          rules,
                          previous_rental,
                          esa_packet,
@@ -38,7 +40,7 @@ const Application = ({
 
     return (
         <Layout site={site} user={user} wide={false}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -104,6 +106,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             navPage: "user",
             ...content,
             links: nav,
+            isABot: isBot(context),
             canEdit: editing,
             user: {...user},
             currentLeases: currentLeases,

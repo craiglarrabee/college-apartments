@@ -6,8 +6,8 @@ import Link from "next/link";
 import {useEffect, useRef, useState} from "react";
 import {useWindowSize} from "../lib/window";
 
-const Navigation = ({bg, variant, brandUrl, links, page, site, ...restOfProps}) => {
-    const navLinks = buildNavLinks(links, "", site);
+const Navigation = ({bg, variant, brandUrl, links, page, site, isBot, ...restOfProps}) => {
+    const navLinks = buildNavLinks(links, "", site, isBot);
     const [width, height] = useWindowSize();
     const [extraClass, setExtraClass] = useState("");
     const [expandOn, setExpandOn] = useState("lg");
@@ -68,14 +68,16 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, ...restOfProps}) 
     );
 };
 
-function buildNavLinks(links, parent, site) {
+function buildNavLinks(links, parent, site, isBot=false) {
     const navLinks = links.filter(item => item.parent_page === parent)
-        .map(item => buildNavLink(item, links, site));
+        .map(item => buildNavLink(item, links, site, isBot));
 
     return navLinks
 }
 
-function buildNavLink(item, links, site) {
+function buildNavLink(item, links, site, isBot) {
+    if (item.target && isBot) return;
+
     if (item.sub_menu) {
         const sub_items = buildNavLinks(links, item.page, site);
         if (sub_items.length === 0) return <></>;

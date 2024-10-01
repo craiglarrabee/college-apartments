@@ -14,6 +14,7 @@ import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
 import ReactDomServer from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
 import Router from "next/router";
+import {isBot} from "../../../../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -23,7 +24,7 @@ const util = require("util");
 const sleep = util.promisify(setTimeout);
 
 
-const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcome_body, company, ...restOfProps}) => {
+const Lease = ({site, isABot,  page, links, user, leaseId, leases, welcome_header, welcome_body, company, ...restOfProps}) => {
     const [pendingLeases, setPendingLeases] = useState(leases.filter(lease => !lease.signed_date));
     const [signedLeases, setSignedLeases] = useState(leases.filter(lease => lease.signed_date));
     const [error, setError] = useState();
@@ -144,7 +145,7 @@ const Lease = ({site, page, links, user, leaseId, leases, welcome_header, welcom
 
     return (
         <Layout site={site} user={user} wide={true}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -197,6 +198,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             site: site,
             page: page,
             links: nav,
+            isABot: isBot(context),
             ...welcomeContent,
             canEdit: editing,
             user: {...user},

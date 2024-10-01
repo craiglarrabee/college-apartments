@@ -1,5 +1,6 @@
 import Layout from "../components/layout";
 import Navigation from "../components/navigation";
+import {isBot} from "../lib/bots";
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
@@ -16,11 +17,11 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Export = ({site, page, links, user, semesters, tenants, ...restOfProps}) => {
+const Export = ({site, isABot,  page, links, user, semesters, tenants, ...restOfProps}) => {
 
     return (
         <Layout site={site} user={user}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -70,6 +71,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
                 site: site,
                 page: page,
                 links: nav,
+                isABot: isBot(context),
                 user: {...user},
                 tenants: [...tenants],
                 semesters: [...semesters]

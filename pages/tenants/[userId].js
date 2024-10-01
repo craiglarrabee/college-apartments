@@ -25,6 +25,7 @@ import {useForm} from "react-hook-form";
 import NewApplicationForm from "../../components/newApplicationForm";
 import UsernameForm from "../../components/usernameForm";
 import PasswordForm from "../../components/passwordForm";
+import {isBot} from "../../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -33,7 +34,7 @@ const brandUrl = process.env.BRAND_URL;
 
 
 const Tenant = ({
-                    isTenant, site, navPage, links, user, tenant, currentLeasesMap,
+                    isTenant, site, isABot,  navPage, links, user, tenant, currentLeasesMap,
                     applications, userId, leases, leaseContentMap, deletedPayments,
                     emails, applicationContent, payments, roommates, tab, currentLeases, page,
                     rules, previous_rental, esa_packet, disclaimer, guaranty
@@ -95,7 +96,7 @@ const Tenant = ({
 
     return (
         <Layout site={site} user={user} wide={!isTenant}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -387,6 +388,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             isTenant: isTenant,
             site: site,
             links: nav,
+            isABot: isBot(context),
             user: {...user},
             tenant: {...tenant},
             applications: applications,

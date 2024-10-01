@@ -8,6 +8,7 @@ import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
 import {Alert, Tab, Table, Tabs} from "react-bootstrap";
 import SearchBar from "../../components/searchbar";
+import {isBot} from "../../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -15,7 +16,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Tenants = ({site, page, links, user, ...restOfProps}) => {
+const Tenants = ({site, isABot,  page, links, user, ...restOfProps}) => {
     const [tenants, setTenants] = useState([]);
     const [searchString, setSearchString] = useState();
     const [message, setMessage] = useState();
@@ -54,7 +55,7 @@ const Tenants = ({site, page, links, user, ...restOfProps}) => {
 
     return (
         <Layout site={site} user={user}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -99,6 +100,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
                 site: site,
                 page: page,
                 links: nav,
+                isABot: isBot(context),
                 user: {...user}
             }
         };

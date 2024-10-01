@@ -1,5 +1,6 @@
 import Layout from "../components/layout";
 import Navigation from "../components/navigation";
+import {isBot} from "../lib/bots";
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React, {useState} from "react";
@@ -16,7 +17,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
+const Home = ({site, isABot,  page, links, canEdit, user, ...restOfProps}) => {
 
     const {register, formState: {isDirty, errors}, handleSubmit} = useForm();
     const [pwd, setPwd] = useState("");
@@ -32,7 +33,7 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
             const resp = await fetch(`api/users/${value}?site=${site}`, options)
             switch (resp.status) {
                 case 400:
-                    break;
+                    return false;
                 case 200:
                     let json = await resp.json();
                     return json.id === undefined;
@@ -46,24 +47,27 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
         event.preventDefault();
 
         try {
-            data.site = site;
+            if(!data.trap) {
+                data.site = site;
 
-            const options = {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            }
+                const options = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                }
 
-            const resp = await fetch(`api/users?site=${site}`, options)
-            switch (resp.status) {
-                case 400:
-                    break;
-                case 200:
-                case 204:
-                    await fetch(`/api/login?site=${site}`, options);
-                    location = `/tenant?newApplication&site=${site}&form`;
+                const resp = await fetch(`api/users?site=${site}`, options)
+                switch (resp.status) {
+                    case 400:
+                        errors.username.type = "validate";
+                        break;
+                    case 200:
+                    case 204:
+                        await fetch(`/api/login?site=${site}`, options);
+                        location = `/tenant?newApplication&site=${site}&form`;
+                }
             }
 
         } catch (e) {
@@ -73,7 +77,7 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
 
     return (
         <Layout site={site} user={user}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -92,6 +96,9 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
                                 {errors && errors.username && errors && errors.username.type === "validate" &&
                                     <Form.Text className={classNames("text-danger")}>Username is not
                                         available.</Form.Text>}
+                            </Form.Group>
+                            <Form.Group controlId="trap">
+                                <Form.Control {...register("trap", {required: false})} style={{display: "none"}} type="text"></Form.Control>
                             </Form.Group>
                             <Form.Group className="mb-3" controlId="password">
                                 <Form.Label visuallyHidden={true}>Password</Form.Label>
@@ -153,6 +160,11 @@ const Home = ({site, page, links, canEdit, user, ...restOfProps}) => {
 };
 
 export const getServerSideProps = withIronSessionSsr(async function (context) {
+    if (context.req.headers["user-agent"].toLowerCase().includes("bot") && context.req.headers["user-agent"] !== "Cubot") {
+        context.res.writeHead(403);
+        context.res.end();
+        return {};
+    }
     await context.req.session.save();
 	const user = context.req.session.user;
     const site = context.query.site || SITE;
@@ -164,7 +176,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const page = "user";
     const editing = !!user && !!user.editSite;
     const [nav] = await Promise.all([GetNavLinks(user, site)]);
-    return {props: {site: site, page: page, links: nav, canEdit: editing, user: {...user}}};
+    return {props: {site: site, page: page, links: nav, isABot: isBot(context), canEdit: editing, user: {...user}}};
 }, ironOptions);
 
 export default Home;

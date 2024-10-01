@@ -1,5 +1,6 @@
 import Layout from "../components/layout";
 import Navigation from "../components/navigation";
+import {isBot} from "../lib/bots";
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React, {useEffect, useState} from "react";
@@ -24,7 +25,7 @@ const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
 
-const Payments = ({site, navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
+const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
     const {
         register,
         resetField,
@@ -154,7 +155,7 @@ const Payments = ({site, navPage, links, user, payments, tenant, privacyContent,
 
     return (
         <Layout site={site} user={user} wide={false}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -544,6 +545,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         props: {
             site: site,
             links: nav,
+            isABot: isBot(context),
             user: {...user},
             payments: payments,
             navPage: "payments",

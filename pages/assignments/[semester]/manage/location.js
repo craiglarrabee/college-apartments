@@ -15,6 +15,7 @@ import {DndContext, DragOverlay} from "@dnd-kit/core";
 import {GetLocations, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/users/roomType";
 import RoomTypes from "../../../../components/roomTypes";
 import Router from "next/router";
+import {isBot} from "../../../../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -23,7 +24,7 @@ const brandUrl = process.env.BRAND_URL;
 
 
 const Assignments = ({
-                         site,
+                         site, isABot,
                          page,
                          links,
                          user,
@@ -229,7 +230,7 @@ const Assignments = ({
 
     return (
         <Layout site={site} user={user} wide={true}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -415,6 +416,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             site: site,
             page: page,
             links: nav,
+            isABot: isBot(context),
             apartments: [...apartments],
             locations: [...locations],
             tenants: [...tenants],

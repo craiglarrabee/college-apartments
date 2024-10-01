@@ -42,6 +42,9 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
                     close();
                     Router.reload();
                     return;
+                case 403:
+                    close();
+                    Router.reload();
                 case 400:
                 default:
                     setLoginError(true);

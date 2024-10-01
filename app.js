@@ -5,6 +5,7 @@ const port = parseInt(process.env.PORT, 10) || 3000
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({dev})
 const handle = app.getRequestHandler()
+const okBots = ["cubot", "googlebot", "bingbot", "applebot", "yandexbot", "duckbot", "baidu", "sogou", "facebookexternalhit", "exabot", "swiftbot", "slurpbot", "ccbot"]
 
 app.prepare().then(() => {
     const server = express()
@@ -12,6 +13,12 @@ app.prepare().then(() => {
     server.use("/upload", express.static(__dirname + "/upload"));
 
     server.all('*', (req, res) => {
+        const userAgent = req.headers["user-agent"].toLowerCase();
+        if (userAgent.includes("bot") && !okBots.find(bot => userAgent.includes(bot))) {
+            res.writeHead(403);
+            res.end();
+            return {};
+        }
         return handle(req, res)
     })
     server.listen(port, (err) => {

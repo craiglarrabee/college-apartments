@@ -1,5 +1,6 @@
 import Layout from "../components/layout";
 import Navigation from "../components/navigation";
+import {isBot} from "../lib/bots";
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React from "react";
@@ -13,14 +14,14 @@ import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 
 const SITE = process.env.SITE;
 
-const Tenant = ({site, navPage, links, user, tenant, isNewApplication = false}) => {
+const Tenant = ({site, isABot,  navPage, links, user, tenant, isNewApplication = false}) => {
     const bg = "white";
     const variant = "light";
     const brandUrl = "http://www.utahcollegeapartments.com";
 
     return (
         <Layout user={user}>
-            <Navigation site={site} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
@@ -68,6 +69,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             site: site,
             navPage: newApplication || tenant?.pending_application ? "user" : "",
             links: nav,
+            isABot: isBot(context),
             user: {...user},
             tenant: {...tenant},
             isNewApplication: newApplication
