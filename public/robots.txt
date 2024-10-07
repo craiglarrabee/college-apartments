@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /pdfs/
+Disallow: /user
+Disallow: /tenant
+Disallow: /tenants/
+Disallow: /email/
+Disallow: /leases/
+Disallow: /assignments/
+Disallow: /applications/
+Disallow: /api

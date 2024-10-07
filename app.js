@@ -5,7 +5,7 @@ const port = parseInt(process.env.PORT, 10) || 3000
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({dev})
 const handle = app.getRequestHandler()
-const okBots = ["cubot", "googlebot", "bingbot", "applebot", "yandexbot", "duckbot", "baidu", "sogou", "facebookexternalhit", "exabot", "swiftbot", "slurpbot", "ccbot"]
+const okBots = ["cubot", "googlebot", "bingbot", "applebot", "yandexbot", "duckbot", "baidu", "sogou", "exabot", "swiftbot", "slurpbot", "ccbot"]
 
 app.prepare().then(() => {
     const server = express()
@@ -14,7 +14,7 @@ app.prepare().then(() => {
 
     server.all('*', (req, res) => {
         const userAgent = req.headers["user-agent"].toLowerCase();
-        if (userAgent.includes("bot") && !okBots.find(bot => userAgent.includes(bot))) {
+        if ((userAgent.includes("bot") || userAgent.includes("crawl") || userAgent.includes("spider")) && (req.params && req.params[0] && req.params[0].toLowerCase() !== "/robots.txt") && !okBots.find(bot => userAgent.includes(bot))) {
             res.writeHead(403);
             res.end();
             return {};
