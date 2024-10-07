@@ -105,7 +105,6 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
             const resp = await fetch(`/api/logout?site=${site}`, options);
             const user = await resp.json();
             setNewUser(user);
-            location = `/index?site=${site}`;
         } catch (e) {
             console.error(new Date().toISOString() + " - " +e);
         }
