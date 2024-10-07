@@ -27,8 +27,8 @@ const login = withIronSessionApiRoute(async (req, res) => {
         };
         req.session.user = user;
         await req.session.save();
+        res.status(200);
         res.json(user);
-        res.status(200).send();
 
     } catch (e) {
         res.status(401).send({});

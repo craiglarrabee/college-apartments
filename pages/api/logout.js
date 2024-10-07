@@ -14,8 +14,8 @@ const logout = withIronSessionApiRoute(async (req, res) => {
         manage: []
     };
 
+    res.status(200);
     res.json(user);
-    res.status(204).send({});
 }, ironOptions);
 
 export default logout;

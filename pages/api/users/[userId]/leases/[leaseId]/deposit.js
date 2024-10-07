@@ -10,13 +10,13 @@ const handler = withIronSessionApiRoute(async (req, res) => {
         switch (req.method) {
             case "POST":
                 const postResp = await ReceiveDeposit(req.query.site, req.query.userId, req.query.leaseId);
+                res.status(200);
                 res.json({...postResp});
-                res.status(200).send();
                 return;
             case "DELETE":
                 const delResp = await DeleteDeposit(req.query.site, req.query.userId, req.query.leaseId);
+                res.status(200);
                 res.json({...delResp});
-                res.status(204).send();
                 return;
             default:
                 res.status(405).send();

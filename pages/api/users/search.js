@@ -10,12 +10,12 @@ const handler = withIronSessionApiRoute(async (req, res) => {
         switch (req.method) {
             case "GET":
                 const tenants = await SearchTenantByName(req.query.site, req.query.search);
-                res.json({tenants: tenants});
                 if (!tenants || tenants.length === 0) {
                     res.status(404).send();
                     return;
                 }
-                res.status(200).send();
+                res.status(200);
+                res.json({tenants: tenants});
                 return;
             default:
                 res.status(405).send();

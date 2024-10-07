@@ -6,8 +6,8 @@ export default async function handler(req, res) {
     try {
         switch (req.method) {
             case "GET":
+                res.status(200);
                 res.json(await GetUser(req.query.userId));
-                res.status(200).send();
                 return;
             default:
                 res.status(405).send();
