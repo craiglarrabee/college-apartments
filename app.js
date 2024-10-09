@@ -13,8 +13,10 @@ app.prepare().then(() => {
     server.use("/upload", express.static(__dirname + "/upload"));
 
     server.all('*', (req, res) => {
-        const userAgent = req.headers["user-agent"].toLowerCase();
-        if ((userAgent.includes("bot") || userAgent.includes("crawl") || userAgent.includes("spider")) && (req.params && req.params[0] && req.params[0].toLowerCase() !== "/robots.txt") && !okBots.find(bot => userAgent.includes(bot))) {
+        const userAgent = req.headers["user-agent"]?.toLowerCase() || "badbot";
+        if ((userAgent.includes("bot") || userAgent.includes("crawl") || userAgent.includes("spider")) &&
+            (req.params && req.params[0] && req.params[0].toLowerCase() !== "/robots.txt") &&
+            !okBots.find(bot => userAgent.includes(bot))) {
             res.writeHead(403);
             res.end();
             return {};
