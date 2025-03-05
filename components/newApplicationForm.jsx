@@ -45,14 +45,17 @@ const NewApplicationForm = ({
 
             const resp = await fetch(`/api/users/${userId}/applications?site=${site}`, options)
             switch (resp.status) {
+                case 204:
+                    location = `/deposit?site=${site}`;
+                    break;
+                default:
                 case 400:
                     setApplicationError("There was an error processing your application. Please try again.");
                     break;
-                case 204:
-                    location = `/deposit?site=${site}`;
             }
         } catch (e) {
             console.error(new Date().toISOString() + " - " +e);
+            setApplicationError("There was an error processing your application. Please try again.");
         }
     }
 

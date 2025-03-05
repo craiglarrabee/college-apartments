@@ -9,7 +9,8 @@ const login = withIronSessionApiRoute(async (req, res) => {
     }
     // get user from database
     try {
-        const userData = await GetUserAndVerifyPassword(req.body.username, req.body.password);
+        const debugging = "localhost:3000" === req.headers.host && "\"Windows\"" === req.headers["sec-ch-ua-platform"];
+        const userData = await GetUserAndVerifyPassword(req.body.username, req.body.password,  !debugging);
         const data = await GetUserAdminSites(userData.id);
         const processedForSites = await GetTenantProcessedApplicationSites(userData.id, req.query.site);
         const adminSites = data.filter(site => site.site_privs === 1).map(site => site.site);

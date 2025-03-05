@@ -3,7 +3,7 @@ import Navigation from "../../../../components/navigation";
 import Title from "../../../../components/title";
 import React, {useState} from "react";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
-import {Alert, Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
+import {Alert, Button, Modal, Tab, Tabs} from "react-bootstrap";
 import Footer from "../../../../components/footer";
 import {GetApartments} from "../../../../lib/db/users/apartments";
 import {ironOptions} from "../../../../lib/session/options";
@@ -15,7 +15,6 @@ import {DndContext, DragOverlay} from "@dnd-kit/core";
 import {GetBaseRoomTypes, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/users/roomType";
 import RoomTypes from "../../../../components/roomTypes";
 import Router from "next/router";
-import CurrentLeases from "../../../../components/currentLeases";
 import {isBot} from "../../../../lib/bots";
 
 const SITE = process.env.SITE;

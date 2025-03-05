@@ -28,9 +28,13 @@ const LeaseDefinitionGroup = ({
 
     const firstYear = startDate ? new Date(startDate).getUTCFullYear() : new Date().getFullYear();
     const secondYear = firstYear + 1;
+    const thirdYear = secondYear + 1;
     const fallSemester = `Fall ${firstYear}`;
     const springSemester = `Spring ${secondYear}`;
     const summerSemester = `Summer ${secondYear}`;
+    const fallSemester2 = `Fall ${secondYear}`;
+    const springSemester2 = `Spring ${thirdYear}`;
+    const summerSemester2 = `Summer ${thirdYear}`;
 
     useEffect(() => {
         const timer = setTimeout(async () => {
@@ -48,6 +52,12 @@ const LeaseDefinitionGroup = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [endDate, startDate, leaseDescription, leaseSemesters, depositAmount, linkLabel]);
 
+    const firstYearSelected = () => {
+        return leaseSemesters.includes(fallSemester) || leaseSemesters.includes(springSemester) || leaseSemesters.includes(summerSemester);
+    };
+    const secondYearSelected = () => {
+        return leaseSemesters.includes(fallSemester2) || leaseSemesters.includes(springSemester2) || leaseSemesters.includes(summerSemester2);
+    };
 
     const saveLeaseDefinition = async (data) => {
         data.page = page;
@@ -115,7 +125,7 @@ const LeaseDefinitionGroup = ({
                         }
                     }}
                         checked={leaseSemesters.includes(fallSemester)}
-                        disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox"
+                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester) || secondYearSelected())} type="checkbox"
                         id="fall_semester" key="fall_semester" label={fallSemester} inline/>
                     <Form.Check
                         className="mb-3" {...register("spring_semester")} onChange={(e) => {
@@ -126,7 +136,7 @@ const LeaseDefinitionGroup = ({
                         }
                     }}
                         checked={leaseSemesters.includes(springSemester)}
-                        disabled={leaseSemesters.length > 0 && leaseSemesters.includes(summerSemester)} type="checkbox"
+                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester) || secondYearSelected())} type="checkbox"
                         id="spring_semester" key="spring_semester" label={springSemester} inline/>
                     {site === "suu" ?
                         <Form.Check
@@ -140,6 +150,43 @@ const LeaseDefinitionGroup = ({
                             checked={leaseSemesters.includes(summerSemester)}
                             disabled={leaseSemesters.length > 0 && !leaseSemesters.includes(summerSemester)}
                             type="checkbox" key="summer_semester" id="summer_semester" label={summerSemester} inline/>
+                        : null}
+                    <br/>
+                    <Form.Label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Form.Label>
+                    <Form.Check
+                        className="mb-3" {...register("fall_semester2")} onChange={(e) => {
+                        if (e.target.checked) {
+                            setLeaseSemesters([...leaseSemesters, fallSemester2]);
+                        } else {
+                            setLeaseSemesters(leaseSemesters.filter(semester => semester !== fallSemester2));
+                        }
+                    }}
+                        checked={leaseSemesters.includes(fallSemester2)}
+                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester2) || firstYearSelected())} type="checkbox"
+                        id="fall_semester2" key="fall_semester2" label={fallSemester2} inline/>
+                    <Form.Check
+                        className="mb-3" {...register("spring_semester2")} onChange={(e) => {
+                        if (e.target.checked) {
+                            setLeaseSemesters([...leaseSemesters, springSemester2]);
+                        } else {
+                            setLeaseSemesters(leaseSemesters.filter(semester => semester !== springSemester2));
+                        }
+                    }}
+                        checked={leaseSemesters.includes(springSemester2)}
+                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester2) || firstYearSelected())} type="checkbox"
+                        id="spring_semester2" key="spring_semester2" label={springSemester2} inline/>
+                    {site === "suu" ?
+                        <Form.Check
+                            className="mb-3" {...register("summer_semester2")} onChange={(e) => {
+                            if (e.target.checked) {
+                                setLeaseSemesters([summerSemester2]);
+                            } else {
+                                setLeaseSemesters([]);
+                            }
+                        }}
+                            checked={leaseSemesters.includes(summerSemester2)}
+                            disabled={leaseSemesters.length > 0 && !leaseSemesters.includes(summerSemester2)}
+                            type="checkbox" key="summer_semester2" id="summer_semester2" label={summerSemester2} inline/>
                         : null}
                 </Col>
             </Row>

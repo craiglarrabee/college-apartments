@@ -153,13 +153,13 @@ const Home = ({site, isABot,  page, links, user, ...restOfProps}) => {
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     await context.req.session.save();
 	const user = context.req.session.user;
+    const site = context.query.site || SITE;
     if (!user || !user.isLoggedIn) {
         context.res.writeHead(302, {Location: `/index.js?site=${site}`});
         context.res.end();
         return {};
     }
     const page = "password";
-    const site = context.query.site || SITE;
     const [nav] = await Promise.all([GetNavLinks(user, site)]);
     return {props: {site: site, page: page, links: nav, isABot: isBot(context), user: {...user}}};
 }, ironOptions);

@@ -5,7 +5,7 @@ const nextConfig = {
     // useFileSystemPublicRoutes: false,
     experimental: {
         //largePageDataBytes: 128 * 1000, // 128KB by default
-        largePageDataBytes: 512 * 1000,
+        largePageDataBytes: 1024 * 1000,
     },
 }
 
