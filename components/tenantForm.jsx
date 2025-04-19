@@ -1,18 +1,41 @@
-import {Button, Col, Form, Row} from "react-bootstrap";
+import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import classNames from "classnames";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useForm} from "react-hook-form";
+import {VerifyEmail} from "./verifyEmail";
+import ConfirmField from "./confirmField";
 
 export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hideButton, ...restOfProps}) => {
 
     const [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? tenant.convicted_crime : false);
     const [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? tenant.charged_crime : false);
+    const [error, setError] = useState();
+    const [emailAddress, setEmailAddress] = useState(tenant.email);
+    const [altEmailAddress, setAltEmailAddress] = useState(tenant.email2);
+    const [origEmail, setOrigEmail] = useState(tenant.email);
+    const [origAltEmail, setOrigAltEmail] = useState(tenant.email2);
+    const [origCellPhone, setOrigCellPhone] = useState(tenant.cell_phone);
+    const [cellPhone, setCellPhone] = useState(tenant.cell_phone);
+    const [origAltCellPhone, setOrigAltCellPhone] = useState(tenant.cell_phone2);
+    const [altCellPhone, setAltCellPhone] = useState(tenant.cell_phone2);
+    const [origHomePhone, setOrigHomePhone] = useState(tenant.home_phone);
+    const [homePhone, setHomePhone] = useState(tenant.home_phone);
+
+    const hasCellPhoneChanged = () => origCellPhone !== cellPhone && cellPhone !== "";
+
+    const hasAltCellPhoneChanged = () => origAltCellPhone !== altCellPhone && altCellPhone !== "";
+    const hasHomePhoneChanged = () => origHomePhone !== homePhone && homePhone !== "";
+    const hasEmailChanged = () => origEmail !== emailAddress && emailAddress !== "";
+    const hasAltEmailChanged = () => origAltEmail !== altEmailAddress && altEmailAddress !== "";
+
     const {
         register,
         reset,
         formState: {isValid, isDirty, errors},
-        handleSubmit
+        handleSubmit,
+        setValue
     } = useForm({mode: "all", defaultValues: {...tenant}});
+
 
     const handleConvicted = () => setConvictedCrime(true);
     const handleNotConvicted = () => setConvictedCrime(false);
@@ -27,6 +50,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
         const bDate = new Date(date);
         return bDate <= sixteenYearsAgo && bDate >= eightyYearsAgo;
     };
+
 
     const onSubmitPersonal = async (data, event) => {
         event.preventDefault();
@@ -47,13 +71,14 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                     if (isNewApplication) location = `/application?site=${site}`;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(new Date().toISOString() + " - " + e);
         }
     }
 
     return (
         <>
             <Form onSubmit={handleSubmit(onSubmitPersonal)} method="post">
+                {error && <Alert dismissible variant="danger" onClose={() => setError(null)}>{error}</Alert>}
                 <div className="h4">Personal Information:</div>
                 <Row>
                     <Form.Group as={Col} className="mb-3" controlId="first_name">
@@ -135,29 +160,65 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                             required: {
                                 value: true,
                                 message: "Cell Phone is required."
-                            }
+                            },
+                            onBlur: (e) => setCellPhone(e.target.value),
+                            onChange: (e) => setCellPhone(e.target.value)
                         })} type="tel"
                             placeholder="Cell Phone"/>
                         {errors && errors.cell_phone && <Form.Text
                             className={classNames("text-danger")}>{errors && errors.cell_phone.message}</Form.Text>}
+                        {hasCellPhoneChanged() &&
+                            <ConfirmField
+                                name="cell_phone"
+                                label="Cell Phone"
+                                value={cellPhone}
+                                register={register}
+                                errors={errors}
+                                setValue={setValue}
+                            />
+                        }
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="cell_phone2">
                         <Form.Label>Alternate Cell Phone</Form.Label>
                         <Form.Control
-                            className={errors && errors.cell_phone2 && classNames("border-danger")} {...register("cell_phone2")}
-                            type="tel"
+                            className={errors && errors.cell_phone2 && classNames("border-danger")} {...register("cell_phone2", {
+                            onBlur: (e) => setAltCellPhone(e.target.value),
+                            onChange: (e) => setAltCellPhone(e.target.value)
+                        })} type="tel"
                             placeholder="Alternate Cell Phone"/>
                         {errors && errors.cell_phone2 && <Form.Text
                             className={classNames("text-danger")}>{errors && errors.cell_phone2.message}</Form.Text>}
+                        {hasAltCellPhoneChanged() &&
+                            <ConfirmField
+                                name="cell_phone2"
+                                label="Alt Cell Phone"
+                                value={altCellPhone}
+                                register={register}
+                                errors={errors}
+                                setValue={setValue}
+                            />
+                        }
                     </Form.Group>
                     <Form.Group as={Col} className="mb-3" controlId="home_phone">
                         <Form.Label>Home Phone</Form.Label>
                         <Form.Control
-                            className={errors && errors.home_phone && classNames("border-danger")} {...register("home_phone", {})}
-                            type="tel"
+                            className={errors && errors.home_phone && classNames("border-danger")} {...register("home_phone", {
+                            onBlur: (e) => setHomePhone(e.target.value),
+                            onChange: (e) => setHomePhone(e.target.value)
+                        })} type="tel"
                             placeholder="Home Phone"/>
                         {errors && errors.home_phone && <Form.Text
                             className={classNames("text-danger")}>{errors && errors.home_phone.message}</Form.Text>}
+                        {hasHomePhoneChanged() &&
+                            <ConfirmField
+                                name="home_phone"
+                                label="Home Phone"
+                                value={homePhone}
+                                register={register}
+                                errors={errors}
+                                setValue={setValue}
+                            />
+                        }
                     </Form.Group>
                 </Row>
                 <Row>
@@ -170,12 +231,18 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                             pattern: {
                                 value: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
                                 message: "Please enter a valid email address"
-                            }
+                            },
+                            onBlur: (e) => setEmailAddress(e.target.value),
+                            onChange: (e) => setEmailAddress(e.target.value)
                         })} type="email" placeholder="Email"
                         />
-                        {errors && errors.email &&
-                            <Form.Text
-                                className={classNames("text-danger")}>{errors && errors.email.message}</Form.Text>}
+                        {errors && errors.email && <Form.Text
+                            className={classNames("text-danger")}>{errors && errors.email.message}</Form.Text>}
+                        <br/>
+                        <VerifyEmail setOrigEmail={setOrigEmail} setValue={setValue} codeName="primaryCode"
+                                     setError={setError} emailErrors={errors.email} hasEmailChanged={hasEmailChanged}
+                                     origEmail={origEmail} email={emailAddress} site={site} register={register}
+                                     errors={errors}></VerifyEmail>
                     </Form.Group>
                     <Form.Group as={Col} xs={6} className="mb-3" controlId="email2">
                         <Form.Label>Alternate Email</Form.Label>
@@ -185,12 +252,19 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                             pattern: {
                                 value: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
                                 message: "Please enter a valid email address"
-                            }
+                            },
+                            onBlur: (e) => setAltEmailAddress(e.target.value),
+                            onChange: (e) => setAltEmailAddress(e.target.value)
                         })} type="email" placeholder="Alternate Email"
                         />
-                        {errors && errors.email2 &&
-                            <Form.Text
-                                className={classNames("text-danger")}>{errors && errors.email2.message}</Form.Text>}
+                        {errors && errors.email2 && <Form.Text
+                            className={classNames("text-danger")}>{errors && errors.email2.message}</Form.Text>}
+                        <br/>
+                        <VerifyEmail setOrigEmail={setOrigAltEmail} setValue={setValue} codeName="alternateCode"
+                                     setError={setError} emailErrors={errors.email2}
+                                     hasEmailChanged={hasAltEmailChanged} email={altEmailAddress}
+                                     origEmail={origAltEmail} site={site} register={register}
+                                     errors={errors}></VerifyEmail>
                     </Form.Group>
                 </Row>
                 <div className="d-inline-flex">
@@ -385,7 +459,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                     <div style={{width: "100%"}}
                          className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
                         <Button variant="primary" type="submit"
-                                disabled={false}>{isNewApplication ? "Next" : "Save"}</Button>
+                                disabled={!((isNewApplication && isValid) || isDirty)}>{isNewApplication ? "Next" : "Save"}</Button>
                     </div>
                 }
             </Form>

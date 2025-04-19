@@ -29,6 +29,7 @@ const LeaseDefinitionGroup = ({
     const firstYear = startDate ? new Date(startDate).getUTCFullYear() : new Date().getFullYear();
     const secondYear = firstYear + 1;
     const thirdYear = secondYear + 1;
+    const summerSemester0 = `Summer ${firstYear}`;
     const fallSemester = `Fall ${firstYear}`;
     const springSemester = `Spring ${secondYear}`;
     const summerSemester = `Summer ${secondYear}`;
@@ -116,6 +117,23 @@ const LeaseDefinitionGroup = ({
             <Row>
                 <Col>
                     <Form.Label>Valid Semesters:&nbsp;</Form.Label>
+                    {site === "suu" ?
+                        <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <Form.Check
+                            className="mb-3" {...register("summer_semester0")} onChange={(e) => {
+                            if (e.target.checked) {
+                                setLeaseSemesters([summerSemester0]);
+                            } else {
+                                setLeaseSemesters([]);
+                            }
+                        }}
+                            checked={leaseSemesters.includes(summerSemester0)}
+                            disabled={leaseSemesters.length > 0 && !leaseSemesters.includes(summerSemester0)}
+                            type="checkbox" key="summer_semester0" id="summer_semester0" label={summerSemester0} inline/>
+                            <br/>
+                            <Form.Label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Form.Label>
+                        </>
+                        : null}
                     <Form.Check
                         className="mb-3" {...register("fall_semester")} onChange={(e) => {
                         if (e.target.checked) {
@@ -125,7 +143,7 @@ const LeaseDefinitionGroup = ({
                         }
                     }}
                         checked={leaseSemesters.includes(fallSemester)}
-                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester) || secondYearSelected())} type="checkbox"
+                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester0) || leaseSemesters.includes(summerSemester) || secondYearSelected())} type="checkbox"
                         id="fall_semester" key="fall_semester" label={fallSemester} inline/>
                     <Form.Check
                         className="mb-3" {...register("spring_semester")} onChange={(e) => {
@@ -136,7 +154,7 @@ const LeaseDefinitionGroup = ({
                         }
                     }}
                         checked={leaseSemesters.includes(springSemester)}
-                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester) || secondYearSelected())} type="checkbox"
+                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester0) || leaseSemesters.includes(summerSemester) || secondYearSelected())} type="checkbox"
                         id="spring_semester" key="spring_semester" label={springSemester} inline/>
                     {site === "suu" ?
                         <Form.Check
@@ -162,7 +180,7 @@ const LeaseDefinitionGroup = ({
                         }
                     }}
                         checked={leaseSemesters.includes(fallSemester2)}
-                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester2) || firstYearSelected())} type="checkbox"
+                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester0) || leaseSemesters.includes(summerSemester2) || firstYearSelected())} type="checkbox"
                         id="fall_semester2" key="fall_semester2" label={fallSemester2} inline/>
                     <Form.Check
                         className="mb-3" {...register("spring_semester2")} onChange={(e) => {
@@ -173,7 +191,7 @@ const LeaseDefinitionGroup = ({
                         }
                     }}
                         checked={leaseSemesters.includes(springSemester2)}
-                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester2) || firstYearSelected())} type="checkbox"
+                        disabled={leaseSemesters.length > 0 && (leaseSemesters.includes(summerSemester0) || leaseSemesters.includes(summerSemester2) || firstYearSelected())} type="checkbox"
                         id="spring_semester2" key="spring_semester2" label={springSemester2} inline/>
                     {site === "suu" ?
                         <Form.Check

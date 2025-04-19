@@ -46,7 +46,7 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot, ...restOfP
                     <SidebarMenu.Header>
                         <SidebarMenu.Nav.Icon>
                             <Link href={"http://www.utahcollegeapartments.com"}>
-                                <Image width={120} height={120} priority={true} src={`/images/logo.png`} alt="UtahCollegeApartments" ></Image>
+                                <Image width={24} height={24} priority={true} src={`/images/logo.png`} alt="UtahCollegeApartments" ></Image>
                             </Link>
                         </SidebarMenu.Nav.Icon>
                         <SidebarMenu.Brand className={classNames("navbar-dark", "h6")}

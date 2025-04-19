@@ -7,6 +7,18 @@ const login = withIronSessionApiRoute(async (req, res) => {
     if (req.headers["user-agent"].toLowerCase().includes("bot") && req.headers["user-agent"] !== "Cubot") {
         res.status(403).send({});
     }
+    const seededRandom = (seed) => {
+        const x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+    }
+
+    const generateRandomCode = (userId) => {
+        const timestamp = Date.now();
+        const seed = userId + timestamp;
+        const x = Math.sin(seed) * 10000;
+        const randomCode = Math.floor(100000 + (x - Math.floor(x)) * 900000);
+        return randomCode.toString();
+    };
     // get user from database
     try {
         const debugging = "localhost:3000" === req.headers.host && "\"Windows\"" === req.headers["sec-ch-ua-platform"];
@@ -24,7 +36,8 @@ const login = withIronSessionApiRoute(async (req, res) => {
             manage: manageSites,
             editSite: false,
             email: userData.email,
-            processedSites: processedForSites.map(site => site.site)
+            processedSites: processedForSites.map(site => site.site),
+            verifyCode: generateRandomCode(userData.id)
         };
         req.session.user = user;
         await req.session.save();
