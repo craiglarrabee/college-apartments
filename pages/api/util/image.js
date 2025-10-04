@@ -29,7 +29,7 @@ const image = withIronSessionApiRoute(async (req, res) => {
     } catch (e) {
         res.body = {error: e.code, description: e.message};
         res.status(400).send();
-        console.error(new Date().toISOString() + " - " +e);
+        console.error(`${new Date().toISOString()} -` , e);
     }
 }, ironOptions);
 

@@ -34,7 +34,7 @@ const Home = ({site, isABot,  user, links, navPage, ...restOfProps}) => {
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     }
 

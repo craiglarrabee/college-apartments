@@ -5,7 +5,7 @@ import {useForm} from "react-hook-form";
 import {VerifyEmail} from "./verifyEmail";
 import ConfirmField from "./confirmField";
 
-export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hideButton, ...restOfProps}) => {
+export const TenantForm = ({site, userId, tenant, isTenant, isNewApplication, leaseId, hideButton, ...restOfProps}) => {
 
     const [convictedCrime, setConvictedCrime] = useState(tenant.hasOwnProperty("convicted_crime") ? tenant.convicted_crime : false);
     const [chargedCrime, setChargedCrime] = useState(tenant.hasOwnProperty("charged_crime") ? tenant.charged_crime : false);
@@ -71,7 +71,7 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                     if (isNewApplication) location = `/application?site=${site}`;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " + e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     }
 
@@ -239,10 +239,12 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                         {errors && errors.email && <Form.Text
                             className={classNames("text-danger")}>{errors && errors.email.message}</Form.Text>}
                         <br/>
-                        <VerifyEmail setOrigEmail={setOrigEmail} setValue={setValue} codeName="primaryCode"
-                                     setError={setError} emailErrors={errors.email} hasEmailChanged={hasEmailChanged}
-                                     origEmail={origEmail} email={emailAddress} site={site} register={register}
-                                     errors={errors}></VerifyEmail>
+                        {isTenant &&
+                            <VerifyEmail setOrigEmail={setOrigEmail} setValue={setValue} codeName="primaryCode"
+                                         setError={setError} emailErrors={errors.email} hasEmailChanged={hasEmailChanged}
+                                         origEmail={origEmail} email={emailAddress} site={site} register={register}
+                                         errors={errors}></VerifyEmail>
+                        }
                     </Form.Group>
                     <Form.Group as={Col} xs={6} className="mb-3" controlId="email2">
                         <Form.Label>Alternate Email</Form.Label>
@@ -260,11 +262,13 @@ export const TenantForm = ({site, userId, tenant, isNewApplication, leaseId, hid
                         {errors && errors.email2 && <Form.Text
                             className={classNames("text-danger")}>{errors && errors.email2.message}</Form.Text>}
                         <br/>
-                        <VerifyEmail setOrigEmail={setOrigAltEmail} setValue={setValue} codeName="alternateCode"
-                                     setError={setError} emailErrors={errors.email2}
-                                     hasEmailChanged={hasAltEmailChanged} email={altEmailAddress}
-                                     origEmail={origAltEmail} site={site} register={register}
-                                     errors={errors}></VerifyEmail>
+                        {isTenant &&
+                            <VerifyEmail setOrigEmail={setOrigAltEmail} setValue={setValue} codeName="alternateCode"
+                                         setError={setError} emailErrors={errors.email2}
+                                         hasEmailChanged={hasAltEmailChanged} email={altEmailAddress}
+                                         origEmail={origAltEmail} site={site} register={register}
+                                         errors={errors}></VerifyEmail>
+                        }
                     </Form.Group>
                 </Row>
                 <div className="d-inline-flex">

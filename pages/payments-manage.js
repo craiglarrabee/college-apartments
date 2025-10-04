@@ -52,7 +52,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, ...restOfProps
             }
         } catch (e) {
             setPaymentError("There was an error processing this payment. Please try again.");
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 
@@ -85,7 +85,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, ...restOfProps
                 }
             } catch (e) {
                 setPaymentError("There was an error removing this payment. Please try again.");
-                console.error(new Date().toISOString() + " - " +e);
+                console.error(`${new Date().toISOString()} -` , e);
             }
         }
 

@@ -78,7 +78,7 @@ export const VerifyEmail = ({
             }
         } catch (e) {
             setError("An error occurred sending the verification email. Please verify your email address and try again.");
-            console.error(new Date().toISOString() + " - " + e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 
@@ -104,7 +104,7 @@ export const VerifyEmail = ({
             }
         } catch (e) {
             setError("An error occurred verifying the code.");
-            console.error(new Date().toISOString() + " - " + e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     }
 

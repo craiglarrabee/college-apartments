@@ -34,7 +34,7 @@ const LeaseForm = ({
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 

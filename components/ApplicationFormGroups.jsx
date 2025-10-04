@@ -69,7 +69,7 @@ const ApplicationFormGroups = ({
             }
             <div className={classNames("d-grid")}>
                 <div className={classNames("d-inline-flex")}>
-                    <div className="required">Do you have an ESA?&nbsp;</div>
+                    <div className="required">Do you have an ESA(Emotional Support Animal)?&nbsp;</div>
                     <Form.Check disabled={!canChangeApplication}
                                 className={errors && errors.esa && classNames("border-danger")} {...register("esa", {
                         required: "This is required.",

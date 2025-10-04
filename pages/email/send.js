@@ -63,7 +63,7 @@ const Send = ({site, isABot,  page, links, user, semesters, tenants, apartments,
             }
         } catch (e) {
             setMessage({value: "An error occurred submitting the email.", type: "error"});
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     }
 

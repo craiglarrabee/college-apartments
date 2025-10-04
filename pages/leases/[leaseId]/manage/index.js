@@ -50,7 +50,7 @@ const Lease = ({site, isABot,  page, links, user, leaseId, leases, welcome_heade
             }
 
             const resp = await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${room_type_id}`, options);
-            console.log(new Date().toISOString() + " - " +`Lease was deleted for user: ${userId} and lease: ${leaseId} in leases.manage.deleteLease.`);
+            console.log(`${new Date().toISOString()} -` +`Lease was deleted for user: ${userId} and lease: ${leaseId} in leases.manage.deleteLease.`);
             switch (resp.status) {
                 case 400:
                     break;
@@ -61,7 +61,7 @@ const Lease = ({site, isABot,  page, links, user, leaseId, leases, welcome_heade
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 
@@ -95,7 +95,7 @@ const Lease = ({site, isABot,  page, links, user, leaseId, leases, welcome_heade
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
 
     };
@@ -133,13 +133,13 @@ const Lease = ({site, isABot,  page, links, user, leaseId, leases, welcome_heade
                 case 400:
                 default:
                     setError("An error occurred sending the welcome email.");
-                    console.error(new Date().toISOString() + " - " +`Error occurred sending welcome email to ${emailAddress}`);
+                    console.error(`${new Date().toISOString()} -` +`Error occurred sending welcome email to ${emailAddress}`);
                     break;
             }
         } catch (e) {
             setError(`An error occurred sending the welcome email. ${e.message}`);
-            console.error(new Date().toISOString() + " - " +`Error occurred sending welcome email to ${emailAddress}`);
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` +`Error occurred sending welcome email to ${emailAddress}`);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 

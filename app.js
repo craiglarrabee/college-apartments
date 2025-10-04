@@ -25,7 +25,7 @@ app.prepare().then(() => {
     })
     server.listen(port, (err) => {
         if (err) throw err
-        console.log(new Date().toISOString() + " - " +`> Ready on http://localhost:${port}`)
+        console.log(`${new Date().toISOString()} -` +`> Ready on http://localhost:${port}`)
     })
 
 })

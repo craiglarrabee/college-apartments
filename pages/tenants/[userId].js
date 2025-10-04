@@ -4,7 +4,7 @@ import Title from "../../components/title";
 import Footer from "../../components/footer";
 import React, {useEffect, useState} from "react";
 import classNames from "classnames";
-import {Alert, Button, Form, Tab, Table, Tabs} from "react-bootstrap";
+import {Alert, Button, Modal, Form, Tab, Table, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
@@ -21,7 +21,6 @@ import {GetUserDeletedPayments, GetUserPayments} from "../../lib/db/users/userPa
 import {UserApartment} from "../../components/assignments";
 import * as Constants from "../../lib/constants";
 import GenericExplanationModal from "../../components/genericExplanationModal";
-import {useForm} from "react-hook-form";
 import NewApplicationForm from "../../components/newApplicationForm";
 import UsernameForm from "../../components/usernameForm";
 import PasswordForm from "../../components/passwordForm";
@@ -34,7 +33,7 @@ const brandUrl = process.env.BRAND_URL;
 
 
 const Tenant = ({
-                    isTenant, site, isABot,  navPage, links, user, tenant, currentLeasesMap,
+                    isTenant, site, isABot, navPage, links, user, tenant, currentLeasesMap,
                     applications, userId, leases, leaseContentMap, deletedPayments,
                     emails, applicationContent, payments, roommates, tab, currentLeases, page,
                     rules, previous_rental, esa_packet, disclaimer, guaranty
@@ -52,7 +51,8 @@ const Tenant = ({
     const [deleteData, setDeleteData] = useState({show: false, description: null});
     const [userInfoError, setUserInfoError] = useState();
     const [userInfoSuccess, setUserInfoSuccess] = useState();
-
+    const [deleteUserError, setDeleteUserError] = useState();
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     tab = (tab === "Roommates") ? 3 : 0;
 
@@ -84,7 +84,7 @@ const Tenant = ({
                 }
             } catch (e) {
                 setPaymentError("There was an error removing this payment. Please try again.");
-                console.error(new Date().toISOString() + " - " +e);
+                console.error(`${new Date().toISOString()} -` , e);
             }
         }
 
@@ -93,17 +93,44 @@ const Tenant = ({
         }
     }, [deleteData.description]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    const handleDeleteUser = async () => {
+        try {
+            const options = {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"},
+            };
+
+            const resp = await fetch(`/api/users/${userId}?site=${site}`, options);
+            switch (resp.status) {
+                case 204:
+                case 200:
+                    setUserInfoSuccess("User deleted successfully.");
+                    setTimeout(() => {
+                        window.location.href = `/tenants?site=${site}`;
+                    }, 2000);
+                    break;
+                case 400:
+                default:
+                    setDeleteUserError("There was an error deleting the user. Please try again.");
+                    break;
+            }
+        } catch (e) {
+            setDeleteUserError("There was an error deleting the user. Please try again.");
+            console.error(`${new Date().toISOString()} -` , e);
+        }
+    };
 
     return (
         <Layout site={site} user={user} wide={!isTenant}>
-            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={navPage}/>
+            <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links}
+                        page={navPage}/>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
                     <div className={classNames("main-content")}>
                         <Tabs defaultActiveKey={tab}>
                             <Tab title="Personal Info" eventKey={0} key={0}>
-                                <TenantForm tenant={tenant} site={site} userId={userId}/>
+                                <TenantForm tenant={tenant} site={site} userId={userId} isTenant={isTenant}/>
                             </Tab>
                             <Tab title="Applications" eventKey={1} key={1}>
                                 <Tabs>
@@ -303,10 +330,58 @@ const Tenant = ({
                                         <Alert variant={"success"} dismissible
                                                onClick={() => setUserInfoSuccess(null)}>{userInfoSuccess}</Alert>
                                     }
+                                    {deleteUserError &&
+                                        <Alert variant={"danger"} dismissible
+                                               onClick={() => setDeleteUserError(null)}>{deleteUserError}</Alert>
+                                    }
                                     <div className="h4">{`Username: ${tenant.username}`}</div>
                                     <br/>
-                                    <UsernameForm site={site} userId={userId} username={tenant.username} setUserInfoError={setUserInfoError} setUserInfoSuccess={setUserInfoSuccess}/>
-                                    <PasswordForm site={site} userId={userId} admin={user.manageApartment} username={tenant.username} setUserInfoError={setUserInfoError} setUserInfoSuccess={setUserInfoSuccess}/>
+                                    <UsernameForm site={site} userId={userId} username={tenant.username}
+                                                  setUserInfoError={setUserInfoError}
+                                                  setUserInfoSuccess={setUserInfoSuccess}/>
+                                    <PasswordForm site={site} userId={userId} admin={user.manageApartment}
+                                                  username={tenant.username} setUserInfoError={setUserInfoError}
+                                                  setUserInfoSuccess={setUserInfoSuccess}/>
+
+                                    {!(tenant.admin) && !(tenant.manage) &&
+                                        <>
+                                        <Form>
+                                            <div style={{width: "100%"}}
+                                                 className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
+                                                <Button variant="danger" onClick={() => setShowDeleteModal(true)}>Delete
+                                                    User</Button>
+                                            </div>
+                                        </Form>
+                                        <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                                            <Modal.Header closeButton>
+                                                <Modal.Title>Warning: Delete User</Modal.Title>
+                                            </Modal.Header>
+                                            <Modal.Body>
+                                                <p>Deleting this user will remove the following:</p>
+                                                <ul>
+                                                    <li>User account</li>
+                                                    <li>Tenant information</li>
+                                                    {leases.length > 0 && <li>{leases.length} Lease associations</li>}
+                                                    {payments.length > 0 && <li>{payments.length} Payment records</li>}
+                                                    {applications.length > 0 && <li>{applications.length} Applications</li>}
+                                                    {emails.length > 0 && <li>{emails.length} Emails</li>}
+                                                </ul>
+                                                <p>This action is irreversible. Are you sure you want to proceed?</p>
+                                            </Modal.Body>
+                                            <Modal.Footer>
+                                                <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                                                    Cancel
+                                                </Button>
+                                                <Button variant="danger" onClick={() => {
+                                                    setShowDeleteModal(false);
+                                                    handleDeleteUser();
+                                                }}>
+                                                    Delete User
+                                                </Button>
+                                            </Modal.Footer>
+                                        </Modal>
+                                        </>
+                                    }
                                 </Tab>
                             }
                         </Tabs>

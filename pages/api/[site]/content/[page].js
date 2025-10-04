@@ -19,6 +19,6 @@ export default async function handler(req, res) {
                 return;
         }
     } catch (e) {
-        console.error(new Date().toISOString() + " - " +e);
+        console.error(`${new Date().toISOString()} -` , e);
     }
 }

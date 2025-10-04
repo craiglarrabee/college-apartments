@@ -21,6 +21,7 @@ import ReactDomServer from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
 import Router from "next/router";
 import {isBot} from "../../../../lib/bots";
+import {DepositEmailBody} from "../../../../components/depositEmailBody";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -45,6 +46,7 @@ const Applications = ({
                           welcome_header,
                           welcome_body,
                           response_body,
+                          deposit_body,
                           company,
                           ...restOfProps
                       }) => {
@@ -82,15 +84,58 @@ const Applications = ({
                 case 400:
                 default:
                     setError("An error occurred sending the application response email.");
-                    console.error(new Date().toISOString() + " - " +`Error occurred sending response email to ${emailAddress}`);
+                    console.error(`${new Date().toISOString()} -` +`Error occurred sending response email to ${emailAddress}`);
                     break;
             }
         } catch (e) {
             setError(`An error occurred sending the application response email. ${e.message}`);
-            console.error(new Date().toISOString() + " - " +`Error occurred sending response email to ${emailAddress}`);
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` +`Error occurred sending response email to ${emailAddress}`);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
+
+    const getDepositEmailBodyString = (thisLease) => {
+        const emailBody = <DepositEmailBody tenant={thisLease} leaseId={leaseId} header={welcome_header}
+                                            body={deposit_body}
+                                            canEdit={false} company={`${company}, LLC`}
+                                            site={site} page={page}></DepositEmailBody>;
+        const emailBodyString = ReactDomServer.renderToString(emailBody);
+        return emailBodyString;
+    }
+    const sendDepositEmail = async (emailAddress, emailBodyString) => {
+        try {
+            const payload = {
+                from: from,
+                subject: `Deposit Received for ${company}`,
+                address: emailAddress,
+                body: emailBodyString
+            };
+
+
+            const options = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+            }
+
+            const resp = await fetch(`/api/util/email?site=${site}`, options);
+            switch (resp.status) {
+                case 204:
+                case 200:
+                    setSuccess(`Deposit received email sent to ${emailAddress}`);
+                    break;
+                case 400:
+                default:
+                    setError("An error occurred sending the deposit received email.");
+                    console.error(`${new Date().toISOString()} -` +`Error occurred sending deposit email to ${emailAddress}`);
+                    break;
+            }
+        } catch (e) {
+            setError(`An error occurred sending the deposit received email. ${e.message}`);
+            console.error(`${new Date().toISOString()} -` +`Error occurred sending deposit email to ${emailAddress}`);
+            console.error(`${new Date().toISOString()} -` , e);
+        }
+    }
 
     const getEmailBodyString = (thisLease) => {
         const emailBody = <WelcomeEmailBody tenant={thisLease} leaseId={leaseId} header={welcome_header}
@@ -135,13 +180,13 @@ const Applications = ({
                 case 400:
                 default:
                     setError("An error occurred sending the welcome email.");
-                    console.error(new Date().toISOString() + " - " +`Error occurred sending welcome email to ${emailAddress}`);
+                    console.error(`${new Date().toISOString()} -` +`Error occurred sending welcome email to ${emailAddress}`);
                     break;
             }
         } catch (e) {
             setError(`An error occurred sending the welcome email. ${e.message}`);
-            console.error(new Date().toISOString() + " - " +`Error occurred sending welcome email to ${emailAddress}`);
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` +`Error occurred sending welcome email to ${emailAddress}`);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     }
 
@@ -180,7 +225,7 @@ const Applications = ({
             }
         } catch (e) {
             setError("An error occurred modifying the application.");
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 
@@ -195,7 +240,7 @@ const Applications = ({
             switch (resp.status) {
                 case 204:
                 case 200:
-                    console.log(new Date().toISOString() + " - " +`Application and lease were deleted for user: ${userId} and lease: ${leaseId} in manageApplications.deleteApplication.`);
+                    console.log(`${new Date().toISOString()} -` +`Application and lease were deleted for user: ${userId} and lease: ${leaseId} in manageApplications.deleteApplication.`);
                     // now remove from the applications on this page components
                     const newApplications = allApplications.filter(app => !(app.user_id == userId && app.pending_application == leaseId && app.room_type_id == roomTypeId));
                     setAllApplications(newApplications);
@@ -210,13 +255,17 @@ const Applications = ({
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 
 
     const receiveDeposit = async (userId, site, leaseId) => {
         try {
+
+            const thisApp = allApplications.find(app => app.user_id == userId);
+            const emailBodyString = getDepositEmailBodyString(thisApp);
+
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -229,7 +278,7 @@ const Applications = ({
                     resp = await fetch(`/api/users/${userId}/leases/${leaseId}/deposit?site=${site}`, options);
                     if (resp.status !== 200) {
                         setError("An error occurred modifying the application. Please try again.");
-                        console.error(new Date().toISOString() + " - " +`An API 400 error occurred modifying the application for user: ${userId} and lease: ${leaseId}`);
+                        console.error(`${new Date().toISOString()} -` +`An API 400 error occurred modifying the application for user: ${userId} and lease: ${leaseId}`);
                         break;
                     }
                     // now remove from the applications on this page components
@@ -246,17 +295,18 @@ const Applications = ({
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
                     setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
+                    await sendDepositEmail(thisApp.email, emailBodyString);
                     break;
                 case 400:
                 default:
                     setError("An error occurred creating the lease. Please try again.");
-                    console.error(new Date().toISOString() + " - " +`An API 400 error occurred creating lease for user: ${userId} and lease: ${leaseId}`);
+                    console.error(`${new Date().toISOString()} -` +`An API 400 error occurred creating lease for user: ${userId} and lease: ${leaseId}`);
                     break;
             }
         } catch (e) {
             setError("An error occurred creating the lease. Please try again.");
-            console.error(new Date().toISOString() + " - " +e);
-            console.error(new Date().toISOString() + " - " +`An error occurred creating lease for user: ${userId} and lease: ${leaseId}`);
+            console.error(`${new Date().toISOString()} -` , e);
+            console.error(`${new Date().toISOString()} -` +`An error occurred creating lease for user: ${userId} and lease: ${leaseId}`);
         }
     };
 
@@ -296,7 +346,7 @@ const Applications = ({
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
 
     };
@@ -360,16 +410,19 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
     const editing = !!user && !!user.editSite;
-    const [welcomeContentRows, nav, applications, responseEmailContentRows] = await Promise.all([
+    const [welcomeContentRows, nav, applications, responseEmailContentRows, depositEmailContentRows] = await Promise.all([
         GetDynamicContent(site, welcomePage),
         GetNavLinks(user, site),
         GetApplications(site, context.query.leaseId),
         GetDynamicContent(site, "response"),
+        GetDynamicContent(site, "deposit-email")
     ]);
     let welcomeContent = {};
     const responseEmailContent = [];
+    const depositEmailContent = [];
     welcomeContentRows.forEach(row => welcomeContent[`welcome_${row.name}`] = row.content);
     responseEmailContentRows.forEach(row => responseEmailContent[`response_${row.name}`] = row.content);
+    depositEmailContentRows.forEach(row => depositEmailContent[`deposit_${row.name}`] = row.content);
 
     return {
         props: {
@@ -380,6 +433,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             isABot: isBot(context),
             ...welcomeContent,
             ...responseEmailContent,
+            ...depositEmailContent,
             canEdit: editing,
             user: {...user},
             applications: [...applications],

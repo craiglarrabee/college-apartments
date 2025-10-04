@@ -48,7 +48,7 @@ const Home = ({site, isABot,  page, body, links, canEdit, user, company, ...rest
             }
         } catch (e) {
             alert(`An error occurred sending the email. ${e.message}`);
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     }
 

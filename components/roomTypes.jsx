@@ -23,12 +23,16 @@ const RoomTypes = ({
 
     const onSubmit = async (data, event) => {
         event.preventDefault();
-        let selectedLease = roomTypes.find(item => data.lease_room_type_id.startsWith(item.leaseId));
-        let selectedRoomType = selectedLease.rooms.find(item => data.lease_room_type_id.endsWith(item.room_type_id));
+        let matchingKey = Object.keys(data).find(key => key.startsWith("lease_") && key.endsWith("_room_type_id"));
+        let selectedLease = roomTypes.find(item => data[matchingKey].startsWith(item.leaseId));
+        let selectedRoomType = selectedLease.rooms.find(item => data[matchingKey].endsWith(item.room_type_id));
         data.room_type = selectedRoomType.room_type;
         data.room_type_id = selectedRoomType.room_type_id;
         data.apartment_number = apartment_number;
         data.lease_id = selectedLease.leaseId;
+        data.room_rent = selectedRoomType.room_rent;
+        data.room_type_desc = selectedRoomType.room_desc;
+        data.submit_date = new Date().toISOString();
         await setTenantRoomType(data);
     };
 

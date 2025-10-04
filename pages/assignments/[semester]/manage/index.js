@@ -84,6 +84,11 @@ const Assignments = ({
         if (!await updateApartmentNumber(tenant, tenant.lease_id, over.id, roomTypeId)) {
             return;
         }
+        tenant.apartment_number = over.id;
+        tenant.room_type_id = over.data?.current?.roomTypeId;
+        tenant.room_type = currentLeaseRoomTypes.find(type => type.room_type_id === tenant.room_type_id)?.room_type;
+
+        setTenantAssignment(tenant, over.id);
         setActiveId(null);
     };
 
@@ -102,7 +107,7 @@ const Assignments = ({
             try {
                 newAssignments[tenant.apartment_number] = newAssignments[tenant.apartment_number].filter(assignment => assignment.user_id !== tenant.user_id);
             } catch (e) {
-                console.error(new Date().toISOString() + " - " +e);
+                console.error(`${new Date().toISOString()} -` , e);
             }
         }
         tenant.apartment_number = ["unassigned_type", "unassigned_others", "unassigned_previous"].includes(apartment_number) ? null : apartment_number;
@@ -119,18 +124,25 @@ const Assignments = ({
         }
         let tenant = tenants.find(tenant => tenant.user_id === parseInt(userId));
         await fetch(`/api/users/${userId}/leases/${leaseId}/application?site=${site}&roomTypeId=${tenant.room_type_id}`, options);
-        console.log(new Date().toISOString() + " - " +`Application and lease were deleted for user: ${userId} and lease: ${leaseId} in assignments[all].deletePreviousTenantData.`);
+        console.log(`${new Date().toISOString()} -` +`Application and lease were deleted for user: ${userId} and lease: ${leaseId} in assignments[all].deletePreviousTenantData.`);
         delete tenant.spots;
         delete tenant.lease_id;
         delete tenant.room_type;
+        delete tenant.room_type_id;
+        delete tenant.room_rent;
+        delete tenant.room_type_desc;
+        delete tenant.submit_date;
         setTenantAssignment(tenant, "unassigned_previous");
     };
 
     const setPreviousTenantData = async (data) => {
+        const submit_date = new Date();
+        const formattedDate = new Intl.DateTimeFormat("en-US", { month: "long", day: "2-digit", year: "numeric" }).format(submit_date);
         data.site = site;
         data.created_by_user_id = user.id;
-        data.submit_date = new Date().toISOString();
+        data.submit_date = submit_date.toISOString();
         data.processed = true;
+        data.newApp = true;
         const JSONdata = JSON.stringify(data);
         let options = {
             method: "POST",
@@ -143,6 +155,11 @@ const Assignments = ({
         setShowRoomTypes(false);
         setSelectedTenantId(null);
         tenant.lease_id = data.lease_id;
+        tenant.room_type_id = data.room_type_id;
+        tenant.room_type = data.room_type;
+        tenant.room_desc = data.room_type_desc;
+        tenant.room_rent = data.room_rent; // Update room_rent
+        tenant.submit_date = formattedDate;
 
         try {
             let resp = await fetch(`/api/users/${data.user_id}/leases/${data.lease_id}/application?site=${site}`, options);
@@ -187,7 +204,7 @@ const Assignments = ({
             }
         } catch (e) {
             setError(`An error occurred setting apartment assignment for ${tenant.first_name} ${tenant.last_name}`);
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
             return false;
         }
     };
@@ -213,7 +230,7 @@ const Assignments = ({
             Router.reload();
         } catch (e) {
             setError("An error occurred resetting all assignments");
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
             return false;
         }
     };

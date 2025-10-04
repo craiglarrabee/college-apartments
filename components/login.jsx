@@ -52,7 +52,7 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
             }
 
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 

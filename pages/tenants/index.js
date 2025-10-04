@@ -45,7 +45,7 @@ const Tenants = ({site, isABot,  page, links, user, ...restOfProps}) => {
             }
         } catch (e) {
             setMessage({value: "An error occurred searching for the user.", type: "error"});
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 

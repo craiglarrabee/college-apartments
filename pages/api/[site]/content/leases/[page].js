@@ -27,7 +27,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        console.error(new Date().toISOString() + " - " +e);
+        console.error(`${new Date().toISOString()} -` , e);
     }
 }, ironOptions);
 

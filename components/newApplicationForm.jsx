@@ -54,7 +54,7 @@ const NewApplicationForm = ({
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
             setApplicationError("There was an error processing your application. Please try again.");
         }
     }

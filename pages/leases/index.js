@@ -42,7 +42,7 @@ const Leases = ({site, isABot,  links, page, user, leases, ...restOfProps}) => {
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     }
 

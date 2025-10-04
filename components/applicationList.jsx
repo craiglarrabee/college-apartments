@@ -178,7 +178,7 @@ export const WelcomedRow = ({page, site, row, leaseId, handleDelete, handleWelco
                     break;
             }
         } catch (e) {
-            console.error(new Date().toISOString() + " - " +e);
+            console.error(`${new Date().toISOString()} -` , e);
         }
     };
 
