@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
+import {AddMaintenanceRequest, GetOpenMaintenanceRequests} from "../../lib/db/users/maintenance";
 
 const suuTransporter = nodemailer.createTransport({
     host: "uca.snowcollegeapartments.com",
@@ -30,9 +31,20 @@ const handler = withIronSessionApiRoute(async (req, res) => {
 
     try {
         switch (req.method) {
+            case "GET": {
+                const user = req.session?.user;
+                const site = req.query.site || process.env.SITE || "suu";
+                if (!user?.isLoggedIn || !user?.admin?.includes(site) || !user?.manageApartment) {
+                    res.status(403).send();
+                    return;
+                }
+                const rows = await GetOpenMaintenanceRequests(site);
+                res.status(200).json(rows);
+                return;
+            }
             case "POST": {
-                const {name, apartment_number, room, request} = req.body || {};
-                if (!name || !apartment_number || !room || !request) {
+                const {tenant_first_name, tenant_last_name, username, email, apartment_number, room, request, user_id} = req.body || {};
+                if (!apartment_number || !room || !request) {
                     res.body = {error: "validation_error", description: "Missing required fields."};
                     res.status(400).send();
                     return;
@@ -42,10 +54,35 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 const transporter = site === "suu" ? suuTransporter : snowTransporter;
                 const from = site === "suu" ? process.env.SUU_EMAIL_USER : process.env.SNOW_EMAIL_USER;
 
+                const firstName = tenant_first_name || req.session.user?.first_name || "";
+                const lastName = tenant_last_name || req.session.user?.last_name || "";
+                const uname = username || req.session.user?.username || "";
+                const emailAddr = email || req.session.user?.email || "";
+                const fullName = `${firstName} ${lastName}`.trim();
+
+                // Persist to DB first
+                try {
+                    await AddMaintenanceRequest(site, {
+                        user_id: req.session.user?.id || user_id || null,
+                        tenant_first_name: firstName,
+                        tenant_last_name: lastName,
+                        username: uname,
+                        email: emailAddr,
+                        apartment_number,
+                        room,
+                        request
+                    });
+                } catch (dbErr) {
+                    // Continue to attempt email but still report error if both fail
+                    console.error(`${new Date().toISOString()} -`, dbErr);
+                }
+
                 const html = `
                     <div>
                         <p>A new maintenance request has been submitted.</p>
-                        <p><strong>Name:</strong> ${name}</p>
+                        <p><strong>Name:</strong> ${fullName || uname}</p>
+                        <p><strong>Username:</strong> ${uname}</p>
+                        <p><strong>Email:</strong> ${emailAddr}</p>
                         <p><strong>Apartment:</strong> ${apartment_number}</p>
                         <p><strong>Room:</strong> ${room}</p>
                         <p><strong>Request:</strong><br/>${(request + "").replace(/\n/g, "<br/>")}</p>
@@ -54,9 +91,9 @@ const handler = withIronSessionApiRoute(async (req, res) => {
 
                 await transporter.sendMail({
                     from,
-                    to: "shaneen@utachcollegeapartments.com",
                     // to: "h2oskier1968@gmail.com",
-                    subject: `Maintenance Request - ${name} - ${apartment_number} - ${room}`,
+                    to: "shaneen@utahcollegeapartments.com",
+                    subject: `Maintenance Request - ${fullName || uname} - ${apartment_number} - ${room}`,
                     html
                 });
 

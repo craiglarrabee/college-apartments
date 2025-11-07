@@ -41,7 +41,7 @@ const LeaseForm = ({
     return (
         <>
             <Form onSubmit={handleSubmit(onSubmit)} method="post">
-                {canEdit ? <LeaseDefinitionGroup {...lease} className={classNames("custom-content")}/> : null}
+                {canEdit ? <LeaseDefinitionGroup {...lease} site={site} className={classNames("custom-content")}/> : null}
                 <PageContent
                     initialContent={lease_header}
                     site={site}

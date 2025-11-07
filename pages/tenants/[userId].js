@@ -9,6 +9,7 @@ import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
 import {GetTenant, GetUserRoomates} from "../../lib/db/users/tenant";
+import {GetUserMaintenanceRequests} from "../../lib/db/users/maintenance";
 import {TenantForm} from "../../components/tenantForm";
 import ApplicationForm from "../../components/applicationForm";
 import {GetTenantApplications} from "../../lib/db/users/application";
@@ -35,7 +36,7 @@ const brandUrl = process.env.BRAND_URL;
 const Tenant = ({
                     isTenant, site, isABot, navPage, links, user, tenant, currentLeasesMap,
                     applications, userId, leases, leaseContentMap, deletedPayments,
-                    emails, applicationContent, payments, roommates, tab, currentLeases, page,
+                    emails, applicationContent, payments, roommates, maintenanceRequests, tab, currentLeases, page,
                     rules, previous_rental, esa_packet, disclaimer, guaranty
                     , ...restOfProps
                 }) => {
@@ -290,6 +291,41 @@ const Tenant = ({
                                     </Table>
                                 </Tab>
                             }
+                            {maintenanceRequests &&
+                                <Tab title="Maintenance" eventKey={7} key={7}>
+                                    <Table>
+                                        <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Apartment</th>
+                                            <th>Room</th>
+                                            <th>Request</th>
+                                            <th>Status</th>
+                                            <th>Closed Date</th>
+                                            <th>Closed Comments</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {maintenanceRequests.map(row => (
+                                            <tr key={row.id}>
+                                                <td>{row.created_datetime}</td>
+                                                <td>{row.apartment_number}</td>
+                                                <td>{row.room}</td>
+                                                <td style={{whiteSpace: 'pre-wrap'}}>{row.request}</td>
+                                                <td>{row.closed_datetime ? 'Closed' : 'Open'}</td>
+                                                <td>{row.closed_datetime || ''}</td>
+                                                <td>{row.closed_comments || ''}</td>
+                                            </tr>
+                                        ))}
+                                        {maintenanceRequests.length === 0 && (
+                                            <tr>
+                                                <td colSpan={7} style={{textAlign: 'center'}}>No maintenance requests.</td>
+                                            </tr>
+                                        )}
+                                        </tbody>
+                                    </Table>
+                                </Tab>
+                            }
                             {!isTenant &&
                                 <Tab title="Bulk Emails" eventKey={6} key={6}>
                                     <Tabs>
@@ -321,7 +357,7 @@ const Tenant = ({
                                 </Tab>
                             }
                             {!isTenant &&
-                                <Tab title="User Information" eventKey={7} key={7}>
+                                <Tab title="User Information" eventKey={8} key={8}>
                                     {userInfoError &&
                                         <Alert variant={"danger"} dismissible
                                                onClick={() => setUserInfoError(null)}>{userInfoError}</Alert>
@@ -424,7 +460,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         payments,
         deletedPayments,
         roommates,
-        currentRooms] = await Promise.all(
+        currentRooms,
+        maintenanceRequests] = await Promise.all(
         [
             GetNavLinks(user, site),
             GetTenant(site, userId),
@@ -436,6 +473,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             GetUserDeletedPayments(site, userId),
             user && user.isLoggedIn ? GetUserRoomates(userId) : [],
             GetUserAvailableLeaseRooms(site, userId),
+            GetUserMaintenanceRequests(site, userId),
         ]);
     applicationContentRows.forEach(row => applicationContent[row.name] = row.content);
     const currentLeasesMap = await Promise.all(applications.map(async application => {
@@ -479,6 +517,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             payments: payments,
             deletedPayments: deletedPayments,
             roommates: roommates,
+            maintenanceRequests: maintenanceRequests,
             tab: context.query.tab || null
         }
     };

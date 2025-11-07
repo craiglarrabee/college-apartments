@@ -13,6 +13,7 @@ describe("LeaseDefinitionGroup", () => {
     const id = 1;
     const firstYear = start_date ? new Date(start_date).getUTCFullYear() : new Date().getFullYear();
     const secondYear = firstYear + 1;
+    const testSite = "testsite"; // default site for non-suu tests
 
 
     beforeAll(() => {
@@ -33,6 +34,7 @@ describe("LeaseDefinitionGroup", () => {
                 semester1={"Spring"}
                 semester2={"Summer"}
                 id={id}
+                site={testSite}
             />
         );
 
@@ -45,10 +47,10 @@ describe("LeaseDefinitionGroup", () => {
         await new Promise(r => setTimeout(r, 1500));
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({start_date: newStartDate, end_date, description, semesters: ["Spring", "Summer"]})
+            body: JSON.stringify({start_date: newStartDate, end_date, description, semesters: ["Spring", "Summer"], deposit_amount: "350", site: testSite})
         });
     });
 
@@ -61,6 +63,7 @@ describe("LeaseDefinitionGroup", () => {
                 id={id}
                 semester1="Spring"
                 semester2="Summer"
+                site={testSite}
             />
         );
 
@@ -72,10 +75,10 @@ describe("LeaseDefinitionGroup", () => {
         await new Promise(r => setTimeout(r, 1500));
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({start_date, end_date: newEndDate, description, semesters: ["Spring", "Summer"]})
+            body: JSON.stringify({start_date, end_date: newEndDate, description, semesters: ["Spring", "Summer"], deposit_amount: "350", site: testSite})
         });
     });
 
@@ -88,6 +91,7 @@ describe("LeaseDefinitionGroup", () => {
                 id={id}
                 semester1="Spring"
                 semester2="Summer"
+                site={testSite}
             />
         );
 
@@ -99,10 +103,10 @@ describe("LeaseDefinitionGroup", () => {
         await new Promise(r => setTimeout(r, 1500));
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({start_date, end_date, description: newDescription, semesters: ["Spring", "Summer"]})
+            body: JSON.stringify({start_date, end_date, description: newDescription, semesters: ["Spring", "Summer"], deposit_amount: "350", site: testSite})
         });
     });
 
@@ -114,6 +118,7 @@ describe("LeaseDefinitionGroup", () => {
             id={1}
             semester1="Spring"
             semester2="Summer"
+            site={testSite}
         />);
         const startDateInput = screen.getByLabelText("Visible From");
         const endDateInput = screen.getByLabelText("Visible Until");
@@ -125,13 +130,13 @@ describe("LeaseDefinitionGroup", () => {
         await user.type(descriptionInput, "new description", {initialSelectionStart: 0, initialSelectionEnd: 10});
         await new Promise(r => setTimeout(r, 1500));
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
-        await expect(fetchMock).toHaveBeenCalledWith("/api/leases/1", {
+        await expect(fetchMock).toHaveBeenCalledWith(`/api/leases/1?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 start_date: "2023-03-30",
                 end_date: "2023-03-31",
-                description: "new description", semesters: ["Spring", "Summer"]
+                description: "new description", semesters: ["Spring", "Summer"], deposit_amount: "350", site: testSite
             }),
         });
     });
@@ -144,6 +149,7 @@ describe("LeaseDefinitionGroup", () => {
             id={1}
             semester1="Spring"
             semester2="Summer"
+            site={testSite}
         />);
         const startDateInput = screen.getByLabelText("Visible From");
         const endDateInput = screen.getByLabelText("Visible Until");
@@ -153,13 +159,13 @@ describe("LeaseDefinitionGroup", () => {
         await user.type(descriptionInput, "new description", {initialSelectionStart: 0, initialSelectionEnd: 5});
         await new Promise(r => setTimeout(r, 1500));
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-        await expect(fetchMock).toHaveBeenCalledWith("/api/leases/1", {
+        await expect(fetchMock).toHaveBeenCalledWith(`/api/leases/1?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 start_date: "2023-03-30",
                 end_date: "2023-03-31",
-                description: "new description", semesters: ["Spring", "Summer"]
+                description: "new description", semesters: ["Spring", "Summer"], deposit_amount: "350", site: testSite
             }),
         });
     });
@@ -171,6 +177,7 @@ describe("LeaseDefinitionGroup", () => {
                 end_date={end_date}
                 description={description}
                 id={id}
+                site={testSite}
             />
         );
 
@@ -178,10 +185,10 @@ describe("LeaseDefinitionGroup", () => {
         await new Promise(r => setTimeout(r, 1500));
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({start_date, end_date, description, semesters: [`Fall ${firstYear}`]})
+            body: JSON.stringify({start_date, end_date, description, semesters: [`Fall ${firstYear}`], deposit_amount: "350", site: testSite})
         });
     });
 
@@ -192,6 +199,7 @@ describe("LeaseDefinitionGroup", () => {
                 end_date={end_date}
                 description={description}
                 id={id}
+                site={testSite}
             />
         );
 
@@ -199,10 +207,10 @@ describe("LeaseDefinitionGroup", () => {
         await new Promise(r => setTimeout(r, 1500));
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({start_date, end_date, description, semesters: [`Spring ${secondYear}`]})
+            body: JSON.stringify({start_date, end_date, description, semesters: [`Spring ${secondYear}`], deposit_amount: "350", site: testSite})
         });
     });
 
@@ -222,10 +230,10 @@ describe("LeaseDefinitionGroup", () => {
         await new Promise(r => setTimeout(r, 1500));
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${id}?site=suu`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({start_date, end_date, description, semesters: []})
+            body: JSON.stringify({start_date, end_date, description, semesters: [], deposit_amount: "350", site: "suu"})
         });
     });
 
@@ -308,6 +316,7 @@ describe("LeaseDefinitionGroup", () => {
                 end_date={end_date}
                 description={description}
                 id={id}
+                site={testSite}
             />
         );
 

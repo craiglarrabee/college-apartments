@@ -181,23 +181,10 @@ describe("LeaseForm", () => {
         // Submit the form
         fireEvent.click(screen.getByText("Submit"));
 
-        expect(fetchMock).toHaveBeenCalledWith(`/api/users/${mockUserId}/leases/${mockLeaseId}`,
+        expect(fetchMock).toHaveBeenCalledWith(`/api/users/${mockUserId}/leases/${mockLeaseId}?site=${mockSite}`,
             expect.objectContaining({
                 method: "PUT"
             })
-            // {
-            //     vehicle_color: "Red",
-            //     vehicle_make_model: "Toyota Camry",
-            //     vehicle_license: "ABC123",
-            //     vehicle_state: "California",
-            //     vehicle_owner: "John Doe",
-            //     signature: "Jane Smith",
-            //     lease_email: "janesmith@example.com",
-            //     lease_address: "123 Main St, City, State, Zip",
-            //     lease_cell_phone: "555-123-4567",
-            //     lease_parent_name: "John and Jane Smith",
-            //     lease_parent_phone: "555-987-6543",
-            // }
         );
     });
 

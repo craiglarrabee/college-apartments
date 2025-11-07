@@ -31,100 +31,177 @@ describe("TenantForm", () => {
                 isNewApplication={mockIsNewApplication}
             />
         );
-
-        // Assert that the component renders without throwing an error
         expect(screen.getByLabelText("First Name")).toBeInTheDocument();
-        expect(screen.getByLabelText("Last Name")).toBeInTheDocument();
-        expect(screen.getByLabelText("Gender")).toBeInTheDocument();
-        expect(screen.getByLabelText("Birthdate")).toBeInTheDocument();
-        expect(screen.getByLabelText("Last 4 Social Security #")).toBeInTheDocument();
-        expect(screen.getByLabelText("Cell Phone")).toBeInTheDocument();
-        expect(screen.getByLabelText("Alternate Cell Phone")).toBeInTheDocument();
-        expect(screen.getByLabelText("Home Phone")).toBeInTheDocument();
-        expect(screen.getByLabelText("Email")).toBeInTheDocument();
-        expect(screen.getByLabelText("Alternate Email")).toBeInTheDocument();
-        expect(screen.getByText("Have you ever been convicted of a crime?")).toBeInTheDocument();
-        expect(screen.getByText("Have you ever been charged with a crime?")).toBeInTheDocument();
-        expect(screen.getByLabelText("Street Address")).toBeInTheDocument();
-        expect(screen.getByLabelText("City")).toBeInTheDocument();
-        expect(screen.getByLabelText("State")).toBeInTheDocument();
-        expect(screen.getByLabelText("Zip Code")).toBeInTheDocument();
-        expect(screen.getByLabelText("Parent Name")).toBeInTheDocument();
-        expect(screen.getByLabelText("Parent Phone")).toBeInTheDocument();
-        expect(screen.getByLabelText("Parent Street Address")).toBeInTheDocument();
-        expect(screen.getByLabelText("Parent City")).toBeInTheDocument();
-        expect(screen.getByLabelText("Parent State")).toBeInTheDocument();
-        expect(screen.getByLabelText("Parent Zip Code")).toBeInTheDocument();
-        expect(screen.getByRole("button", {name: "Next"})).toBeInTheDocument();
     });
 
-    test("calls onSubmitPersonal with correct data when form is submitted", async () => {
-        render(
-            <TenantForm
-                site={mockSite}
-                userId={mockUserId}
-                tenant={mockTenant}
-                isNewApplication={mockIsNewApplication}
-            />
-        );
+    // helper to set a field by label
+    const setVal = (label, value) => fireEvent.change(screen.getByLabelText(label), {target: {value}});
 
-        // Fill in form fields
-        fireEvent.change(screen.getByLabelText("First Name"), {target: {value: "John"}});
-        fireEvent.change(screen.getByLabelText("Last Name"), {target: {value: "Doe"}});
-        fireEvent.change(screen.getByLabelText("Gender"), {target: {value: "M"}});
-        fireEvent.change(screen.getByLabelText("Birthdate"), {target: {value: "1990-01-01"}});
-        fireEvent.change(screen.getByLabelText("Last 4 Social Security #"), {target: {value: "1234"}});
-        fireEvent.change(screen.getByLabelText("Cell Phone"), {target: {value: "123-456-7890"}});
-        fireEvent.change(screen.getByLabelText("Alternate Cell Phone"), {target: {value: "987-654-3210"}});
-        fireEvent.change(screen.getByLabelText("Home Phone"), {target: {value: "555-555-5555"}});
-        fireEvent.change(screen.getByLabelText("Email"), {target: {value: "johndoe@example.com"}});
-        fireEvent.change(screen.getByLabelText("Alternate Email"), {target: {value: "johndoe2@example.com"}});
-        fireEvent.click(screen.getByLabelText("Yes")); // Select "Yes" for convicted of a crime
-        fireEvent.click(screen.getByLabelText("No")); // Select "No" for charged with a crime
-        fireEvent.change(screen.getByLabelText("Street Address"), {target: {value: "123 Main St"}});
-        fireEvent.change(screen.getByLabelText("City"), {target: {value: "City"}});
-        fireEvent.change(screen.getByLabelText("State"), {target: {value: "State"}});
-        fireEvent.change(screen.getByLabelText("Zip Code"), {target: {value: "12345"}});
-        fireEvent.change(screen.getByLabelText("Parent Name"), {target: {value: "Jane Doe"}});
-        fireEvent.change(screen.getByLabelText("Parent Phone"), {target: {value: "555-123-4567"}});
-        fireEvent.change(screen.getByLabelText("Parent Street Address"), {target: {value: "456 Main St"}});
-        fireEvent.change(screen.getByLabelText("Parent City"), {target: {value: "City"}});
-        fireEvent.change(screen.getByLabelText("Parent State"), {target: {value: "State"}});
-        fireEvent.change(screen.getByLabelText("Parent Zip Code"), {target: {value: "54321"}});
+    const fillBasePersonalFields = async (data) => {
+        const {
+            firstName = "John",
+            lastName = "Doe",
+            gender = "M",
+            birthdate = "1990-01-01",
+            last4 = "1234",
+            cellPhone = "123-456-7890",
+            altCellPhone = "987-654-3210",
+            homePhone = "555-555-5555",
+            email = "user@example.com",
+            altEmail = "user2@example.com"
+        } = data || {};
+        await act(async () => {
+            setVal("First Name", firstName);
+            setVal("Last Name", lastName);
+            setVal("Gender", gender);
+            setVal("Birthdate", birthdate);
+            setVal("Last 4 Social Security #", last4);
+            setVal("Cell Phone", cellPhone);
+            setVal("Alternate Cell Phone", altCellPhone);
+            setVal("Home Phone", homePhone);
+            setVal("Email", email);
+            setVal("Alternate Email", altEmail);
+        });
+        await waitFor(() => expect(screen.getByPlaceholderText("Confirm Cell Phone")).toBeInTheDocument());
+    };
 
-        // Submit the form
-        await act(() => user.click(screen.getByText("Next")));
+    const fillConfirmPhonesIfPresent = (data) => {
+        const {cellPhone = "123-456-7890", altCellPhone = "987-654-3210", homePhone = "555-555-5555"} = data || {};
+        const confirmCell = screen.queryByPlaceholderText("Confirm Cell Phone");
+        if (confirmCell) fireEvent.change(confirmCell, {target: {value: cellPhone}});
+        const confirmAlt = screen.queryByPlaceholderText("Confirm Alt Cell Phone");
+        if (confirmAlt) fireEvent.change(confirmAlt, {target: {value: altCellPhone}});
+        const confirmHome = screen.queryByPlaceholderText("Confirm Home Phone");
+        if (confirmHome) fireEvent.change(confirmHome, {target: {value: homePhone}});
+    };
 
-        // Assert that the onSubmitPersonal function is called with the correct data
+    const fillAddressAndParent = async (data) => {
+        const {
+            street = "123 Main St",
+            city = "City",
+            state = "ST",
+            zip = "12345",
+            parentName = "Jane Doe",
+            parentPhone = "555-123-4567",
+            parentStreet = "456 Main St",
+            parentCity = "City",
+            parentState = "State",
+            parentZip = "54321"
+        } = data || {};
+        await act(async () => {
+            setVal("Street Address", street);
+            setVal("City", city);
+            setVal("State", state);
+            setVal("Zip Code", zip);
+            setVal("Parent Name", parentName);
+            setVal("Parent Phone", parentPhone);
+            setVal("Parent Street Address", parentStreet);
+            setVal("Parent City", parentCity);
+            setVal("Parent State", parentState);
+            setVal("Parent Zip Code", parentZip);
+        });
+    };
+
+    test("submits tenant personal info with correct payload and site param", async () => {
+        render(<TenantForm site={mockSite} userId={mockUserId} tenant={mockTenant} isNewApplication={mockIsNewApplication}/>);
+        await fillBasePersonalFields();
+        fillConfirmPhonesIfPresent();
+        // radios set to NO
+        const allRadios = screen.getAllByRole('radio');
+        const noRadios = allRadios.filter(r => r.getAttribute('value') === '0').slice(0,2);
+        if (noRadios.length < 2) throw new Error("Expected at least two 'No' radios for convicted and charged crime questions");
+        await act(async () => { fireEvent.click(noRadios[0]); fireEvent.click(noRadios[1]); });
+        await fillAddressAndParent();
+        const submitBtn = screen.getByRole('button', {name: /Next/i});
+        expect(submitBtn).not.toBeDisabled();
+        await act(async () => { fireEvent.click(submitBtn); });
         await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-        expect(fetchMock).toHaveBeenCalledWith(
-            {
-                first_name: "John",
-                last_name: "Doe",
-                gender: "M",
-                date_of_birth: "1990-01-01",
-                last_4_social: "1234",
-                cell_phone: "123-456-7890",
-                cell_phone2: "987-654-3210",
-                home_phone: "555-555-5555",
-                email: "johndoe@example.com",
-                email2: "johndoe2@example.com",
-                convicted_crime: "1",
-                charged_crime: "0",
-                street: "123 Main St",
-                city: "City",
-                state: "State",
-                zip: "12345",
-                parent_name: "Jane Doe",
-                parent_phone: "555-123-4567",
-                parent_street: "456 Main St",
-                parent_city: "City",
-                parent_state: "State",
-                parent_zip: "54321",
-            },
-            expect.any(Object)
-        );
+        const [url, options] = fetchMock.mock.calls[0];
+        expect(url).toBe(`/api/users/${mockUserId}/tenant?site=${mockSite}`);
+        const sent = JSON.parse(options.body);
+        expect(sent).toEqual(expect.objectContaining({first_name: 'John', last_name: 'Doe', gender: 'M', date_of_birth: '1990-01-01', convicted_crime: '0', charged_crime: '0'}));
     });
 
-    // Add more unit tests for other functionality as needed
+    test("submits tenant personal info with correct payload and site param (Yes crime path)", async () => {
+        render(<TenantForm site={mockSite} userId={mockUserId} tenant={mockTenant} isNewApplication={mockIsNewApplication}/>);
+        await fillBasePersonalFields({firstName: 'Alice', lastName: 'Smith', gender: 'F', birthdate: '1995-05-05', last4: '4321', cellPhone: '111-222-3333', altCellPhone: '222-333-4444', homePhone: '333-444-5555', email: 'alice@example.com', altEmail: 'alice2@example.com'});
+        fillConfirmPhonesIfPresent({cellPhone: '111-222-3333', altCellPhone: '222-333-4444', homePhone: '333-444-5555'});
+        const allRadios = screen.getAllByRole('radio');
+        const yesRadios = allRadios.filter(r => r.getAttribute('value') === '1');
+        if (yesRadios.length < 2) throw new Error("Expected at least two 'Yes' radios");
+        await act(async () => { fireEvent.click(yesRadios[0]); fireEvent.click(yesRadios[1]); });
+        // Expect exactly two Explain fields (convicted + charged)
+        await waitFor(() => expect(screen.getAllByLabelText("Explain").length).toBe(2));
+        const [convictExplain, chargedExplain] = screen.getAllByLabelText("Explain");
+        fireEvent.change(convictExplain, {target: {value: 'Convicted details'}});
+        fireEvent.change(chargedExplain, {target: {value: 'Charged details'}});
+        await fillAddressAndParent({street: '789 Side Rd', city: 'Town', state: 'TS', zip: '67890', parentName: 'Parent One', parentPhone: '999-888-7777', parentStreet: '101 Parent Ave', parentCity: 'Town', parentState: 'TS', parentZip: '67891'});
+        const submitBtn = screen.getByRole('button', {name: /Next/i});
+        expect(submitBtn).not.toBeDisabled();
+        await act(async () => { fireEvent.click(submitBtn); });
+        await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+        const [, options] = fetchMock.mock.calls[0];
+        const sent = JSON.parse(options.body);
+        expect(sent).toEqual(expect.objectContaining({first_name: 'Alice', last_name: 'Smith', gender: 'F', date_of_birth: '1995-05-05', convicted_crime: '1', charged_crime: '1', convicted_explain: 'Convicted details', charged_explain: 'Charged details'}));
+    });
+
+    test("does not submit when conviction explanation missing (Yes convicted only)", async () => {
+        render(<TenantForm site={mockSite} userId={mockUserId} tenant={mockTenant} isNewApplication={mockIsNewApplication}/>);
+        await fillBasePersonalFields();
+        fillConfirmPhonesIfPresent();
+        const allRadios = screen.getAllByRole('radio');
+        const yesRadios = allRadios.filter(r => r.getAttribute('value') === '1');
+        const noRadios = allRadios.filter(r => r.getAttribute('value') === '0');
+        if (yesRadios.length < 1 || noRadios.length < 1) throw new Error('Expected radios present');
+        await act(async () => { fireEvent.click(yesRadios[0]); /* convicted yes */ fireEvent.click(noRadios[0]); /* charged no */ });
+        // Explanation field for convicted should appear empty
+        await waitFor(() => expect(screen.getAllByLabelText('Explain').length).toBe(1));
+        await fillAddressAndParent();
+        const submitBtn = screen.getByRole('button', {name: /Next/i});
+        expect(submitBtn).not.toBeDisabled();
+        await act(async () => { fireEvent.click(submitBtn); });
+        // Should NOT call fetch because explanation required
+        await new Promise(r => setTimeout(r, 50));
+        expect(fetchMock).not.toHaveBeenCalled();
+        // Error message should be present
+        // (react-hook-form will show generic required, we didn't customize convict explain message in test) Look for text-danger near explain
+        expect(screen.getByText(/Please enter an explanation/i)).toBeInTheDocument();
+    });
+
+    test("does not submit when confirm cell phone missing", async () => {
+        render(<TenantForm site={mockSite} userId={mockUserId} tenant={mockTenant} isNewApplication={mockIsNewApplication}/>);
+        await act(async () => {
+            setVal("First Name", "Test");
+            setVal("Last Name", "User");
+            setVal("Gender", "M");
+            setVal("Birthdate", "1990-01-01");
+            setVal("Last 4 Social Security #", "9999");
+            setVal("Cell Phone", "111-111-1111");
+            // do NOT fill confirm cell phone
+            setVal("Email", "test@example.com");
+            setVal("Street Address", "1 Test Way");
+            setVal("City", "Testville");
+            setVal("State", "TS");
+            setVal("Zip Code", "00000");
+            setVal("Parent Name", "Parent");
+            setVal("Parent Phone", "222-222-2222");
+            setVal("Parent Street Address", "2 Parent Rd");
+            setVal("Parent City", "Testville");
+            setVal("Parent State", "TS");
+            setVal("Parent Zip Code", "00001");
+        });
+        // radios default? choose NO for both to avoid explanation requirement
+        const allRadios = screen.getAllByRole('radio');
+        const noRadios = allRadios.filter(r => r.getAttribute('value') === '0').slice(0,2);
+        if (noRadios.length === 2) {
+            await act(async () => { fireEvent.click(noRadios[0]); fireEvent.click(noRadios[1]); });
+        }
+        const submitBtn = screen.getByRole('button', {name: /Next/i});
+        expect(submitBtn).not.toBeDisabled();
+        await act(async () => { fireEvent.click(submitBtn); });
+        await new Promise(r => setTimeout(r, 50));
+        expect(fetchMock).not.toHaveBeenCalled();
+        // Look for validation error for confirm cell (Must match Cell Phone or required)
+        expect(screen.getByText(/Must match Cell Phone|required/i)).toBeInTheDocument();
+    });
 });

@@ -1,188 +1,75 @@
 import React from "react";
-import {act, getByRole, render, waitFor} from "@testing-library/react";
+import {render} from "@testing-library/react";
 import fetchMock from "jest-fetch-mock";
 import Title from "../../components/title";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
-import Router from "next/router";
 
 let user;
-describe("Title component", () => {
+describe("Title component (site param propagation)", () => {
     beforeAll(() => {
         fetchMock.enableMocks();
         user = userEvent.setup();
-        jest.mock('next/router');
-        Router.reload = jest.fn();
     });
 
     beforeEach(() => {
         fetchMock.resetMocks();
     });
 
-    it("displays welcome message for logged in user", () => {
-        const initialUser = {
-            isLoggedIn: true,
-            username: "johndoe",
-            firstName: "John",
-        };
-        expect(getByText("Welcome John")).toBeInTheDocument();
-        const {getByText} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {getByText} = render(<Title initialUser={initialUser}/>);
-            });
+    const openMenu = async (container) => {
+        // Updated selector: react-bootstrap NavDropdown renders an anchor with class 'dropdown-toggle'
+        const toggle = container.querySelector('.dropdown-toggle');
+        if (!toggle) throw new Error('NavDropdown toggle not found');
+        await user.click(toggle);
+    };
 
-            it("displays sign in message for not logged in user", async () => {
-            const initialUser = {
-            isLoggedIn: false,
-        };
-            await act(() => user.click(getByRole("button")));
-            const {queryAllByText, getByRole} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {queryAllByText, getByRole} = render(<Title initialUser={initialUser}/>);
-            const signins = await waitFor(() => queryAllByText("Sign In"));
-            expect(signins.length).toEqual(2);
-            });
+    test("logs out user and calls /api/logout?site=site", async () => {
+        const initialUser = {isLoggedIn: true, username: "johndoe"};
+        fetchMock.mockResponseOnce(JSON.stringify({isLoggedIn: false}));
+        const {container, findByText} = render(<Title initialUser={initialUser} site="site" />);
+        await openMenu(container);
+        const signOutItem = await findByText(/Sign out/i);
+        await user.click(signOutItem);
+        expect(fetchMock).toHaveBeenCalledWith("/api/logout?site=site", expect.objectContaining({method: "POST"}));
+    });
 
-            it("opens login modal when user clicks first sign in button", async () => {
-            const initialUser = {
-            isLoggedIn: false,
-        };
-            const {getByRole, queryByLabelText, queryAllByText} = render(
-            );
-            <div style={{display: "flex", flexDirection: "column"}}>
-            <Title initialUser={initialUser}/>
-            await act(() => user.click(getByRole("button")));
-            const signInButtons = await waitFor(() => queryAllByText("Sign In"));
-            await act(() => user.click(signInButtons[0]));
-            await waitFor(() => expect(queryByLabelText("Username")).toBeInTheDocument());
-            });
+    test("manage site triggers /api/maintain?site=site", async () => {
+        const initialUser = {isLoggedIn: true, admin: ["site"], username: "admin"};
+        fetchMock.mockResponseOnce(JSON.stringify({}));
+        const {container, findByText} = render(<Title initialUser={initialUser} site="site" />);
+        await openMenu(container);
+        const manageSite = await findByText(/Manage Site/i);
+        await user.click(manageSite);
+        expect(fetchMock).toHaveBeenCalledWith("/api/maintain?site=site", expect.objectContaining({method: "POST"}));
+    });
 
-            it("opens login modal when user clicks second sign in button", async () => {
-            const initialUser = {
-            isLoggedIn: false,
-        };
-            const {getByRole, queryByLabelText, queryAllByText} = render(
-            );
-            <div style={{display: "flex", flexDirection: "column"}}>
-            <Title initialUser={initialUser}/>
-            await act(() => user.click(getByRole("button")));
-            const signInButtons = await waitFor(() => queryAllByText("Sign In"));
-            await act(() => user.click(signInButtons[1]));
-            await waitFor(() => expect(queryByLabelText("Username")).toBeInTheDocument());
-            });
+    test("manage apartments triggers /api/manage?site=site", async () => {
+        const initialUser = {isLoggedIn: true, manage: ["site"], username: "manager"};
+        fetchMock.mockResponseOnce(JSON.stringify({}));
+        const {container, findByText} = render(<Title initialUser={initialUser} site="site" />);
+        await openMenu(container);
+        const manageApts = await findByText(/Manage Apartments/i);
+        await user.click(manageApts);
+        expect(fetchMock).toHaveBeenCalledWith("/api/manage?site=site", expect.objectContaining({method: "POST"}));
+    });
 
-            it("logs out user and updates state when user clicks sign out", async () => {
-            const initialUser = {
-            isLoggedIn: true,
-            username: "johndoe",
-        };
-            fetchMock.mockResponseOnce(JSON.stringify({isLoggeIn: false}));
-            await act(() => user.click(getByRole("button")));
-            const {getByRole, queryByText, queryAllByText} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {getByRole, queryByText, queryAllByText} = render(<Title initialUser={initialUser}/>);
-            const signOutButton = await waitFor(() => queryByText("Sign out"));
-            await act(() => user.click(signOutButton));
-            await waitFor(() => expect(queryAllByText("Sign In").length).toEqual(2));
-            expect(fetchMock).toHaveBeenCalledWith("/api/logout", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-        });
-            });
+    test("view site from edit mode triggers /api/view?site=site", async () => {
+        const initialUser = {isLoggedIn: true, editSite: true, username: "editor"};
+        fetchMock.mockResponseOnce(JSON.stringify({}));
+        const {container, findByText} = render(<Title initialUser={initialUser} site="site" />);
+        await openMenu(container);
+        const viewSite = await findByText(/View Site/i);
+        await user.click(viewSite);
+        expect(fetchMock).toHaveBeenCalledWith("/api/view?site=site", expect.objectContaining({method: "POST"}));
+    });
 
-            it("sends API request to edit site when user clicks manage site", async () => {
-            const initialUser = {
-            isLoggedIn: true,
-            admin: ["site"],
-        };
-            fetchMock.mockResponseOnce(JSON.stringify({}));
-            await act(() => user.click(getByRole("button")));
-            const {queryByText, getByRole} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {queryByText, getByRole} = render(<Title initialUser={initialUser} site="site"/>);
-            const manageSiteButton = await waitFor(() => queryByText("Manage Site"));
-            await act(() => user.click(manageSiteButton));
-            expect(fetchMock).toHaveBeenCalledWith("/api/maintain", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({editSite: true}),
-        });
-            expect(window.location.pathname).toBe("/");
-            });
-
-            it("sends API request to manage apartments when user clicks manage apartments", async () => {
-            const initialUser = {
-            isLoggedIn: true,
-            admin: ["site"],
-        };
-            fetchMock.mockResponseOnce(JSON.stringify({}));
-            await act(() => user.click(getByRole("button")));
-            const {queryByText, getByRole} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {queryByText, getByRole} = render(<Title initialUser={initialUser} site="site"/>);
-            const manageApartmentsButton = await waitFor(() => queryByText("Manage Apartments"));
-            await act(() => user.click(manageApartmentsButton));
-            expect(fetchMock).toHaveBeenCalledWith("/api/manage", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-        });
-            expect(window.location.pathname).toBe("/");
-            });
-
-            it("sends API request to view site when user is managing site and clicks view site", async () => {
-            const initialUser = {
-            isLoggedIn: true,
-            admin: ["site"],
-            editSite: true
-        };
-            fetchMock.mockResponseOnce(JSON.stringify({}));
-            await act(() => user.click(getByRole("button")));
-            const {queryByText, getByRole} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {queryByText, getByRole} = render(<Title initialUser={initialUser} site="site"/>);
-            const manageApartmentsButton = await waitFor(() => queryByText("View Site"));
-            await act(() => user.click(manageApartmentsButton));
-            expect(fetchMock).toHaveBeenCalledWith("/api/view", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-        });
-            expect(window.location.pathname).toBe("/");
-            });
-
-            it("sends API request to view site when user is managing apartments and clicks view site", async () => {
-            const initialUser = {
-            isLoggedIn: true,
-            admin: ["site"],
-            manageApartment: true
-        };
-            fetchMock.mockResponseOnce(JSON.stringify({}));
-            await act(() => user.click(getByRole("button")));
-            const {queryByText, getByRole} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {queryByText, getByRole} = render(<Title initialUser={initialUser} site="site"/>);
-            const viewButton = await waitFor(() => queryByText("View Site"));
-            await act(() => user.click(viewButton));
-            expect(fetchMock).toHaveBeenCalledWith("/api/view", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-        });
-            expect(window.location.pathname).toBe("/");
-            });
-
-            it("redirects for tenant page when user clicks on manage profile", async () => {
-            const initialUser = {
-            isLoggedIn: true,
-        };
-            fetchMock.mockResponseOnce(JSON.stringify({}));
-            await act(() => user.click(getByRole("button")));
-            const {queryByText, getByRole} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-            const manageProfile = await waitFor(() => queryByText("Manage Profile"));
-            expect(manageProfile.pathname).toBe("/tenant");
-            });
-
-            it("redirects for password page when user clicks on change password", async () => {
-            const initialUser = {
-            isLoggedIn: true,
-        };
-            fetchMock.mockResponseOnce(JSON.stringify({}));
-            await act(() => user.click(getByRole("button")));
-            const {queryByText, getByRole} = render(<div style={{display: "flex", flexDirection: "column"}}>
-            const {queryByText, getByRole} = render(<Title initialUser={initialUser}/>);
-            const changePasswordButton = await waitFor(() => queryByText("Change Password"));
-            expect(changePasswordButton.pathname).toBe("/password");
-            });
-            });
+    test("view site from manage apartments mode triggers /api/view?site=site", async () => {
+        const initialUser = {isLoggedIn: true, manageApartment: true, username: "aptmgr"};
+        fetchMock.mockResponseOnce(JSON.stringify({}));
+        const {container, findByText} = render(<Title initialUser={initialUser} site="site" />);
+        await openMenu(container);
+        const viewSite = await findByText(/View Site/i);
+        await user.click(viewSite);
+        expect(fetchMock).toHaveBeenCalledWith("/api/view?site=site", expect.objectContaining({method: "POST"}));
+    });
+});

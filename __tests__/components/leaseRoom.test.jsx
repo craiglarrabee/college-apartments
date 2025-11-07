@@ -11,6 +11,7 @@ describe("LeaseRoom", () => {
     const room_type_id = "2";
     const room_rent = "100";
     const room_desc = "test description";
+    const testSite = "testsite";
     let user;
 
     beforeAll(() => {
@@ -25,7 +26,7 @@ describe("LeaseRoom", () => {
 
     it("renders room details for non-editable mode", () => {
         render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc}
-                          canEdit={false}/>);
+                          canEdit={false} site={testSite}/>);
         const roomId = screen.getByText(`#${room_type_id}:`);
         const rent = screen.getByText(`$${room_rent}.00`);
         const desc = screen.getByText(room_desc);
@@ -36,7 +37,7 @@ describe("LeaseRoom", () => {
 
     it("renders edit form for editable mode", () => {
         render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc}
-                          canEdit={true}/>);
+                          canEdit={true} site={testSite}/>);
         const roomId = screen.getByLabelText("Room Type");
         const rent = screen.getByLabelText("Room Rent");
         const desc = screen.getByLabelText("Room Description");
@@ -47,13 +48,13 @@ describe("LeaseRoom", () => {
 
     it("updates room rent when changed", async () => {
         render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc}
-                          canEdit={true}/>);
+                          canEdit={true} site={testSite}/>);
         const rentInput = screen.getByLabelText("Room Rent");
         await user.type(rentInput, "200", {initialSelectionStart: 0, initialSelectionEnd: 4});
         await user.tab();
         expect(rentInput).toHaveValue("200");
         await new Promise(resolve => setTimeout(resolve, 1500)); // wait for debounce
-        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${lease_id}/rooms/${room_type_id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/leases/${lease_id}/rooms/${room_type_id}?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({room_rent: "200"}),
@@ -62,13 +63,13 @@ describe("LeaseRoom", () => {
 
     it("updates room description when changed", async () => {
         render(<LeaseRoom lease_id={lease_id} room_type_id={room_type_id} room_rent={room_rent} room_desc={room_desc}
-                          canEdit={true}/>);
+                          canEdit={true} site={testSite}/>);
         const descInput = screen.getByLabelText("Room Description");
         await user.type(descInput, "new description", {initialSelectionStart: 0, initialSelectionEnd: 16});
         await user.tab();
         expect(descInput).toHaveValue("new description");
         await new Promise(resolve => setTimeout(resolve, 1500)); // wait for debounce
-        expect(fetchMock).toHaveBeenCalledWith(`/api/rooms/${room_type_id}`, {
+        expect(fetchMock).toHaveBeenCalledWith(`/api/rooms/${room_type_id}?site=${testSite}`, {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({room_desc: "new description"}),

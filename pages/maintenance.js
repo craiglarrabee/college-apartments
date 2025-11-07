@@ -8,7 +8,7 @@ import classNames from "classnames";
 import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {GetTenant} from "../lib/db/users/tenant";
-import {GetTenantUserLeases} from "../lib/db/users/userLease";
+import {GetMostRecentTenantApartment} from "../lib/db/users/userLease";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {isBot} from "../lib/bots";
@@ -42,7 +42,10 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number}) => {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
-                    name: tenant?.name,
+                    tenant_first_name: tenant?.first_name,
+                    tenant_last_name: tenant?.last_name,
+                    username: tenant?.username,
+                    email: tenant?.email,
                     apartment_number: apartment_number || data?.apartment_number?.trim() || "",
                     room: data?.room?.trim(),
                     request: data?.request?.trim()
@@ -84,9 +87,12 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number}) => {
                         )}
                         <Form onSubmit={handleSubmit(onSubmit)}>
                             <Row>
-                                <Form.Group as={Col} className="mb-3" controlId="name">
-                                    <Form.Label className="required">Name</Form.Label>
-                                    <Form.Control type="text" value={tenant?.name || ""} readOnly/>
+                                <Form.Group as={Col} className="mb-3" controlId="identity" style={{display: "none"}}>
+                                    {/* Hidden identity fields */}
+                                    <Form.Control type="hidden" value={tenant?.first_name || ""} {...register("tenant_first_name")} />
+                                    <Form.Control type="hidden" value={tenant?.last_name || ""} {...register("tenant_last_name")} />
+                                    <Form.Control type="hidden" value={tenant?.username || ""} {...register("username")} />
+                                    <Form.Control type="hidden" value={tenant?.email || ""} {...register("email")} />
                                 </Form.Group>
                                 <Form.Group as={Col} className="mb-3" controlId="apartment">
                                     <Form.Label className="required">Apartment Number</Form.Label>
@@ -158,7 +164,7 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number}) => {
                                 </Form.Group>
                             </Row>
                             <div style={{width: "100%"}} className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                                <Button variant="primary" disabled={!isDirty} type="submit" style={{margin: "5px"}}>Submit</Button>
+                                <Button variant="primary" disabled={!isValid} type="submit" style={{margin: "5px"}}>Submit</Button>
                             </div>
                         </Form>
                     </div>
@@ -179,16 +185,21 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
 
-    const [nav, tenant, leases] = await Promise.all([
+    const [nav, tenantFull, mostRecent] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(site, user.id),
-        GetTenantUserLeases(site, user.id)
+        GetMostRecentTenantApartment(site, user.id)
     ]);
 
-    let apartment_number = "";
-    try {
-        apartment_number = leases?.find(l => l.apartment_number)?.apartment_number || "";
-    } catch {}
+    const apartment_number = mostRecent?.apartment_number || "";
+
+    // Build a minimal tenant object from most recent lease info, fallback to full tenant if needed
+    const tenant = {
+        first_name: mostRecent?.first_name ?? tenantFull?.first_name ?? "",
+        last_name: mostRecent?.last_name ?? tenantFull?.last_name ?? "",
+        username: mostRecent?.username ?? tenantFull?.username ?? "",
+        email: mostRecent?.email ?? tenantFull?.email ?? ""
+    };
 
     return {
         props: {
@@ -196,7 +207,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             links: nav,
             isABot: isBot(context),
             user: {...user},
-            tenant: tenant,
+            tenant,
             apartment_number
         }
     };

@@ -70,7 +70,8 @@ const LeaseDefinitionGroup = ({
                 body: JSON.stringify(data),
             }
 
-            const resp = await fetch(`/api/leases/${id}?site=${site}`, options)
+            const url = `/api/leases/${id}?site=${site}`;
+            const resp = await fetch(url, options)
             switch (resp.status) {
                 case 400:
                     break;
