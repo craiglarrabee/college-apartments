@@ -11,13 +11,6 @@ const nextConfig = {
     serverExternalPackages: ['argon2'],
     // Enable source maps for debugging
     productionBrowserSourceMaps: false,
-    webpack: (config, { dev, isServer }) => {
-        if (dev && isServer) {
-            // Enable source maps for server-side code in development
-            config.devtool = 'eval-source-map';
-        }
-        return config;
-    },
 };
 const redirects = [
     {
