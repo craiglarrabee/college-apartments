@@ -4,12 +4,10 @@ import {GetUserAdminSites, GetUserAndVerifyPassword} from "../../lib/db/users/us
 import {GetTenantProcessedApplicationSites} from "../../lib/db/users/application";
 
 const login = withIronSessionApiRoute(async (req, res) => {
+    console.log("**********************************************************************",req);
     if (req.headers["user-agent"].toLowerCase().includes("bot") && req.headers["user-agent"] !== "Cubot") {
         res.status(403).send({});
-    }
-    const seededRandom = (seed) => {
-        const x = Math.sin(seed) * 10000;
-        return x - Math.floor(x);
+        return;
     }
 
     const generateRandomCode = (userId) => {
@@ -41,11 +39,11 @@ const login = withIronSessionApiRoute(async (req, res) => {
         };
         req.session.user = user;
         await req.session.save();
-        res.status(200);
-        res.json(user);
+        return res.status(200).json(user);
 
     } catch (e) {
-        res.status(401).send({});
+        console.error('Login error:', e);
+        return res.status(401).send({});
     }
 }, ironOptions);
 

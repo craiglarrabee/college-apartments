@@ -5,9 +5,10 @@ import {Alert, Button, Carousel, Form, Modal, Spinner, Image} from "react-bootst
 import {Trash} from "react-bootstrap-icons";
 import {useForm} from "react-hook-form";
 import FileResizer from "react-image-file-resizer";
-import Router from "next/router";
+import {useRouter} from "next/router";
 
 const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
+    const router = useRouter();
     images = images?.map(image => {
         return {name: image, value: restOfProps[image]}
     });
@@ -48,7 +49,7 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
 
     const handleCloseUploader = () => {
         setShowUploader(false);
-        Router.reload();
+        router.reload();
     }
 
     return (

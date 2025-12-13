@@ -1,11 +1,8 @@
 import {Alert, Button, Form, Modal} from "react-bootstrap";
-import React, {useMemo, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {Pencil} from "react-bootstrap-icons";
 import classNames from "classnames";
 import dynamic from "next/dynamic";
-
-const JoditEditor = dynamic(() => import("jodit-react"), {ssr: false});
-
 export const PageContent = ({site, page, name, canEdit, initialContent, ...restOfProps}) => {
     const [showEditor, setShowEditor] = useState(false);
     const [content, setContent] = useState(initialContent);
@@ -57,6 +54,8 @@ export const Editor = ({
                        }) => {
     const [content, setContent] = useState(initialContent);
     const [error, setError] = useState();
+    // Create the client-only dynamic import inside the component to avoid SSR evaluation
+    const JoditEditor = useMemo(() => dynamic(() => import("jodit-react"), { ssr: false }), []);
     const json = {
         site: site,
         page: page,

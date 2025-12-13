@@ -1,6 +1,6 @@
 import Layout from "../components/layout";
-import Navigation from "../components/navigation";
-import {isBot} from "../lib/bots";
+import dynamic from "next/dynamic";
+const Navigation = dynamic(() => import("../components/navigation"), { ssr: false });
 import Title from "../components/title";
 import Footer from "../components/footer";
 import React, {useState} from "react";
@@ -10,6 +10,7 @@ import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {useForm} from "react-hook-form";
+import {isBot} from "../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;

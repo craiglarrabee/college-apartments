@@ -1,5 +1,6 @@
 import Layout from "../../../../components/layout";
-import Navigation from "../../../../components/navigation";
+import dynamic from "next/dynamic";
+const Navigation = dynamic(() => import("../../../../components/navigation"), { ssr: false });
 import Title from "../../../../components/title";
 import Footer from "../../../../components/footer";
 import React, {useState} from "react";
@@ -11,9 +12,8 @@ import {Alert, Tab, Tabs} from "react-bootstrap";
 import {SignedLeaseList, WelcomedApplicationList} from "../../../../components/applicationList";
 import {GetUserLeases} from "../../../../lib/db/users/userLease";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
-import ReactDomServer from "react-dom/server";
+import { renderToString } from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
-import Router from "next/router";
 import {isBot} from "../../../../lib/bots";
 
 const SITE = process.env.SITE;
@@ -38,7 +38,7 @@ const Lease = ({site, isABot,  page, links, user, leaseId, leases, welcome_heade
                                             canEdit={false} company={`${company}, LLC`}
                                             site={site} page={page}
                                             semester={thisLease.semester1}></WelcomeEmailBody>;
-        const emailBodyString = ReactDomServer.renderToString(emailBody);
+        const emailBodyString = renderToString(emailBody);
         return emailBodyString;
     };
 

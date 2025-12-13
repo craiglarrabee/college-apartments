@@ -1,5 +1,6 @@
 import Layout from "../../../../components/layout";
-import Navigation from "../../../../components/navigation";
+import dynamic from "next/dynamic";
+const Navigation = dynamic(() => import("../../../../components/navigation"), { ssr: false });
 import Title from "../../../../components/title";
 import Footer from "../../../../components/footer";
 import React, {useState} from "react";
@@ -17,9 +18,8 @@ import {
 } from "../../../../components/applicationList";
 import {GetApplications} from "../../../../lib/db/users/application";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
-import ReactDomServer from "react-dom/server";
+import { renderToString } from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
-import Router from "next/router";
 import {isBot} from "../../../../lib/bots";
 import {DepositEmailBody} from "../../../../components/depositEmailBody";
 
@@ -99,7 +99,7 @@ const Applications = ({
                                             body={deposit_body}
                                             canEdit={false} company={`${company}, LLC`}
                                             site={site} page={page}></DepositEmailBody>;
-        const emailBodyString = ReactDomServer.renderToString(emailBody);
+        const emailBodyString = renderToString(emailBody);
         return emailBodyString;
     }
     const sendDepositEmail = async (emailAddress, emailBodyString) => {
@@ -143,7 +143,7 @@ const Applications = ({
                                             canEdit={false} company={`${company}, LLC`}
                                             site={site} page={page}
                                             semester={thisLease.semester1}></WelcomeEmailBody>;
-        const emailBodyString = ReactDomServer.renderToString(emailBody);
+        const emailBodyString = renderToString(emailBody);
         return emailBodyString;
     };
 

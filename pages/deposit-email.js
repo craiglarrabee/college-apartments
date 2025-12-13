@@ -1,5 +1,6 @@
 import Layout from "../components/layout";
-import Navigation from "../components/navigation";
+import dynamic from "next/dynamic";
+const Navigation = dynamic(() => import("../components/navigation"), { ssr: false });
 import {isBot} from "../lib/bots";
 import Title from "../components/title";
 import Footer from "../components/footer";
@@ -11,7 +12,7 @@ import {ironOptions} from "../lib/session/options";
 import {GetTenant} from "../lib/db/users/tenant";
 import {Button} from "react-bootstrap";
 import {DepositEmailBody} from "../components/depositEmailBody";
-import ReactDomServer from "react-dom/server";
+import { renderToString } from "react-dom/server";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -24,7 +25,7 @@ const Home = ({site, isABot,  page, header, body, links, canEdit, user, company,
     const emailBody = <DepositEmailBody tenant={tenant} header={header} body={body}
                                         canEdit={false} company={`${company}, LLC`}
                                         site={site} page={page} userId={user.id}> </DepositEmailBody>;
-    const emailBodyString = ReactDomServer.renderToString(emailBody);
+    const emailBodyString = renderToString(emailBody);
     const sendEmail = async () => {
 
         try {

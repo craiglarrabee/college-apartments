@@ -1,5 +1,6 @@
 import Layout from "../components/layout";
-import Navigation from "../components/navigation";
+import dynamic from "next/dynamic";
+const Navigation = dynamic(() => import("../components/navigation"), { ssr: false });
 import {isBot} from "../lib/bots";
 import Title from "../components/title";
 import Footer from "../components/footer";
@@ -181,12 +182,11 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                     }
                     <div className={classNames("main-content")}>
                         {site === "snow" &&
-                            <Alert>For those using a Credit Card or Debit Card to make online payments, a surcharge of
-                                2.25% will be added on to any such payment to partially offset the cost of processing
-                                fees charged by the Credit Card and Debit card processing companies. No such charge will
-                                be added to checks sent by mail or to Debit Cards processed in person at the
-                                Landlord&apos;s office on the office machine as such Debit Card transactions do not
-                                incur a processing fee. </Alert>
+                            <Alert>All payments made with a credit/debit card will be charged a 2.75% processing fee.
+                                To avoid any fees, you may make payments with cash or check. If you intend on mailing a
+                                check, please allow enough time for payment to arrive before the due date.
+                                Please feel free to contact the office if you have any questions or concerns.
+                            </Alert>
                         }
                         <Tabs defaultActiveKey={0}>
                             <Tab title="Make a payment" eventKey={0} key={0}>

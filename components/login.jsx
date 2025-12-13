@@ -2,11 +2,12 @@ import {Alert, Button, Form, Modal} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 import {useForm} from "react-hook-form";
-import Router from "next/router";
+import {useRouter} from "next/router";
 
 const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
     const [loginError, setLoginError] = useState(false);
     const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
+    const router = useRouter();
 
     const handleClose = () => {
         setLoginError(false);
@@ -40,11 +41,11 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
                     setLoginError(false);
                     setNewUser(await resp.json());
                     close();
-                    Router.reload();
+                    router.reload();
                     return;
                 case 403:
                     close();
-                    Router.reload();
+                    router.reload();
                 case 400:
                 default:
                     setLoginError(true);

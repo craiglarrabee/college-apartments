@@ -1,5 +1,6 @@
 import Layout from "../../../../components/layout";
-import Navigation from "../../../../components/navigation";
+import dynamic from "next/dynamic";
+const Navigation = dynamic(() => import("../../../../components/navigation"), { ssr: false });
 import Title from "../../../../components/title";
 import React, {useState} from "react";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
@@ -14,7 +15,6 @@ import classNames from "classnames";
 import {DndContext, DragOverlay} from "@dnd-kit/core";
 import {GetLocations, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/users/roomType";
 import RoomTypes from "../../../../components/roomTypes";
-import Router from "next/router";
 import {isBot} from "../../../../lib/bots";
 
 const SITE = process.env.SITE;

@@ -1,5 +1,6 @@
 import Layout from "../../../components/layout";
-import Navigation from "../../../components/navigation";
+import dynamic from "next/dynamic";
+const Navigation = dynamic(() => import("../../../components/navigation"), { ssr: false });
 import Title from "../../../components/title";
 import Footer from "../../../components/footer";
 import React, {useState} from "react";
@@ -16,7 +17,6 @@ import {GetLease} from "../../../lib/db/users/lease";
 import {GetLeaseRooms} from "../../../lib/db/users/roomType";
 import LeaseRoom from "../../../components/leaseRoom";
 import {GetUserLease} from "../../../lib/db/users/userLease";
-import Router from "next/router";
 import {isBot} from "../../../lib/bots";
 
 const SITE = process.env.SITE;

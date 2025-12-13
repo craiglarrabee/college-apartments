@@ -1,5 +1,6 @@
 import Layout from "../../components/layout";
-import Navigation from "../../components/navigation";
+import dynamic from "next/dynamic";
+const Navigation = dynamic(() => import("../../components/navigation"), { ssr: false });
 import Title from "../../components/title";
 import Footer from "../../components/footer";
 import React, {useEffect, useState} from "react";
