@@ -10,6 +10,7 @@ import {ironOptions} from "../lib/session/options";
 import classNames from "classnames";
 import {GetActiveSemesters, GetActiveSemesterTenants} from "../lib/db/users/userLease";
 import {CSVLink} from "react-csv";
+import {isBot} from "../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;

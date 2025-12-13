@@ -11,6 +11,7 @@ import {ironOptions} from "../lib/session/options";
 import {GetTenant} from "../lib/db/users/tenant";
 import {TenantForm} from "../components/tenantForm";
 import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
+import {isBot} from "../lib/bots";
 
 const SITE = process.env.SITE;
 

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import {useRouter} from "next/router";
 import {useEffect, useState} from "react";
 import classNames from "classnames";
 import {Button, Nav, Offcanvas} from "react-bootstrap";
@@ -7,6 +8,7 @@ import {List} from "react-bootstrap-icons";
 import {useWindowSize} from "../lib/window";
 
 const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
+    const router = useRouter();
     const [isClient, setIsClient] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [expandedParents, setExpandedParents] = useState(new Set());
@@ -34,7 +36,14 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
 
     const buildNavLink = (item, allLinks) => {
         if (item.target && isBot) return <></>;
-        const href = `${!item.target ? "/" : ""}${item.page}?site=${site}&t=${Date.now()}`;
+        const href = `${!item.target ? "/" : ""}${item.page}?site=${site}`;
+
+        const handleClick = (e) => {
+            if (!item.target) {
+                e.preventDefault();
+                window.location.href = href;
+            }
+        };
 
         if (item.sub_menu) {
             const children = buildNavLinks(allLinks, item.page);
@@ -64,8 +73,8 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
         return (
             <Nav.Item key={item.position}>
                 <Nav.Link
-                    as={Link}
                     href={href}
+                    onClick={handleClick}
                     target={item.target}
                     active={page === item.page}
                 >
@@ -144,7 +153,7 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
                 isOpen ? (
                     <aside
                         className={classNames("d-flex", "flex-column", "px-3", bg && `bg-${bg}`)}
-                        style={{width: sidebarWidth, minHeight: "100vh", position: "fixed", top: 0, left: 0, zIndex: 1054, paddingTop: 80, paddingBottom: 32}}
+                        style={{width: sidebarWidth, height: "100vh", position: "fixed", top: 0, left: 0, zIndex: 1054, paddingTop: 80, paddingBottom: 32, overflowY: "auto"}}
                     >
                         <div className="mb-3">
                             {brand}

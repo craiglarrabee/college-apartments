@@ -10,6 +10,7 @@ import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import PageContent from "../components/pageContent";
 import {Button} from "react-bootstrap";
+import {isBot} from "../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;

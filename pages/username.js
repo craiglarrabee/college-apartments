@@ -9,7 +9,7 @@ import {Alert, Button, Form} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {useForm} from "react-hook-form";
+import {isBot} from "../lib/bots";
 import UsernameForm from "../components/usernameForm";
 
 const SITE = process.env.SITE;

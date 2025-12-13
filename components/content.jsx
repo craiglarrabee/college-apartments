@@ -31,7 +31,7 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
                     "Content-Type": "application/json"
                 }
             }
-            const resp = await fetch(`/api/util/image?fileName=${fileName}&site=${site}&page=${page}`, options);
+            const resp = await fetch(`/api/util/image?fileName=${encodeURIComponent(fileName)}&site=${site}&page=${page}`, options);
             switch (resp.status) {
                 case 204:
                     setPageImages(pageImages.filter(image => image.name !== fileName));
@@ -84,7 +84,7 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
 
                                         image.name !== null ?
                                             <Image role="carousel-image"
-                                                   src={`/upload/images/${site}/${page}/${image.name}`} alt={image.name}/> :
+                                                   src={`/upload/images/${site}/${page}/${encodeURIComponent(image.name)}`} alt={image.name}/> :
                                             <></>
                                     }
                                     <Carousel.Caption>
@@ -159,7 +159,7 @@ function Uploader({handleClose, title, show, site, page}) {
                 },
                 body: uri || formData,
             }
-            const resp = await fetch(`/api/util/image?fileName=${fileName}&site=${site}&page=${page}`, options);
+            const resp = await fetch(`/api/util/image?fileName=${encodeURIComponent(fileName)}&site=${site}&page=${page}`, options);
             switch (resp.status) {
                 case 204:
                     setShowSpinner(false);

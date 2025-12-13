@@ -6,20 +6,20 @@ import {useState} from "react";
 
 const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogin = () => {}, ...restOfProps}) => {
     const [showLogin, setShowLogin] = useState(startWithLogin);
-    const [actionText, setActionText] = useState(initialUser.isLoggedIn ? "Sign out" : "Sign In");
+    const [actionText, setActionText] = useState(initialUser?.isLoggedIn ? "Sign out" : "Sign In");
     const [user, setUser] = useState(initialUser);
-    const [editSite, setEditSite] = useState(!!user.editSite);
+    const [editSite, setEditSite] = useState(!!user?.editSite);
 
     const setNewUser = (newUser) => {
         setUser(newUser);
-        setActionText(newUser.isLoggedIn ? "Sign out" : "Sign In");
-        if (newUser.isLoggedIn && postLogin) postLogin();
+        setActionText(newUser?.isLoggedIn ? "Sign out" : "Sign In");
+        if (newUser?.isLoggedIn && postLogin) postLogin();
     };
 
     const handleEditSite = async () => {
         const canEdit = !editSite;
         setEditSite(canEdit);
-        if (user.isLoggedIn) {
+        if (user?.isLoggedIn) {
             try {
                 const JSONdata = JSON.stringify({editSite: canEdit});
                 // API endpoint where we send form data.
@@ -45,7 +45,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
     }
 
     const handleManageApartment = async () => {
-        if (user.isLoggedIn) {
+        if (user?.isLoggedIn) {
             try {
                 const endpoint = `/api/manage?site=${site}`
                 const options = {
@@ -63,7 +63,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
     }
 
     const handleViewSite = async () => {
-        if (user.isLoggedIn) {
+        if (user?.isLoggedIn) {
             try {
                 const endpoint = `/api/view?site=${site}`
                 const options = {
@@ -85,7 +85,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
     }
 
     const handleUserAction = async (event) => {
-        if (user.isLoggedIn) {
+        if (user?.isLoggedIn) {
             await signOut(event);
             location = `/index?site=${site}`;
         } else {
@@ -118,26 +118,26 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
             <Navbar.Brand style={{width: "100%"}}>
                 <span className={classNames("d-inline-flex", "justify-content-end", "navbar-brand")}
                       style={{width: "100%"}}>
-                {user && user.isLoggedIn ?
-                    <Navbar.Text>{`Welcome ${user.firstName ? user.firstName : user.username}`}</Navbar.Text> :
+                {user?.isLoggedIn ?
+                    <Navbar.Text>{`Welcome ${user?.firstName ? user.firstName : user?.username}`}</Navbar.Text> :
                     <Navbar.Text style={{cursor: "pointer"}} onClick={handleUserAction}>{actionText}</Navbar.Text>
                 }
                     <Nav style={{paddingRight: "1.5rem"}} className={classNames("justify-content-end")}>
                         <NavDropdown align="end" style={{fontSize: "1rem"}}
                                      title={<Person className={classNames("h3")}/>}>
-                            {user.editSite || user.manageApartment ?
+                            {user?.editSite || user?.manageApartment ?
                                 <NavDropdown.Item onClick={handleViewSite}>View Site</NavDropdown.Item> : <></>}
-                            {user.admin && user.admin.includes(site) && !user.editSite ?
+                            {user?.admin && user?.admin.includes(site) && !user?.editSite ?
                                 <NavDropdown.Item onClick={handleEditSite}>Manage Site</NavDropdown.Item> : <></>}
-                            {user.manage && user.manage.includes(site) && !user.manageApartment ?
+                            {user?.manage && user?.manage.includes(site) && !user?.manageApartment ?
                                 <NavDropdown.Item onClick={handleManageApartment}>Manage
                                     Apartments</NavDropdown.Item> : <></>}
                             {!editSite ?
-                                <NavDropdown.Item href={`/tenants/${user.id}?site=${site}`} hidden={!user.isLoggedIn}>Manage
+                                <NavDropdown.Item href={`/tenants/${user?.id}?site=${site}`} hidden={!user?.isLoggedIn}>Manage
                                     Profile</NavDropdown.Item> : <></>}
-                            {!editSite ? <NavDropdown.Item href={`/username?site=${site}`} hidden={!user.isLoggedIn}>Change
+                            {!editSite ? <NavDropdown.Item href={`/username?site=${site}`} hidden={!user?.isLoggedIn}>Change
                                 Username</NavDropdown.Item> : <></>}
-                            {!editSite ? <NavDropdown.Item href={`/password?site=${site}`} hidden={!user.isLoggedIn}>Change
+                            {!editSite ? <NavDropdown.Item href={`/password?site=${site}`} hidden={!user?.isLoggedIn}>Change
                                 Password</NavDropdown.Item> : <></>}
                             <NavDropdown.Item onClick={handleUserAction}>{actionText}</NavDropdown.Item>
                         </NavDropdown>
