@@ -9,6 +9,7 @@ import {Button} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
+import {isBot} from "../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;

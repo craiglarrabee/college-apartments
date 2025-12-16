@@ -15,6 +15,7 @@ import ApplicationForm from "../../../../components/applicationForm";
 import {GetLeaseRoomsMap} from "../../../../lib/db/users/roomType";
 import {GetApplication} from "../../../../lib/db/users/application";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";
+import {isBot} from "../../../../lib/bots";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
