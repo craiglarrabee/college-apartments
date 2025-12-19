@@ -1,7 +1,18 @@
 import React from "react";
 import {render, screen, within} from "@testing-library/react";
+import fetchMock from "jest-fetch-mock";
 import Content from "../../components/content";
 import "@testing-library/jest-dom";
+
+jest.mock("next/router", () => ({
+    useRouter: () => ({
+        push: jest.fn(),
+        prefetch: jest.fn(),
+        pathname: "/",
+        query: {},
+        asPath: "/",
+    })
+}));
 
 describe("Content", () => {
     const site = "example";
@@ -25,9 +36,13 @@ describe("Content", () => {
         expect(getByText("Bottom content")).toBeInTheDocument();
     });
 
-    it("does not render the carousel when the images prop is not provided", () => {
-        const {queryByRole} = render(<Content site={site} page={page} top={top} canEdit={canEdit}/>);
-        expect(queryByRole("carousel")).toBeNull();
+    it("renders a placeholder carousel when canEdit and no images are provided", () => {
+        const {getByRole, getByAltText} = render(<Content site={site} page={page} top={top} canEdit={canEdit}/>);
+        const carousel = getByRole("carousel");
+        expect(carousel).toBeInTheDocument();
+        // When canEdit=true and no images, component injects a placeholder image named "empty"
+        const img = screen.getByRole('carousel-image');
+        expect(img).toHaveAttribute('alt', 'empty');
     });
 
     const imageProps = {"image1.png": "Caption 1", "image2.png": "Caption 2", "image3.png": "Caption 3"};

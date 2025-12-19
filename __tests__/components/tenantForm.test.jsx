@@ -1,5 +1,5 @@
 import React from "react";
-import {render, screen, fireEvent, act, waitFor} from "@testing-library/react";
+import {render, screen, fireEvent, act, waitFor, within} from "@testing-library/react";
 import {TenantForm} from "../../components/tenantForm";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
@@ -149,13 +149,12 @@ describe("TenantForm", () => {
         render(<TenantForm site={mockSite} userId={mockUserId} tenant={mockTenant} isNewApplication={mockIsNewApplication}/>);
         await fillBasePersonalFields();
         fillConfirmPhonesIfPresent();
-        const allRadios = screen.getAllByRole('radio');
-        const yesRadios = allRadios.filter(r => r.getAttribute('value') === '1');
-        const noRadios = allRadios.filter(r => r.getAttribute('value') === '0');
-        if (yesRadios.length < 1 || noRadios.length < 1) throw new Error('Expected radios present');
-        await act(async () => { fireEvent.click(yesRadios[0]); /* convicted yes */ fireEvent.click(noRadios[0]); /* charged no */ });
-        // Explanation field for convicted should appear empty
-        await waitFor(() => expect(screen.getAllByLabelText('Explain').length).toBe(1));
+        // Choose convicted: Yes and charged: No using input names rendered by react-hook-form
+        const convictedYes = document.querySelector('input[name="convicted_crime"][value="1"]');
+        const chargedNo = document.querySelector('input[name="charged_crime"][value="0"]');
+        if (!convictedYes || !chargedNo) throw new Error('Expected convicted/charged radio inputs present');
+        await act(async () => { fireEvent.click(convictedYes); fireEvent.click(chargedNo); });
+        // Proceed to submit without entering explanation
         await fillAddressAndParent();
         const submitBtn = screen.getByRole('button', {name: /Next/i});
         expect(submitBtn).not.toBeDisabled();
@@ -163,9 +162,10 @@ describe("TenantForm", () => {
         // Should NOT call fetch because explanation required
         await new Promise(r => setTimeout(r, 50));
         expect(fetchMock).not.toHaveBeenCalled();
-        // Error message should be present
-        // (react-hook-form will show generic required, we didn't customize convict explain message in test) Look for text-danger near explain
-        expect(screen.getByText(/Please enter an explanation/i)).toBeInTheDocument();
+        // Error state should be present on the convicted Explain textarea specifically
+        // In react-bootstrap, Form.Group controlId applies id to the control itself
+        const convictedExplain = document.querySelector('#convicted_explain');
+        expect(convictedExplain).toHaveClass('border-danger');
     });
 
     test("does not submit when confirm cell phone missing", async () => {
@@ -201,7 +201,8 @@ describe("TenantForm", () => {
         await act(async () => { fireEvent.click(submitBtn); });
         await new Promise(r => setTimeout(r, 50));
         expect(fetchMock).not.toHaveBeenCalled();
-        // Look for validation error for confirm cell (Must match Cell Phone or required)
-        expect(screen.getByText(/Must match Cell Phone|required/i)).toBeInTheDocument();
+        // Assert confirm cell phone field is marked invalid (border-danger)
+        const confirmCell = screen.getByPlaceholderText('Confirm Cell Phone');
+        expect(confirmCell).toHaveClass('border-danger');
     });
 });

@@ -1,9 +1,19 @@
 import React from "react";
-import {render} from "@testing-library/react";
+import {render, screen} from "@testing-library/react";
 import fetchMock from "jest-fetch-mock";
 import Title from "../../components/title";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
+
+jest.mock("next/router", () => ({
+    useRouter: () => ({
+        push: jest.fn(),
+        prefetch: jest.fn(),
+        pathname: "/",
+        query: {},
+        asPath: "/",
+    })
+}));
 
 let user;
 describe("Title component (site param propagation)", () => {

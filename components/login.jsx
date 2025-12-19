@@ -6,7 +6,7 @@ import {useRouter} from "next/router";
 
 const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
     const [loginError, setLoginError] = useState(false);
-    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
+    const {register, handleSubmit, formState: {isValid, isDirty}} = useForm({mode: "onChange"});
     const router = useRouter();
 
     const handleClose = () => {
@@ -18,44 +18,35 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
         event.preventDefault();
 
         try {
-            // Get data from the form.
-            data.site = site;
-
-            // Send the data to the server in JSON format.
-            const JSONdata = JSON.stringify(data)
-
-            // Form the request for sending data to the server.
-            const options = {
-                // The method is POST because we are sending data.
+            const payload = JSON.stringify({...data, site});
+            const resp = await fetch(`/api/login?site=${site}`, {
                 method: "POST",
-                // Tell the server we're sending JSON.
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                // Body of the request is the JSON data we created above.
-                body: JSONdata,
-            }
-            const resp = await fetch(`/api/login?site=${site}`, options);
-            switch (resp.status) {
-                case 200:
-                    setLoginError(false);
-                    setNewUser(await resp.json());
-                    close();
-                    router.reload();
-                    return;
-                case 403:
-                    close();
-                    router.reload();
-                case 400:
-                default:
-                    setLoginError(true);
-                    break;
+                headers: {"Content-Type": "application/json"},
+                body: payload,
+            });
+
+            if (!resp.ok) {
+                setLoginError(true);
+                return;
             }
 
+            const userPayload = await resp.json();
+            setLoginError(false);  // Clear error only on success
+            setNewUser(userPayload);
+            close();
+            router.reload();
         } catch (e) {
-            console.error(`${new Date().toISOString()} -` , e);
+            console.error(`${new Date().toISOString()} -`, e);
+            setLoginError(true);
         }
     };
+
+    // Effect to log when loginError changes
+    React.useEffect(() => {
+        console.log('loginError changed to:', loginError);
+    }, [loginError]);
+
+    console.log('Login render - loginError:', loginError, 'show:', show);
 
     return (
         <Modal show={show}
@@ -69,7 +60,7 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
             </Modal.Header>
 
             <Modal.Body>
-                {loginError && <Alert variant="danger">Incorrect username or password.</Alert>}
+                {loginError && <Alert data-testid="login-error" variant="danger">Incorrect username or password.</Alert>}
                 <Form onSubmit={handleSubmit(onSubmit)} method="post">
                     <Form.Group className="mb-3" controlId="username">
                         <Form.Label visuallyHidden={true}>Username</Form.Label>

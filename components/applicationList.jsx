@@ -2,7 +2,6 @@ import {Button, Col, Form, Row, Table} from "react-bootstrap";
 import {useForm} from "react-hook-form";
 import React, {useEffect, useState} from "react";
 import classNames from "classnames";
-import welcome from "../pages/welcome";
 
 
 export const UnprocessedApplicationList = ({

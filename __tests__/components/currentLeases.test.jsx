@@ -5,16 +5,11 @@ import "@testing-library/jest-dom";
 describe("CurrentLeases component", () => {
     const mockRooms = [
         {
-            room_type_id: 1,
-            room_desc: "Room 1",
-            room_rent: 100,
-            lease_id: 1,
-        },
-        {
-            room_type_id: 2,
-            room_desc: "Room 2",
-            room_rent: 200,
-            lease_id: 1,
+            leaseId: 1,
+            rooms: [
+                {room_type_id: 101, room_desc: "Private"},
+                {room_type_id: 102, room_desc: "Shared"},
+            ],
         },
     ];
     const mockRegister = jest.fn();
@@ -26,24 +21,24 @@ describe("CurrentLeases component", () => {
     });
 
     test("renders correct number of room options", () => {
-        render(<CurrentLeases register={mockRegister} rooms={mockRooms}/>);
+        render(<CurrentLeases canChangeApplication={true} leaseId={mockRooms[0].leaseId} register={mockRegister} rooms={mockRooms[0].rooms}/>);
         const roomOptions = screen.getAllByRole("radio");
-        expect(roomOptions).toHaveLength(mockRooms.length);
+        expect(roomOptions).toHaveLength(mockRooms[0].rooms.length);
     });
 
     test("calls register with correct arguments for each room option", () => {
-        render(<CurrentLeases register={mockRegister} rooms={mockRooms}/>);
-        mockRooms.forEach((room) => {
-            expect(mockRegister).toHaveBeenCalledWith("lease_room_type_id", {
-                required: "Please select a Room Type above.",
+        const mockRegister = jest.fn();
+        render(<CurrentLeases canChangeApplication={true} leaseId={mockRooms[0].leaseId} register={mockRegister} rooms={mockRooms[0].rooms}/>);
+        mockRooms[0].rooms.forEach(() => {
+            expect(mockRegister).toHaveBeenCalledWith(`lease_${mockRooms[0].leaseId}_room_type_id`, {
                 setValueAs: expect.any(Function),
             });
         });
     });
 
     test("selects a room option when clicked", () => {
-        render(<CurrentLeases register={mockRegister} rooms={mockRooms}/>);
-        const roomOption = screen.getByLabelText(/\$100\/sem - Room 1/i);
+        render(<CurrentLeases canChangeApplication={true} leaseId={mockRooms[0].leaseId} register={mockRegister} rooms={mockRooms[0].rooms}/>);
+        const roomOption = screen.getByLabelText(/Private/i);
         fireEvent.click(roomOption);
         expect(roomOption).toBeChecked();
     });

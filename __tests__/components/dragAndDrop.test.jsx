@@ -4,7 +4,7 @@ import {Apartment, UnassignedTenants, Tenant, TenantCard} from "../../components
 import "@testing-library/jest-dom";
 
 describe("Apartment", () => {
-    const mockId = "101";
+    const mockId = "apt-101";
     const mockData = {spots: 2};
     const mockTenants = [
         {user_id: 1, spots: 1},
@@ -12,9 +12,16 @@ describe("Apartment", () => {
     ];
 
     test("renders Apartment component", () => {
+        const apartmentProps = {
+            apartmentNumber: "101",
+            id: mockId,
+            data: mockData,
+            tenants: mockTenants,
+            roomType: "Deluxe",
+        };
         render(
-            <Apartment id={mockId} data={mockData} tenants={mockTenants}>
-                <div>Apartment Content</div>
+            <Apartment {...apartmentProps}>
+                Apartment Content
             </Apartment>
         );
 

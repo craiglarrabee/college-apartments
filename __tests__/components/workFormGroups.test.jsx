@@ -1,5 +1,5 @@
 import React from "react";
-import {act, render, screen, waitFor} from "@testing-library/react";
+import {render, screen, waitFor} from "@testing-library/react";
 import WorkFormGroups from "../../components/workFormGroups";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
@@ -20,7 +20,7 @@ describe("WorkFormGroups", () => {
         const yesButton = buttons.find(button => button.id === "maint_work_true");
 
         await waitFor(() => expect(queryByLabelText("Maintenance Experience")).toBeNull());
-        await act(() => user.click(yesButton));
+        await user.click(yesButton);
         await waitFor(() => expect(queryByLabelText("Maintenance Experience")).toBeInTheDocument());
     });
 
@@ -30,9 +30,9 @@ describe("WorkFormGroups", () => {
         const noButton = buttons.find(button => button.id === "maint_work_false");
         const yesButton = buttons.find(button => button.id === "maint_work_true");
 
-        await act(() => user.click(yesButton));
+        await user.click(yesButton);
         await waitFor(() => expect(queryByLabelText("Maintenance Experience")).toBeInTheDocument());
-        await act(() => user.click(noButton));
+        await user.click(noButton);
         await waitFor(() => expect(queryByLabelText("Maintenance Experience")).toBeNull());
     });
 

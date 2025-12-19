@@ -1,20 +1,21 @@
-import {render, screen, fireEvent, act, waitFor} from "@testing-library/react";
+import {render, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 
-import ApplicationForm from "../../components/applicationForm";
 import {ProcessedApplicationList, UnprocessedApplicationList} from "../../components/applicationList";
 
 const users = [
     {
         name: "user1",
         user_id: 1,
-        submit_date: "Dec 7, 1944"
+        submit_date: "Dec 7, 1944",
+        room_type_id: 10,
     },
     {
         name: "user2",
         user_id: 2,
-        submit_date: "Sep 11, 2001"
+        submit_date: "Sep 11, 2001",
+        room_type_id: 20,
     }
 ];
 const leaseId = 1;
@@ -53,9 +54,9 @@ describe("UnprocessedApplicationList component", () => {
         const delFn = jest.fn();
         const {getByText} = render(<UnprocessedApplicationList data={[users[0]]} handleDelete={delFn} site={site}
                                                                page={page} leaseId={leaseId}/>);
-        await act(() => user.click(getByText("Delete")));
+        await user.click(getByText("Delete"));
         await waitFor(() => {
-            expect(delFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId)
+            expect(delFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId, users[0].room_type_id)
         });
     });
 
@@ -63,7 +64,7 @@ describe("UnprocessedApplicationList component", () => {
         const procFn = jest.fn();
         const {getByText} = render(<UnprocessedApplicationList data={[users[0]]} handleProcess={procFn} site={site}
                                                                page={page} leaseId={leaseId}/>);
-        await act(() => user.click(getByText("Process")));
+        await user.click(getByText("Process"));
         await waitFor(() => {
             expect(procFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId, true)
         });
@@ -73,7 +74,10 @@ describe("UnprocessedApplicationList component", () => {
         const {getByText} = render(<UnprocessedApplicationList data={[users[0]]} site={site} page={page}
                                                                leaseId={leaseId}/>);
         const url = getByText(users[0].name).href;
-        expect(url.endsWith(`${page}/${users[0].user_id}?site=${site}`)).toBe(true);
+        const parsed = new URL(url);
+        expect(parsed.pathname).toBe(`/${page}/${users[0].user_id}`);
+        expect(parsed.searchParams.get('site')).toBe(site);
+        expect(parsed.searchParams.get('roomTypeId')).toBe(String(users[0].room_type_id));
     });
 });
 describe("ProcessedApplicationList component", () => {
@@ -106,9 +110,9 @@ describe("ProcessedApplicationList component", () => {
         const delFn = jest.fn();
         const {getByText} = render(<ProcessedApplicationList data={[users[0]]} handleDelete={delFn} site={site}
                                                              page={page} leaseId={leaseId}/>);
-        await act(() => user.click(getByText("Delete")));
+        await user.click(getByText("Delete"));
         await waitFor(() => {
-            expect(delFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId)
+            expect(delFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId, users[0].room_type_id)
         });
     });
 
@@ -116,7 +120,7 @@ describe("ProcessedApplicationList component", () => {
         const depFn = jest.fn();
         const {getByText} = render(<ProcessedApplicationList data={[users[0]]} handleDeposit={depFn} site={site}
                                                              page={page} leaseId={leaseId}/>);
-        await act(() => user.click(getByText("Deposit")));
+        await user.click(getByText("Deposit"));
         await waitFor(() => {
             expect(depFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId)
         });
@@ -126,7 +130,7 @@ describe("ProcessedApplicationList component", () => {
         const unprocFn = jest.fn();
         const {getByText} = render(<ProcessedApplicationList data={[users[0]]} handleProcess={unprocFn} site={site}
                                                              page={page} leaseId={leaseId}/>);
-        await act(() => user.click(getByText("Unprocess")));
+        await user.click(getByText("Unprocess"));
         await waitFor(() => {
             expect(unprocFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId, false)
         });
@@ -136,6 +140,9 @@ describe("ProcessedApplicationList component", () => {
         const {getByText} = render(<ProcessedApplicationList data={[users[0]]} site={site} page={page}
                                                              leaseId={leaseId}/>);
         const url = getByText(users[0].name).href;
-        expect(url.endsWith(`${page}/${users[0].user_id}?site=${site}`)).toBe(true);
+        const parsed = new URL(url);
+        expect(parsed.pathname).toBe(`/${page}/${users[0].user_id}`);
+        expect(parsed.searchParams.get('site')).toBe(site);
+        expect(parsed.searchParams.get('roomTypeId')).toBe(String(users[0].room_type_id));
     });
 });
