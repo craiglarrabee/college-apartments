@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 const Navigation = dynamic(() => import("../../../../components/navigation"), { ssr: false });
 import Title from "../../../../components/title";
 import Footer from "../../../../components/footer";
-import React from "react";
+import React, {useRef} from "react";
 import classNames from "classnames";
 import {Button, Tab, Tabs} from "react-bootstrap";
 import {GetNavLinks} from "../../../../lib/db/content/navLinks";
@@ -38,6 +38,75 @@ const Home = ({
                   body,
                   ...restOfProps
               }) => {
+    const printRef = useRef(null);
+
+    const handlePrint = () => {
+        if (!printRef.current) return;
+        const cloned = printRef.current.cloneNode(true);
+
+        const replaceInputs = (root) => {
+            const inputs = root.querySelectorAll('input, textarea, select');
+            inputs.forEach(inp => {
+                let text = '';
+                if (inp.tagName.toLowerCase() === 'select') {
+                    const sel = inp;
+                    const opt = sel.options[sel.selectedIndex];
+                    text = opt ? opt.text : '';
+                } else if (inp.type === 'checkbox' || inp.type === 'radio') {
+                    text = inp.checked ? (inp.getAttribute('data-true-text') || 'Yes') : (inp.getAttribute('data-false-text') || 'No');
+                } else {
+                    text = inp.value || inp.getAttribute('value') || '';
+                }
+                const span = document.createElement('div');
+                span.textContent = text;
+                span.style.whiteSpace = 'pre-wrap';
+                inp.parentNode && inp.parentNode.replaceChild(span, inp);
+            });
+        };
+
+        replaceInputs(cloned);
+
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('Unable to open print window. Please allow popups or use your browser print.');
+            return;
+        }
+
+        const doc = printWindow.document;
+        doc.open();
+        doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Application Print</title>');
+
+        const styleNodes = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
+        styleNodes.forEach(node => {
+            try { doc.write(node.outerHTML); } catch(e) {}
+        });
+        doc.write('<style>body{background:#fff;padding:20px;color:#000} @media print { a, button { display: none !important } }</style>');
+        doc.write('</head><body>');
+        doc.write(cloned.outerHTML);
+        doc.write('</body></html>');
+        doc.close();
+
+        const closePrintWindow = () => { try { printWindow.close(); } catch(e) {} };
+        try {
+            if ('onafterprint' in printWindow) {
+                printWindow.onafterprint = () => { closePrintWindow(); };
+            } else if (printWindow.matchMedia) {
+                try {
+                    const mql = printWindow.matchMedia('print');
+                    const listener = (m) => {
+                        if (!m.matches) {
+                            closePrintWindow();
+                            try { mql.removeEventListener('change', listener); } catch(e){}
+                        }
+                    };
+                    if (mql.addEventListener) mql.addEventListener('change', listener);
+                    else if (mql.addListener) mql.addListener(listener);
+                } catch(e) {}
+            }
+            printWindow.focus();
+            setTimeout(() => { try { printWindow.print(); } catch(e) { console.error('Print failed', e); } setTimeout(closePrintWindow, 1500); }, 500);
+        } catch(e) { console.error('Print window handling failed', e); }
+    };
 
     return (
         <Layout site={site} user={user}>
@@ -56,14 +125,15 @@ const Home = ({
                                                  roomTypeId={tenant.room_type_id} emailAddress={tenant.email} company={company} body={body} />
                             </Tab>
                             <Tab title="Printable" eventKey={3} key={3}>
-                                <TenantForm tenant={tenant} site={site} userId={userId} leaseId={leaseId}
-                                            hideButton={true}/>
-                                <ApplicationForm {...content} printing={true} application={application} site={site}
-                                                 userId={userId} leaseId={leaseId} navPage={navPage}
-                                                 currentLeases={currentLeases} roomTypeId={tenant.room_type_id}/>
-                                <div style={{width: "100%"}}
-                                     className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                                    <Button onClick={() => window.print()}>Print</Button>
+                                <div style={{display: 'flex', justifyContent: 'flex-end'}} className="mb-2">
+                                    <Button variant="primary" onClick={handlePrint}>Print</Button>
+                                </div>
+                                <div ref={printRef}>
+                                    <TenantForm tenant={tenant} site={site} userId={userId} leaseId={leaseId}
+                                                hideButton={true}/>
+                                    <ApplicationForm {...content} printing={true} application={application} site={site}
+                                                     userId={userId} leaseId={leaseId} navPage={navPage}
+                                                     currentLeases={currentLeases} roomTypeId={tenant.room_type_id}/>
                                 </div>
                             </Tab>
                         </Tabs>
