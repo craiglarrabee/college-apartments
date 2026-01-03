@@ -20,7 +20,8 @@ const brandUrl = process.env.BRAND_URL;
 
 
 const Leases = ({site, isABot,  links, page, user, leases, ...restOfProps}) => {
-    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm();
+    // validate on change so `isValid` updates as the user types/selections
+    const {register, formState: {isValid, isDirty, errors}, handleSubmit} = useForm({mode: "onChange"});
 
     const createLease = async (data, event) => {
         event.preventDefault();
@@ -48,9 +49,9 @@ const Leases = ({site, isABot,  links, page, user, leases, ...restOfProps}) => {
     }
 
     return (
-        <Layout site={site} user={user}>
+        <Layout site={site} user={user} wide={true}>
             <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <div style={{display: "flex", flexDirection: "column"}}>
+            <div style={{display: "flex", flexDirection: "column", width: "1200px", margin: "0 auto"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
                     <div className={classNames("main-content")}>

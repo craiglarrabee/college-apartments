@@ -44,27 +44,55 @@ const Home = ({
         if (!printRef.current) return;
         const cloned = printRef.current.cloneNode(true);
 
-        const replaceInputs = (root) => {
-            const inputs = root.querySelectorAll('input, textarea, select');
-            inputs.forEach(inp => {
-                let text = '';
-                if (inp.tagName.toLowerCase() === 'select') {
-                    const sel = inp;
-                    const opt = sel.options[sel.selectedIndex];
-                    text = opt ? opt.text : '';
-                } else if (inp.type === 'checkbox' || inp.type === 'radio') {
-                    text = inp.checked ? (inp.getAttribute('data-true-text') || 'Yes') : (inp.getAttribute('data-false-text') || 'No');
-                } else {
-                    text = inp.value || inp.getAttribute('value') || '';
+        // Copy current form state from the live DOM into the cloned DOM so checked radios/checkboxes
+        // and selected options are preserved in the print HTML. We pair source and cloned elements
+        // by their order in the DOM for simplicity (the cloned structure mirrors the source).
+        const syncFormState = (sourceRoot, clonedRoot) => {
+            const sourceEls = Array.from(sourceRoot.querySelectorAll('input, textarea, select'));
+            const clonedEls = Array.from(clonedRoot.querySelectorAll('input, textarea, select'));
+            const len = Math.min(sourceEls.length, clonedEls.length);
+            for (let i = 0; i < len; i++) {
+                const src = sourceEls[i];
+                const dst = clonedEls[i];
+                const tag = dst.tagName.toLowerCase();
+                const type = dst.type;
+                try {
+                    if (tag === 'input') {
+                        if (type === 'checkbox' || type === 'radio') {
+                            // set both attribute and property so native input visuals reflect state
+                            if (src.checked) {
+                                dst.setAttribute('checked', 'checked');
+                                try { dst.checked = true; dst.defaultChecked = true; } catch(e){}
+                            } else {
+                                dst.removeAttribute('checked');
+                                try { dst.checked = false; dst.defaultChecked = false; } catch(e){}
+                            }
+                        } else {
+                            // reflect value both as property and attribute
+                            try { dst.value = src.value || ''; } catch(e){}
+                            try { dst.setAttribute('value', src.value || ''); } catch(e){}
+                        }
+                    } else if (tag === 'textarea') {
+                        try { dst.value = src.value || src.textContent || ''; } catch(e){}
+                        try { dst.textContent = src.value || src.textContent || ''; } catch(e){}
+                    } else if (tag === 'select') {
+                        try { dst.selectedIndex = src.selectedIndex; } catch(e){}
+                        Array.from(dst.options).forEach(opt => opt.removeAttribute('selected'));
+                        if (src.selectedIndex >= 0 && dst.options[src.selectedIndex]) {
+                            dst.options[src.selectedIndex].setAttribute('selected', 'selected');
+                        }
+                    }
+                } catch (e) {
+                    // ignore per-element failures
                 }
-                const span = document.createElement('div');
-                span.textContent = text;
-                span.style.whiteSpace = 'pre-wrap';
-                inp.parentNode && inp.parentNode.replaceChild(span, inp);
-            });
+            }
         };
 
-        replaceInputs(cloned);
+        syncFormState(printRef.current, cloned);
+
+        // Keep the printable tab layout as-is; do not replace other inputs. Instead we'll inject
+        // print-specific CSS into the print window so form controls and user-entered values
+        // keep visible borders/padding when printed. This preserves the on-screen formatting.
 
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
@@ -74,13 +102,55 @@ const Home = ({
 
         const doc = printWindow.document;
         doc.open();
-        doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Application Print</title>');
+        // include lang for accessibility
+        doc.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Application Print</title>');
 
         const styleNodes = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
         styleNodes.forEach(node => {
             try { doc.write(node.outerHTML); } catch(e) {}
         });
-        doc.write('<style>body{background:#fff;padding:20px;color:#000} @media print { a, button { display: none !important } }</style>');
+        // Include print-specific styles so form controls keep visible borders/padding when printed
+        // Also include styles for the replaced radio visuals so they are visible immediately in the
+        // print window as well as in the print preview.
+        doc.write(`<style>
+          body{background:#fff;padding:20px;color:#000}
+          /* Styles for replaced radio spans inserted into the cloned DOM (visible on-screen in the print window) */
+          .print-radio {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            margin-right: 0.25rem;
+            vertical-align: middle;
+            border: 1px solid #000;
+            border-radius: 50%;
+            background: transparent;
+          }
+          .print-radio.checked {
+            background-image: radial-gradient(circle at center, #000 45%, transparent 46%);
+          }
+          /* Make form controls visibly boxed in print while preserving layout */
+          @media print {
+            a, button { display: none !important; }
+            input[type="text"], input[type="email"], input[type="tel"], input[type="number"],
+            input[type="search"], input:not([type]), textarea, select, .form-control {
+              border: 1px solid #000 !important;
+              padding: 0.15rem 0.4rem !important;
+              display: inline-block !important;
+              white-space: pre-wrap !important;
+              background: transparent !important;
+              color: #000 !important;
+            }
+            textarea { white-space: pre-wrap !important; }
+
+            /* For print, use native radio/checkbox visuals but scale them slightly so selection is clear */
+            input[type="checkbox"], input[type="radio"] {
+              transform: scale(1.15) !important;
+              margin: 0 0.25rem 0 0 !important;
+              vertical-align: middle !important;
+              -webkit-print-color-adjust: exact;
+            }
+          }
+        </style>`);
         doc.write('</head><body>');
         doc.write(cloned.outerHTML);
         doc.write('</body></html>');
