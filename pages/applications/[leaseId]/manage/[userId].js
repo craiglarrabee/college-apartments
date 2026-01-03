@@ -35,8 +35,7 @@ const Home = ({
                   leaseId,
                   content,
                   company,
-                  body,
-                  ...restOfProps
+                  body
               }) => {
     const printRef = useRef(null);
 
@@ -113,7 +112,14 @@ const Home = ({
         // Also include styles for the replaced radio visuals so they are visible immediately in the
         // print window as well as in the print preview.
         doc.write(`<style>
-          body{background:#fff;padding:20px;color:#000}
+          /* Try to force zero page margins in the print preview/print output. Note: some
+             browsers or printer drivers may still apply user-set or minimum physical margins
+             that can't be overridden. */
+          @page { size: auto; margin: 0 !important; }
+
+          /* Reset page/body margin/padding so content can extend to the paper edge */
+          html, body { margin: 0 !important; padding: 0 !important; background: #fff; color: #000; }
+
           /* Styles for replaced radio spans inserted into the cloned DOM (visible on-screen in the print window) */
           .print-radio {
             display: inline-block;
@@ -130,7 +136,15 @@ const Home = ({
           }
           /* Make form controls visibly boxed in print while preserving layout */
           @media print {
+            /* Ensure no browser chrome buttons or links print */
             a, button { display: none !important; }
+
+            /* Remove default page margins when printing; many browsers respect @page, but
+               some may enforce minimum non-zero margins via user settings or printer drivers. */
+            @page { margin: 0; }
+
+            body { margin: 0 !important; padding: 0 !important; }
+
             input[type="text"], input[type="email"], input[type="tel"], input[type="number"],
             input[type="search"], input:not([type]), textarea, select, .form-control {
               border: 1px solid #000 !important;
@@ -149,6 +163,10 @@ const Home = ({
               vertical-align: middle !important;
               -webkit-print-color-adjust: exact;
             }
+
+            /* Try to avoid any page-breaks that leave unexpected whitespace at top/bottom */
+            * { -webkit-print-color-adjust: exact; box-sizing: border-box; }
+            img { max-width: 100% !important; height: auto !important; }
           }
         </style>`);
         doc.write('</head><body>');
@@ -249,7 +267,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
 
     contentRows.forEach(row => content[row.name] = row.content);
-    const emailContent = [];
+    const emailContent = {};
     emailContentRows.forEach(row => emailContent[row.name] = row.content);
     if (application) {
         application.lease_room_type_id = `${application.lease_id}_${application.room_type_id}`;
