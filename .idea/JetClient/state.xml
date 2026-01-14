@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JetClientState">
+    <option name="draftsState">
+      <draftsState>
+        <option name="requests">
+          <list>
+            <requestState>
+              <option name="body">
+                <bodyState>
+                  <option name="raw" value="{&#10;  &quot;location&quot;: &quot;TEST&quot;,&#10;  &quot;squareSourceId&quot;: &quot;cnon:card-nonce-ok&quot;,&#10;  &quot;first_name&quot;: &quot;John&quot;,&#10;  &quot;last_name&quot;: &quot;Doe&quot;,&#10;  &quot;email&quot;: &quot;john.doe@example.com&quot;,&#10;  &quot;street&quot;: &quot;123 Main St&quot;,&#10;  &quot;city&quot;: &quot;Anytown&quot;,&#10;  &quot;state&quot;: &quot;UT&quot;,&#10;  &quot;zip&quot;: &quot;11111&quot;,&#10;  &quot;items&quot;: [&#10;    {&#10;      &quot;description&quot;: &quot;January Rent&quot;,&#10;      &quot;unitPrice&quot;: 25.00&#10;    }&#10;  ],&#10;  &quot;total&quot;: 25.00,&#10;  &quot;tenantFirstName&quot;: &quot;Student&quot;,&#10;  &quot;tenantLastName&quot;: &quot;Name&quot;&#10;}" />
+                  <option name="type" value="JSON" />
+                </bodyState>
+              </option>
+              <option name="id" value="4ad6334a-fa91-4ae1-8b87-3553187b9de3" />
+              <option name="method" value="POST" />
+              <option name="name" value="Draft" />
+              <option name="url" value="http://localhost:3000/api/dev/square-test" />
+            </requestState>
+          </list>
+        </option>
+      </draftsState>
+    </option>
     <option name="id" value="aac02d06-e185-4623-b352-1b2622949999" />
+    <option name="version" value="6" />
   </component>
 </project>

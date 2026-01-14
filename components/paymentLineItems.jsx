@@ -63,7 +63,7 @@ export const PaymentLineItems = ({
 
     const getSurcharge = (amt) => {
         if (site === "snow") {
-            return Math.round(amt * 2.25) / 100;
+            return Math.round(amt * 2.75) / 100;
         }
         return 0;
     };

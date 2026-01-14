@@ -21,9 +21,9 @@ import AcknowledgePaymentModal from "../components/acknowledgePaymentModal";
 import {PaymentLineItems} from "../components/paymentLineItems";
 
 const SITE = process.env.SITE;
-const bg = process.env.BG;
-const variant = process.env.VARIANT;
-const brandUrl = process.env.BRAND_URL;
+const bg = process.env.BG || 'light';
+const variant = process.env.VARIANT || 'light';
+const brandUrl = process.env.BRAND_URL || 'http://www.utahcollegeapartments.com';
 
 
 const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
@@ -49,6 +49,52 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     const [payment, setPayment] = useState("");
     const [paymentItems, setPaymentItems] = useState([{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}]);
     const [total, setTotal] = useState("");
+
+    // Feature flag: enable Square for snow site via NEXT_PUBLIC_USE_SQUARE_FOR_SNOW
+    const [useSquare, setUseSquare] = useState(false);
+    const [squarePayments, setSquarePayments] = useState(null);
+    const [squareCard, setSquareCard] = useState(null);
+    // UI banner to indicate which payment mode is active
+    const [showModeBanner, setShowModeBanner] = useState(true);
+
+    useEffect(() => {
+        // Single toggle passed from server via props to avoid client env mismatch
+        const flag = !!restOfProps.useSquareEnabled && site === 'snow';
+        setUseSquare(flag);
+    }, [site, restOfProps.useSquareEnabled]);
+
+    useEffect(() => {
+        if (!useSquare) return;
+        // Load Square Web Payments SDK and initialize card element
+        const applicationId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
+        const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID || (process.env.NODE_ENV !== 'production' ? process.env.TEST_SQUARE_LOCATION_ID : undefined);
+        if (!applicationId || !locationId) return;
+
+        const ensureScript = () => new Promise((resolve, reject) => {
+            if (window.Square) return resolve();
+            const script = document.createElement('script');
+            script.src = (process.env.NODE_ENV === 'production')
+                ? 'https://web.squarecdn.com/v1/square.js'
+                : 'https://sandbox.web.squarecdn.com/v1/square.js';
+            script.onload = () => resolve();
+            script.onerror = (e) => reject(e);
+            document.body.appendChild(script);
+        });
+
+        (async () => {
+            try {
+                await ensureScript();
+                const payments = window.Square.payments(applicationId, locationId);
+                setSquarePayments(payments);
+                const card = await payments.card();
+                await card.attach('#sq-card-container');
+                setSquareCard(card);
+            } catch (e) {
+                console.error(`${new Date().toISOString()} - Failed to init Square`, e);
+                setPaymentError('Failed to initialize card input. Please refresh and try again.');
+            }
+        })();
+    }, [useSquare]);
 
     const formatCardNumber = (event) => {
         let v = event.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -119,10 +165,29 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
 
     const makePayment = async () => {
         try {
+            let body = { ...payment };
+
+            // If using Square, tokenize to get squareSourceId and strip raw CC fields
+            if (useSquare) {
+                if (!squareCard) {
+                    setPaymentError('Payment form is not ready. Please refresh and try again.');
+                    return;
+                }
+                const result = await squareCard.tokenize();
+                if (result?.status !== 'OK') {
+                    setPaymentError('Unable to tokenize card. Please verify your entries and try again.');
+                    return;
+                }
+                body.squareSourceId = result.token;
+                delete body.cc_number;
+                delete body.cc_expire;
+                delete body.cc_code;
+            }
+
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(payment),
+                body: JSON.stringify(body),
             }
 
             const resp = await fetch(`/api/users/${user.id}/payment?site=${site}`, options)
@@ -181,6 +246,15 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                onClick={() => setPaymentInfo(null)}>{paymentInfo}</Alert>
                     }
                     <div className={classNames("main-content")}>
+                        {site === "snow" && useSquare && showModeBanner && (
+                            <Alert
+                                variant="info"
+                                dismissible
+                                onClose={() => setShowModeBanner(false)}
+                            >
+                                {"Payments mode: Square (tokenized) is active for snow. Controlled by USE_SQUARE_FOR_SNOW."}
+                            </Alert>
+                        )}
                         {site === "snow" &&
                             <Alert>All payments made with a credit/debit card will be charged a 2.75% processing fee.
                                 To avoid any fees, you may make payments with cash or check. If you intend on mailing a
@@ -346,8 +420,21 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                             </Form.Group>
                                         </Row>
                                         <hr/>
-                                        <Form.Text>Credit Card Information</Form.Text>
-                                        <Row>
+                                        {useSquare && (
+                                            <>
+                                                <Form.Text>Card Information</Form.Text>
+                                                <Row>
+                                                    <Col xs={12} className="mb-3">
+                                                        <div id="sq-card-container" style={{border: '1px solid #ced4da', borderRadius: 4, padding: 12}} />
+                                                        <Form.Text className="text-muted">Your card details are securely handled by Square.</Form.Text>
+                                                    </Col>
+                                                </Row>
+                                            </>
+                                        )}
+                                        {!useSquare && (
+                                            <>
+                                                <Form.Text>Credit Card Information</Form.Text>
+                                                <Row>
                                             <Form.Group as={Col} xs={5} className="mb-3" controlId="cc_number">
                                                 <Form.Label className="required">Card Number</Form.Label>
                                                 <Form.Control maxLength={19} autoComplete="cc-number"
@@ -400,6 +487,8 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                                         className={classNames("text-danger")}>{errors && errors.cc_code.message}</Form.Text>}
                                             </Form.Group>
                                         </Row>
+                                            </>
+                                        )}
                                         <hr/>
                                         <Form.Text>Items</Form.Text>
                                             <PaymentLineItems
@@ -489,8 +578,8 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {validPayments.map(row => (
-                                        <tr>
+                                    {validPayments.map((row, idx) => (
+                                        <tr key={row.id ?? `${row.date}-${row.description}-${idx}`}>
                                             <td>{row.date}</td>
                                             {site === "snow" &&
                                                 <>
@@ -551,7 +640,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             navPage: "payments",
             tenant: tenant,
             privacyContent: privacy || [],
-            refundContent: refund || ""
+            refundContent: refund || "",
+            useSquareEnabled: process.env.USE_SQUARE_FOR_SNOW === 'true'
         }
     };
 }, ironOptions);

@@ -5,6 +5,10 @@ import Login from "./login";
 import {useState} from "react";
 
 const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogin = () => {}, ...restOfProps}) => {
+    // Ensure stable defaults for theming props to avoid SSR/CSR hydration mismatches
+    const safeBg = bg ?? "light";
+    const safeVariant = variant ?? "light";
+
     const [showLogin, setShowLogin] = useState(startWithLogin);
     const [actionText, setActionText] = useState(initialUser?.isLoggedIn ? "Sign out" : "Sign In");
     const [user, setUser] = useState(initialUser);

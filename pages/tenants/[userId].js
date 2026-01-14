@@ -5,7 +5,7 @@ import Title from "../../components/title";
 import Footer from "../../components/footer";
 import React, {useEffect, useState} from "react";
 import classNames from "classnames";
-import {Alert, Button, Modal, Form, Tab, Table, Tabs} from "react-bootstrap";
+import {Alert, Button, Modal, Form, Tab, Table, Tabs, ProgressBar} from "react-bootstrap";
 import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
@@ -55,6 +55,254 @@ const Tenant = ({
     const [userInfoSuccess, setUserInfoSuccess] = useState();
     const [deleteUserError, setDeleteUserError] = useState();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    // Files tab state
+    const [filesList, setFilesList] = useState([]);
+    const [filesError, setFilesError] = useState();
+    const [filesSuccess, setFilesSuccess] = useState();
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState({}); // key: filename -> percent
+    const [showRenameModal, setShowRenameModal] = useState(false);
+    const [fileToRename, setFileToRename] = useState(null);
+    const [newFileName, setNewFileName] = useState('');
+    const [showDeleteFileModal, setShowDeleteFileModal] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState(null);
+
+    const fetchFiles = async () => {
+        try {
+            const resp = await fetch(`/api/tenants/${userId}/files?site=${site}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                console.log('Fetched files:', data);
+                setFilesList(data.files || []);
+            } else {
+                console.error('Failed to load files, status:', resp.status);
+                setFilesError('Failed to load files.');
+            }
+        } catch (e) {
+            console.error('Failed to load files, error:', e);
+            setFilesError('Failed to load files.');
+        }
+    };
+
+    // Format date as MM/DD/YYYY
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${month}/${day}/${year}`;
+    };
+
+    useEffect(() => {
+        // Load files on mount for admins only
+        if (!isTenant) fetchFiles();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleUpload = async (fileList) => {
+        setFilesError(undefined);
+        setFilesSuccess(undefined);
+        if (!fileList || fileList.length === 0) return;
+        // client-side checks for filename length and type
+        const allowed = /^(image\/png|application\/pdf)$/;
+        const maxMb = parseInt(process.env.FILE_UPLOAD_MAX_MB || '25', 10);
+        const maxBytes = maxMb * 1024 * 1024;
+        const rejected = [];
+        const toUpload = [];
+        for (const f of fileList) {
+            if (f.name.length > 150) {
+                rejected.push(`${f.name}: name must be <= 150 characters`);
+                continue;
+            }
+            if (!allowed.test(f.type)) {
+                rejected.push(`${f.name}: only PNGs and PDFs are allowed`);
+                continue;
+            }
+            if (f.size > maxBytes) {
+                rejected.push(`${f.name}: exceeds ${maxMb} MB`);
+                continue;
+            }
+            toUpload.push(f);
+        }
+        if (rejected.length > 0) setFilesError(rejected.join("\n"));
+        if (toUpload.length === 0) return;
+
+        setUploading(true);
+        const progress = {};
+        setUploadProgress(progress);
+
+        // Build a FormData with multiple files under the same field name 'file'
+        const form = new FormData();
+        toUpload.forEach(f => form.append('file', f));
+
+        try {
+            await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `/api/tenants/${userId}/files?site=${site}`);
+                xhr.upload.onprogress = (evt) => {
+                    if (evt.lengthComputable) {
+                        const percent = Math.round((evt.loaded / evt.total) * 100);
+                        setUploadProgress({ total: percent });
+                    }
+                };
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            // Check response for any errors in individual file results
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.results) {
+                                    const errors = response.results.filter(r => r.status === 'error' || r.status === 'rejected');
+                                    const successes = response.results.filter(r => r.status === 'created' || r.status === 'replaced');
+
+                                    if (errors.length > 0) {
+                                        console.warn('Some files failed:', errors);
+                                        const errorMsg = errors.map(e => `${e.original_name}: ${e.reason || 'Unknown error'}`).join('\n');
+                                        setFilesError(errorMsg);
+                                    }
+
+                                    if (successes.length > 0) {
+                                        const successMsg = `Successfully uploaded ${successes.length} file(s): ${successes.map(s => s.original_name).join(', ')}`;
+                                        setFilesSuccess(successMsg);
+                                    }
+                                } else {
+                                    setFilesSuccess('Files uploaded successfully');
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse upload response:', e);
+                                setFilesError(`Upload may have succeeded but response was unclear. Error: ${e.message}`);
+                            }
+                            resolve();
+                        } else {
+                            // Parse error response if possible
+                            let errorMsg = 'Upload failed';
+                            try {
+                                const errorResponse = JSON.parse(xhr.responseText);
+                                if (errorResponse.error) {
+                                    errorMsg = `Upload failed: ${errorResponse.error}`;
+                                }
+                            } catch (e) {
+                                if (xhr.responseText) {
+                                    errorMsg = `Upload failed: ${xhr.responseText.substring(0, 200)}`;
+                                } else {
+                                    errorMsg = `Upload failed with status ${xhr.status}`;
+                                }
+                            }
+                            reject(new Error(errorMsg));
+                        }
+                    }
+                };
+                xhr.send(form);
+            });
+            await fetchFiles();
+        } catch (e) {
+            setFilesError(e.message || 'Upload failed. Please try again.');
+            console.error(`${new Date().toISOString()} - Upload error:`, e);
+        } finally {
+            setUploading(false);
+            setUploadProgress({});
+        }
+    };
+
+    const handleDownload = (id) => {
+        window.open(`/api/tenants/${userId}/files/${id}/download?site=${site}`, '_blank');
+    };
+
+    const handleRename = async (file) => {
+        setFileToRename(file);
+        setNewFileName(file.original_name);
+        setShowRenameModal(true);
+    };
+
+    const submitRename = async () => {
+        if (!fileToRename) return;
+        if (!newFileName || newFileName.trim() === '' || newFileName === fileToRename.original_name) {
+            setShowRenameModal(false);
+            return;
+        }
+        if (newFileName.length > 150) {
+            setFilesError('Filename must be <= 150 characters');
+            setShowRenameModal(false);
+            return;
+        }
+        setFilesError(undefined);
+        setFilesSuccess(undefined);
+        setShowRenameModal(false);
+
+        try {
+            const resp = await fetch(`/api/tenants/${userId}/files/${fileToRename.id}?site=${site}`, {
+                method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ newName: newFileName })
+            });
+            if (resp.ok) {
+                setFilesSuccess(`Renamed "${fileToRename.original_name}" to "${newFileName}"`);
+                await fetchFiles();
+            } else if (resp.status === 409) {
+                setFilesError('A file with that name already exists.');
+            } else {
+                const errorData = await resp.json().catch(() => ({}));
+                setFilesError(`Rename failed: ${errorData.error || resp.statusText}`);
+            }
+        } catch (e) {
+            setFilesError(`Rename failed: ${e.message}`);
+            console.error(`${new Date().toISOString()} - Rename error:`, e);
+        }
+    };
+
+    const handleReplace = async (file, newFile) => {
+        if (!newFile) return;
+        setFilesError(undefined);
+        setFilesSuccess(undefined);
+        const allowed = /^(image\/png|application\/pdf)$/;
+        const maxMb = parseInt(process.env.FILE_UPLOAD_MAX_MB || '25', 10);
+        const maxBytes = maxMb * 1024 * 1024;
+        if (newFile.size > maxBytes) { setFilesError(`File too large. Max ${maxMb} MB`); return; }
+        if (!allowed.test(newFile.type)) { setFilesError('Only PNG images and PDFs are allowed'); return; }
+        const form = new FormData();
+        form.append('file', newFile);
+        try {
+            const resp = await fetch(`/api/tenants/${userId}/files/${file.id}?site=${site}`, { method: 'PUT', body: form });
+            if (resp.ok) {
+                setFilesSuccess(`Successfully replaced "${file.original_name}"`);
+                await fetchFiles();
+            } else {
+                const errorData = await resp.json().catch(() => ({}));
+                setFilesError(`Replace failed: ${errorData.error || resp.statusText}`);
+            }
+        } catch (e) {
+            setFilesError(`Replace failed: ${e.message}`);
+            console.error(`${new Date().toISOString()} - Replace error:`, e);
+        }
+    };
+
+    const handleDeleteFile = async (file) => {
+        setFileToDelete(file);
+        setShowDeleteFileModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!fileToDelete) return;
+        setShowDeleteFileModal(false);
+        setFilesError(undefined);
+        setFilesSuccess(undefined);
+
+        try {
+            const resp = await fetch(`/api/tenants/${userId}/files/${fileToDelete.id}?site=${site}`, { method: 'DELETE' });
+            if (resp.ok) {
+                setFilesSuccess(`Successfully deleted "${fileToDelete.original_name}"`);
+                await fetchFiles();
+            } else {
+                const errorData = await resp.json().catch(() => ({}));
+                setFilesError(`Delete failed: ${errorData.error || resp.statusText}`);
+            }
+        } catch (e) {
+            setFilesError(`Delete failed: ${e.message}`);
+            console.error(`${new Date().toISOString()} - Delete error:`, e);
+        } finally {
+            setFileToDelete(null);
+        }
+    };
 
     tab = (tab === "Roommates") ? 3 : 0;
 
@@ -355,6 +603,138 @@ const Tenant = ({
                                                 </Table>
                                             </Tab>)}
                                     </Tabs>
+                                </Tab>
+                            }
+                            {!isTenant && site === 'snow' &&
+                                <Tab title="Files" eventKey={9} key={9}>
+                                    {filesSuccess && (
+                                        <Alert variant="success" dismissible onClose={() => setFilesSuccess(undefined)}>{filesSuccess}</Alert>
+                                    )}
+                                    {filesError && (
+                                        <Alert variant="danger" dismissible onClose={() => setFilesError(undefined)}>{filesError}</Alert>
+                                    )}
+
+                                    {uploading && (
+                                        <div className="mb-3">
+                                            <ProgressBar now={uploadProgress.total || 0} label={`${uploadProgress.total || 0}%`} />
+                                        </div>
+                                    )}
+
+                                    {/* Hidden file input */}
+                                    <input
+                                        type="file"
+                                        id="fileUploadInput"
+                                        accept="image/png,application/pdf"
+                                        multiple
+                                        onChange={(e)=> { handleUpload(e.target.files); e.target.value = ''; }}
+                                        style={{display: 'none'}}
+                                    />
+
+                                    <Table>
+                                        <thead>
+                                        <tr>
+                                            <th colSpan={6}>
+                                                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                    <Button
+                                                        variant="success"
+                                                        size="sm"
+                                                        onClick={() => document.getElementById('fileUploadInput').click()}
+                                                        disabled={uploading}
+                                                    >
+                                                        <span style={{fontSize: '1.2em', marginRight: '5px'}}>+</span>
+                                                        Add new files
+                                                    </Button>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Size</th>
+                                            <th>Uploaded At</th>
+                                            <th>Uploaded By</th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {filesList && filesList.map(f => (
+                                            <tr key={f.id}>
+                                                <td>{f.original_name}</td>
+                                                <td>{f.mime_type}</td>
+                                                <td>{(f.size_bytes/1024/1024).toFixed(2)} MB</td>
+                                                <td>{formatDate(f.created_at)}</td>
+                                                <td>{f.uploaded_by_name || 'Unknown'}</td>
+                                                <td style={{whiteSpace: 'nowrap'}}>
+                                                    <Button size="sm" className="me-2" onClick={() => handleDownload(f.id)}>Download</Button>
+                                                    <Button size="sm" variant="secondary" className="me-2" onClick={() => handleRename(f)}>Rename</Button>
+                                                    <label className="btn btn-sm btn-outline-primary me-2 mb-0">
+                                                        Replace
+                                                        <input type="file" accept="image/png,application/pdf" style={{display:'none'}} onChange={(e)=> { const file = e.target.files?.[0]; e.target.value = ''; handleReplace(f, file); }} />
+                                                    </label>
+                                                    <Button size="sm" variant="danger" onClick={() => handleDeleteFile(f)}>Delete</Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {(!filesList || filesList.length === 0) && (
+                                            <tr><td colSpan={6} style={{textAlign:'center'}}>No files uploaded.</td></tr>
+                                        )}
+                                        </tbody>
+                                    </Table>
+
+                                    {/* Rename File Modal */}
+                                    <Modal show={showRenameModal} onHide={() => setShowRenameModal(false)}>
+                                        <Modal.Header closeButton>
+                                            <Modal.Title>Rename File</Modal.Title>
+                                        </Modal.Header>
+                                        <Modal.Body>
+                                            <Form.Group>
+                                                <Form.Label>New Filename (max 150 characters)</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    value={newFileName}
+                                                    onChange={(e) => setNewFileName(e.target.value)}
+                                                    maxLength={150}
+                                                    autoFocus
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            submitRename();
+                                                        }
+                                                    }}
+                                                />
+                                                <Form.Text className="text-muted">
+                                                    {newFileName.length}/150 characters
+                                                </Form.Text>
+                                            </Form.Group>
+                                        </Modal.Body>
+                                        <Modal.Footer>
+                                            <Button variant="secondary" onClick={() => setShowRenameModal(false)}>
+                                                Cancel
+                                            </Button>
+                                            <Button variant="primary" onClick={submitRename}>
+                                                Rename
+                                            </Button>
+                                        </Modal.Footer>
+                                    </Modal>
+
+                                    {/* Delete File Modal */}
+                                    <Modal show={showDeleteFileModal} onHide={() => setShowDeleteFileModal(false)}>
+                                        <Modal.Header closeButton>
+                                            <Modal.Title>Delete File</Modal.Title>
+                                        </Modal.Header>
+                                        <Modal.Body>
+                                            <p>Are you sure you want to delete <strong>{fileToDelete?.original_name}</strong>?</p>
+                                            <p className="text-danger">This action cannot be undone.</p>
+                                        </Modal.Body>
+                                        <Modal.Footer>
+                                            <Button variant="secondary" onClick={() => setShowDeleteFileModal(false)}>
+                                                Cancel
+                                            </Button>
+                                            <Button variant="danger" onClick={confirmDelete}>
+                                                Delete
+                                            </Button>
+                                        </Modal.Footer>
+                                    </Modal>
                                 </Tab>
                             }
                             {!isTenant &&

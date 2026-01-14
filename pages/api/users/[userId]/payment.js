@@ -4,6 +4,7 @@ import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import {AddUserPayment, MarkPaymentDeleted, MarkPaymentReviewed} from "../../../../lib/db/users/userPayment";
 import chargeCreditCard from "../../../../lib/payment/chargeCreditCard";
+import chargeSquare from "../../../../lib/payment/chargeSquare";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
             if (!req.session?.user?.isLoggedIn) res.status(403).send();
@@ -13,7 +14,14 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     let data;
                     try {
                         data = {...req.body};
-                        payResp = await chargeCreditCard(data);
+                        const useSquareForSnow = process.env.USE_SQUARE_FOR_SNOW === 'true';
+                        const isSnowSite = req.query.site === 'snow';
+                        if (useSquareForSnow && isSnowSite && data.squareSourceId) {
+                            // Never log or persist the raw token
+                            payResp = await chargeSquare(data);
+                        } else {
+                            payResp = await chargeCreditCard(data);
+                        }
                     } catch (e) {
                         res.body = {error: e.statusCode, message: e.errormessage};
                         res.status(400).send();

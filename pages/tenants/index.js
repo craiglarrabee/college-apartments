@@ -57,7 +57,7 @@ const Tenants = ({site, isABot,  page, links, user, ...restOfProps}) => {
     return (
         <Layout site={site} user={user}>
             <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links} page={page}/>
-            <div style={{display: "flex", flexDirection: "column"}}>
+            <div style={{display: "flex", flexDirection: "column",minWidth: "800px", minHeight: "100vh"}}>
                 <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
                 <main>
                     {message &&

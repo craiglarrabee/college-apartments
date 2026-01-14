@@ -1,5 +1,10 @@
 // jest.setup.js
 import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'util';
+
+// Polyfill for TextEncoder/TextDecoder (needed for crypto libraries)
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 // Polyfill for MessageChannel (needed for React 19 with jsdom)
 if (typeof global.MessageChannel === 'undefined') {
