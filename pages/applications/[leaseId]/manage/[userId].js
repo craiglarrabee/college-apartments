@@ -89,10 +89,8 @@ const Home = ({
 
         syncFormState(printRef.current, cloned);
 
-        // Keep the printable tab layout as-is; do not replace other inputs. Instead we'll inject
-        // print-specific CSS into the print window so form controls and user-entered values
-        // keep visible borders/padding when printed. This preserves the on-screen formatting.
-
+        // We'll open the print window first, write the head/styles, import the cloned DOM
+        // into that document, then measure and insert page-breaks only where necessary.
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
             alert('Unable to open print window. Please allow popups or use your browser print.');
@@ -101,78 +99,129 @@ const Home = ({
 
         const doc = printWindow.document;
         doc.open();
-        // include lang for accessibility
+        // include lang for accessibility and a minimal body with a wrapper we'll populate
         doc.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Application Print</title>');
 
         const styleNodes = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
-        styleNodes.forEach(node => {
-            try { doc.write(node.outerHTML); } catch(e) {}
-        });
-        // Include print-specific styles so form controls keep visible borders/padding when printed
-        // Also include styles for the replaced radio visuals so they are visible immediately in the
-        // print window as well as in the print preview.
+        styleNodes.forEach(node => { try { doc.write(node.outerHTML); } catch(e) {} });
+
+        // same injected print styles as before (kept intact)
         doc.write(`<style>
-          /* Try to force zero page margins in the print preview/print output. Note: some
-             browsers or printer drivers may still apply user-set or minimum physical margins
-             that can't be overridden. */
-          @page { size: auto; margin: 0 !important; }
-
-          /* Reset page/body margin/padding so content can extend to the paper edge */
+          @page { size: auto; margin: 6mm 6mm 6mm 6mm !important; }
           html, body { margin: 0 !important; padding: 0 !important; background: #fff; color: #000; }
-
-          /* Styles for replaced radio spans inserted into the cloned DOM (visible on-screen in the print window) */
-          .print-radio {
-            display: inline-block;
-            width: 1em;
-            height: 1em;
-            margin-right: 0.25rem;
-            vertical-align: middle;
-            border: 1px solid #000;
-            border-radius: 50%;
-            background: transparent;
-          }
-          .print-radio.checked {
-            background-image: radial-gradient(circle at center, #000 45%, transparent 46%);
-          }
-          /* Make form controls visibly boxed in print while preserving layout */
+          .print-radio { display: inline-block; width: 1em; height: 1em; margin-right: 0.25rem; vertical-align: middle; border: 1px solid #000; border-radius: 50%; background: transparent; }
+          .print-radio.checked { background-image: radial-gradient(circle at center, #000 45%, transparent 46%); }
           @media print {
-            /* Ensure no browser chrome buttons or links print */
             a, button { display: none !important; }
-
-            /* Remove default page margins when printing; many browsers respect @page, but
-               some may enforce minimum non-zero margins via user settings or printer drivers. */
-            @page { margin: 0; }
-
-            body { margin: 0 !important; padding: 0 !important; }
-
-            input[type="text"], input[type="email"], input[type="tel"], input[type="number"],
-            input[type="search"], input:not([type]), textarea, select, .form-control {
-              border: 1px solid #000 !important;
-              padding: 0.15rem 0.4rem !important;
-              display: inline-block !important;
-              white-space: pre-wrap !important;
-              background: transparent !important;
-              color: #000 !important;
-            }
+            @page { margin: 6mm 6mm 6mm 6mm; }
+            body { margin: 0 !important; padding: 6mm !important; }
+            input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="search"], input:not([type]), textarea, select, .form-control { border: 1px solid #000 !important; padding: 0.15rem 0.4rem !important; display: inline-block !important; white-space: pre-wrap !important; background: transparent !important; color: #000 !important; }
             textarea { white-space: pre-wrap !important; }
-
-            /* For print, use native radio/checkbox visuals but scale them slightly so selection is clear */
-            input[type="checkbox"], input[type="radio"] {
-              transform: scale(1.15) !important;
-              margin: 0 0.25rem 0 0 !important;
-              vertical-align: middle !important;
-              -webkit-print-color-adjust: exact;
-            }
-
-            /* Try to avoid any page-breaks that leave unexpected whitespace at top/bottom */
+            input[type="checkbox"], input[type="radio"] { transform: scale(1.15) !important; margin: 0 0.25rem 0 0 !important; vertical-align: middle !important; -webkit-print-color-adjust: exact; }
+            body { orphans: 2; widows: 2; -webkit-print-color-adjust: exact; }
+            h1, h2, h3, h4, h5, h6 { page-break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
+            .form-group, fieldset, legend, .field, label, .value, .print-radio { page-break-inside: avoid; break-inside: avoid; }
+            .row, .form-row { page-break-inside: auto; break-inside: auto; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+            tr { page-break-inside: avoid; break-inside: avoid; }
+            .page-break { page-break-before: always; break-before: page; }
+            .avoid-break { page-break-inside: avoid; break-inside: avoid; }
             * { -webkit-print-color-adjust: exact; box-sizing: border-box; }
             img { max-width: 100% !important; height: auto !important; }
           }
         </style>`);
-        doc.write('</head><body>');
-        doc.write(cloned.outerHTML);
-        doc.write('</body></html>');
+
+        // open body and an empty wrapper; we'll populate and measure in the new document
+        doc.write('</head><body><div id="print-wrapper"></div></body></html>');
         doc.close();
+
+        try {
+            // Import the cloned node into the print document to keep event/ownership correct
+            const wrapper = printWindow.document.getElementById('print-wrapper');
+            const imported = printWindow.document.importNode(cloned, true);
+            wrapper.appendChild(imported);
+
+            // Measure px per mm in the print window (useful to convert our 6mm margin)
+            const mmTest = printWindow.document.createElement('div');
+            mmTest.style.height = '1mm';
+            mmTest.style.position = 'absolute';
+            mmTest.style.top = '-1000mm';
+            printWindow.document.body.appendChild(mmTest);
+            const pxPerMm = Math.max(1, mmTest.getBoundingClientRect().height || mmTest.offsetHeight || 1);
+            mmTest.parentNode.removeChild(mmTest);
+
+            // Determine likely paper height in px by comparing A4 and Letter to the window height
+            const a4Px = 297 * pxPerMm; // mm
+            const letterPx = 279.4 * pxPerMm; // 11in
+            const winH = printWindow.innerHeight || printWindow.document.documentElement.clientHeight || a4Px;
+            const pageHeightBasePx = (Math.abs(winH - a4Px) < Math.abs(winH - letterPx)) ? a4Px : letterPx;
+
+            // Subtract the top+bottom padding (6mm each) to compute usable content height
+            const marginPx = 6 * pxPerMm;
+            const usablePageHeight = Math.max(200, pageHeightBasePx - (marginPx * 2));
+
+            // Recursive splitter: walk the DOM and insert page breaks only where needed.
+            let currentPageBottom = usablePageHeight;
+
+            const insertPageBreakBefore = (node) => {
+                const br = printWindow.document.createElement('div');
+                br.className = 'page-break';
+                node.parentNode.insertBefore(br, node);
+            };
+
+            // Walk children of `parent` and insert breaks when a child would overflow the current page.
+            const walk = (parent) => {
+                // Snapshot child list because we'll mutate DOM by inserting breaks
+                const children = Array.from(parent.children || []);
+                for (let i = 0; i < children.length; i++) {
+                    const ch = children[i];
+
+                    // Force layout read so measurements are updated
+                    const chTop = ch.offsetTop;
+                    const chBottom = chTop + ch.offsetHeight;
+
+                    if (chBottom > currentPageBottom) {
+                        // If this single child itself is taller than a page, try to split it by recursing
+                        if (ch.offsetHeight > usablePageHeight && ch.children && ch.children.length > 0) {
+                            // Recurse into the child to try to split it by its children
+                            walk(ch);
+                            // re-measure after possible splits
+                            const newBottom = ch.offsetTop + ch.offsetHeight;
+                            if (newBottom > currentPageBottom) {
+                                insertPageBreakBefore(ch);
+                                const pagesSpanned = Math.floor((newBottom - currentPageBottom) / usablePageHeight) + 1;
+                                currentPageBottom += pagesSpanned * usablePageHeight;
+                            }
+                        } else {
+                            // Otherwise insert a page break before this child
+                            insertPageBreakBefore(ch);
+                            const pagesSpanned = Math.floor((chBottom - currentPageBottom) / usablePageHeight) + 1;
+                            currentPageBottom += pagesSpanned * usablePageHeight;
+                        }
+                    }
+
+                    // Even if this child fit, its inner children might overflow; recurse to allow finer splits
+                    if (ch.children && ch.children.length > 0) {
+                        walk(ch);
+                    }
+                }
+            };
+
+            walk(wrapper);
+        } catch (e) {
+             // If anything goes wrong, fall back to simple printing of the cloned markup
+             console.error('Split heuristic failed, falling back to un-split print', e);
+             const doc = printWindow.document;
+             doc.open();
+             doc.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Application Print</title>');
+             const styleNodes2 = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
+             styleNodes2.forEach(node => { try { doc.write(node.outerHTML); } catch(e) {} });
+             doc.write('</head><body>');
+             doc.write(`<div style="padding:6mm;">${cloned.outerHTML}</div>`);
+             doc.write('</body></html>');
+             doc.close();
+         }
 
         const closePrintWindow = () => { try { printWindow.close(); } catch(e) {} };
         try {
