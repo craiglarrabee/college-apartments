@@ -19,13 +19,34 @@ export const PaymentLineItems = ({
     const [lineItems, setLineItems] = useState(paymentItems);
     const [total, setTotal] = useState(paymentTotal);
 
+    // Update lineItems when paymentItems prop changes (e.g., from admin-created items)
+    useEffect(() => {
+        console.log('PaymentLineItems received paymentItems:', paymentItems);
+        if (paymentItems && paymentItems.length > 0) {
+            // Check if paymentItems actually has content (not just empty template)
+            const hasContent = paymentItems.some(item => item.description || item.amount);
+            console.log('hasContent:', hasContent);
+            if (hasContent) {
+                setLineItems(paymentItems);
+                // Recalculate total when items are updated
+                const sum = currency.format(paymentItems.reduce((partialSum, item) => partialSum + (parseFloat(item.unitPrice) || 0), 0));
+                setTotal(sum);
+                if (setParentTotal) {
+                    setParentTotal(sum);
+                }
+                console.log('Updated lineItems:', paymentItems);
+            }
+        }
+    }, [paymentItems, setParentTotal]);
+
     const addItem = () => {
         const newItems = [...lineItems, {
             id: lineItems.length,
             description: "",
             amount: "",
             surcharge: "",
-            unitPrice: ""
+            unitPrice: "",
+            isAdminCreated: false
         }];
         setLineItems(newItems);
         setParentPaymentItems(newItems);
@@ -33,6 +54,13 @@ export const PaymentLineItems = ({
 
     const updateLineItem = async (id, description, amount, surcharge, subtotal) => {
         const item = await lineItems[id];
+
+        // Prevent updating admin-created items
+        if (item?.isAdminCreated) {
+            console.log('Cannot update admin-created item');
+            return;
+        }
+
         item.amount = amount;
         item.description = description;
         item.surcharge = surcharge;
@@ -45,11 +73,18 @@ export const PaymentLineItems = ({
     };
 
     const removeLineItem = (id) => {
+        // Prevent removing admin-created items
+        const itemToRemove = lineItems.find(item => item.id === id);
+        if (itemToRemove?.isAdminCreated) {
+            console.log('Cannot remove admin-created item');
+            return;
+        }
+
         let newItems;
         let sum;
 
         if (lineItems.length === 1) {
-            newItems = [{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}];
+            newItems = [{id: 0, description: "", amount: "", surcharge: "", unitPrice: "", isAdminCreated: false}];
         } else {
             newItems = [...lineItems.filter(item => item.id !== id)];
         }
@@ -87,10 +122,12 @@ export const PaymentLineItems = ({
                                 desc={item.description}
                                 chg={item.surcharge}
                                 tot={item.unitPrice}
+                                isAdminCreated={item.isAdminCreated || false}
+                                key={i}
                             />
                         )
                     )}
-                {lineItems.length >= 1 && lineItems[lineItems.length - 1]?.unitPrice > 0 && lineItems[lineItems.length - 1]?.description &&
+                {lineItems.length >= 1 && lineItems[lineItems.length - 1]?.unitPrice > 0 && lineItems[lineItems.length - 1]?.description && !lineItems[lineItems.length - 1]?.isAdminCreated &&
                     <tr>
                         <td><Button variant="light" onClick={addItem}><Plus/></Button></td>
                         <td/>
@@ -129,7 +166,8 @@ export const PaymentLineItem = ({
                                     desc,
                                     amt,
                                     tot,
-                                    chg
+                                    chg,
+                                    isAdminCreated = false
                                 }) => {
 
 
@@ -197,7 +235,17 @@ export const PaymentLineItem = ({
             <tr className="align-middle">
                 <td>
                     <Row>
-                        <Col><Button variant="light" onClick={remove}><Trash/></Button></Col>
+                        <Col>
+                            {isAdminCreated ||
+                            <Button
+                                variant="light"
+                                onClick={remove}
+                                title="Remove item"
+                            >
+                                <Trash/>
+                            </Button>
+                            }
+                        </Col>
                         <Form.Label as={Col} xs={2} className="required">Description</Form.Label>
                         <Form.Group as={Col} xs={8} controlId={`description_${itemId}`}>
                             {displayDescInput ?
@@ -212,6 +260,8 @@ export const PaymentLineItem = ({
                                     onChange={handleChangeDescription}
                                     value={description}
                                     defaultValue={""}
+                                    readOnly={isAdminCreated}
+                                    disabled={isAdminCreated}
                                 />
                                 :
                                 <Form.Select
@@ -224,7 +274,8 @@ export const PaymentLineItem = ({
                                     onChange={handleChangeDescription}
                                     type="text"
                                     placeholder="Description"
-                                    value={description}>
+                                    value={description}
+                                    disabled={isAdminCreated}>
                                     <option value="" disabled>Select Payment Reason</option>
                                     <option value="Deposit">Deposit</option>
                                     <option value="Fall Rent">Fall Rent</option>
@@ -264,14 +315,17 @@ export const PaymentLineItem = ({
                                         message: "Amount is required."
                                     },
                                     onChange: (event) => {
-                                        handleChangeAmount(event);
+                                        if (!isAdminCreated) handleChangeAmount(event);
                                     },
                                     onBlur: (event) => {
-                                        handleChangeAmount(event, true);
+                                        if (!isAdminCreated) handleChangeAmount(event, true);
                                     }
                                 })} type="text"
                                 value={amount}
-                                placeholder="Amount"/>
+                                placeholder="Amount"
+                                readOnly={isAdminCreated}
+                                disabled={isAdminCreated}
+                            />
                             {errors && errors[`amount_${itemId}`] && <Form.Text
                                 className={classNames("text-danger")}>{errors && errors[`amount_${itemId}`].message}</Form.Text>}
                         </Form.Group>

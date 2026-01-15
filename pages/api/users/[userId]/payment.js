@@ -3,6 +3,7 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import {AddUserPayment, MarkPaymentDeleted, MarkPaymentReviewed} from "../../../../lib/db/users/userPayment";
+import {MarkTenantPaymentItemsPaid} from "../../../../lib/db/users/tenantPaymentItems";
 import chargeCreditCard from "../../../../lib/payment/chargeCreditCard";
 import chargeSquare from "../../../../lib/payment/chargeSquare";
 
@@ -57,6 +58,12 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         data.resultMessage = payResp.messages?.message[0]?.text;
                         data.accountType = payResp.transactionResponse.accountType;
                         data.accountNumber = payResp.transactionResponse.accountNumber;
+
+                        // Mark admin-created payment items as paid
+                        if (data.adminItemIds && data.adminItemIds.length > 0) {
+                            await MarkTenantPaymentItemsPaid(req.query.site, req.query.userId, data.adminItemIds, data.transId);
+                        }
+
                         // create a payment record for each line item
                         // they will all have the same transactionId for grouping
                         await Promise.allSettled(data.items.map(item =>

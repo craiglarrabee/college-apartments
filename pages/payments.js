@@ -19,6 +19,7 @@ import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import AcknowledgePaymentModal from "../components/acknowledgePaymentModal";
 import {PaymentLineItems} from "../components/paymentLineItems";
+import {GetTenantPaymentItems} from "../lib/db/users/tenantPaymentItems";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG || 'light';
@@ -26,7 +27,7 @@ const variant = process.env.VARIANT || 'light';
 const brandUrl = process.env.BRAND_URL || 'http://www.utahcollegeapartments.com';
 
 
-const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privacyContent, refundContent, ...restOfProps}) => {
+const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privacyContent, refundContent, tenantPaymentItems, ...restOfProps}) => {
     const {
         register,
         resetField,
@@ -49,6 +50,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     const [payment, setPayment] = useState("");
     const [paymentItems, setPaymentItems] = useState([{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}]);
     const [total, setTotal] = useState("");
+    const [adminItemIds, setAdminItemIds] = useState([]); // Track which items came from admin
 
     // Feature flag: enable Square for snow site via NEXT_PUBLIC_USE_SQUARE_FOR_SNOW
     const [useSquare, setUseSquare] = useState(false);
@@ -56,6 +58,48 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     const [squareCard, setSquareCard] = useState(null);
     // UI banner to indicate which payment mode is active
     const [showModeBanner, setShowModeBanner] = useState(true);
+
+    // Auto-populate payment items from admin-created entries
+    useEffect(() => {
+        console.log('tenantPaymentItems received:', tenantPaymentItems);
+        if (tenantPaymentItems && tenantPaymentItems.length > 0) {
+            const getSurcharge = (amt) => {
+                if (site === "snow") {
+                    return Math.round(amt * 2.75) / 100;
+                }
+                return 0;
+            };
+
+            const items = tenantPaymentItems.map((item, index) => {
+                const amount = parseFloat(item.amount);
+                const surcharge = getSurcharge(amount);
+                const unitPrice = amount + surcharge;
+
+                return {
+                    id: index,
+                    description: item.description,
+                    amount: amount.toString(),
+                    surcharge: surcharge.toString(),
+                    unitPrice: unitPrice.toString(),
+                    adminItemId: item.id, // Store the DB ID for later
+                    isAdminCreated: true // Mark as admin-created
+                };
+            });
+
+            console.log('Setting payment items:', items);
+            setPaymentItems(items);
+            setAdminItemIds(items.map(i => i.adminItemId));
+
+            // Calculate total
+            const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.unitPrice), 0);
+            const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
+            setTotal(currency.format(totalAmount));
+
+            if (items.length > 0) {
+                setPaymentInfo("You have pending payment items set by the administrator. Please review and complete your payment.");
+            }
+        }
+    }, [tenantPaymentItems, site]);
 
     useEffect(() => {
         // Single toggle passed from server via props to avoid client env mismatch
@@ -153,6 +197,11 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
         data.tenantLastName = tenant.last_name;
         data.items = paymentItems;
 
+        // Include admin item IDs if any items came from admin
+        data.adminItemIds = paymentItems
+            .filter(item => item.adminItemId)
+            .map(item => item.adminItemId);
+
         // now store form data for use after confirmation
         setPayment({...data, date: new Date().toLocaleDateString()});
     };
@@ -241,20 +290,11 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                         site={site} close={() => setShowConfirmation(false)}
                         show={showConfirmation}/>
 
-                    {paymentInfo &&
-                        <Alert dismissible={true} variant={"primary"}
-                               onClick={() => setPaymentInfo(null)}>{paymentInfo}</Alert>
-                    }
                     <div className={classNames("main-content")}>
-                        {site === "snow" && useSquare && showModeBanner && (
-                            <Alert
-                                variant="info"
-                                dismissible
-                                onClose={() => setShowModeBanner(false)}
-                            >
-                                {"Payments mode: Square (tokenized) is active for snow. Controlled by USE_SQUARE_FOR_SNOW."}
-                            </Alert>
-                        )}
+                        {paymentInfo &&
+                            <Alert dismissible={true} variant={"warning"}
+                                   onClick={() => setPaymentInfo(null)}>{paymentInfo}</Alert>
+                        }
                         {site === "snow" &&
                             <Alert>All payments made with a credit/debit card will be charged a 2.75% processing fee.
                                 To avoid any fees, you may make payments with cash or check. If you intend on mailing a
@@ -614,12 +654,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
     const userId = user.id;
-    const [nav, tenant, payments, privacyContent, refundContent] = await Promise.all([
+    const [nav, tenant, payments, privacyContent, refundContent, tenantPaymentItems] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(site, userId),
         GetUserPayments(site, userId),
         GetDynamicContent(site, "privacy%"),
-        GetDynamicContent(site, "refund")
+        GetDynamicContent(site, "refund"),
+        GetTenantPaymentItems(site, userId)
     ]);
 
     if (!nav.find(page => page.page === "payments")) return {notFound: true};
@@ -641,7 +682,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             tenant: tenant,
             privacyContent: privacy || [],
             refundContent: refund || "",
-            useSquareEnabled: process.env.USE_SQUARE_FOR_SNOW === 'true'
+            useSquareEnabled: process.env.USE_SQUARE_FOR_SNOW === 'true',
+            tenantPaymentItems: tenantPaymentItems || []
         }
     };
 }, ironOptions);
