@@ -13,12 +13,13 @@ $sidebar-menu-nav-link-padding-y: 1px;
 @import "~bootstrap/scss/bootstrap";
 @import "react-bootstrap-sidebar-menu/dist/sidebar-menu.scss";
 
-html,
-body,
-#root,
 #myCarousel {
   margin-left: 40px;
   margin-right: 80px;
+}
+
+body {
+  margin: 0;
 }
 
 aside {

@@ -24,8 +24,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                             payResp = await chargeCreditCard(data);
                         }
                     } catch (e) {
-                        res.body = {error: e.statusCode, message: e.errormessage};
-                        res.status(400).send();
+                        const errorResponse = {error: e.statusCode, message: e.errormessage};
                         // make sure we remove sensitive data before logging
                         delete data.cc_number;
                         delete data.cc_code;
@@ -37,6 +36,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         delete data.state;
                         delete data.zip;
                         console.error(`${new Date().toISOString()} -` , e);
+                        res.status(400).json(errorResponse);
                         return;
                     }
 
@@ -79,10 +79,9 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     } catch (e) {
                         // if we successfully processed the payment
                         // but failed to record it, then log the error
-                        // but don't send a failure
-                        res.body = data;
+                        // but don't send a failure (payment was successful)
+                        console.error(`${new Date().toISOString()} - Failed to record payment: ${JSON.stringify(data)}\n with error: ${e}`);
                         res.status(200).send();
-                        console.error(`${new Date().toISOString()} -` +`Failed to record payment: ${JSON.stringify(data)}\n with error: ${e}`);
                         return;
                     }
                     return;
@@ -91,9 +90,9 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         await MarkPaymentReviewed(req.body.id);
                         res.status(204).send();
                     } catch (e) {
-                        res.body = {error: e.code, description: e.message};
-                        res.status(400).send();
+                        const errorResponse = {error: e.code, description: e.message};
                         console.error(`${new Date().toISOString()} -` , e);
+                        res.status(400).json(errorResponse);
                     }
                     return;
                 case "DELETE":
@@ -101,9 +100,9 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         await MarkPaymentDeleted(req.body.id, req.body.reason);
                         res.status(204).send();
                     } catch (e) {
-                        res.body = {error: e.code, description: e.message};
-                        res.status(400).send();
+                        const errorResponse = {error: e.code, description: e.message};
                         console.error(`${new Date().toISOString()} -` , e);
+                        res.status(400).json(errorResponse);
                     }
                     return;
                 default:

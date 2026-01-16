@@ -141,6 +141,7 @@ export const PaymentLineItems = ({
                             <Form.Group as={Col} xs={3} controlId={"orderTotal"}>
                                 <Form.Control
                                     readOnly
+                                    disabled={lineItems.length > 0 && lineItems.every(item => item.isAdminCreated)}
                                     {...register("orderTotal")}
                                     type="text"
                                     value={total}/>
@@ -246,13 +247,13 @@ export const PaymentLineItem = ({
                             </Button>
                             }
                         </Col>
-                        <Form.Label as={Col} xs={2} className="required">Description</Form.Label>
+                        <Form.Label as={Col} xs={2} className={isAdminCreated ? "" : "required"}>Description</Form.Label>
                         <Form.Group as={Col} xs={8} controlId={`description_${itemId}`}>
                             {displayDescInput ?
                                 <Form.Control
                                     className={errors && errors[`description_${itemId}`] && classNames("border-danger")} {...register(`description_${itemId}`, {
                                     required: {
-                                        value: true,
+                                        value: !isAdminCreated,
                                         message: "Required"
                                     }, maxLength: 250,
                                 })} type="text"
@@ -267,7 +268,7 @@ export const PaymentLineItem = ({
                                 <Form.Select
                                     className={errors && errors[`description_${itemId}`] && classNames("border-danger")} {...register(`description_${itemId}`, {
                                     required: {
-                                        value: true,
+                                        value: !isAdminCreated,
                                         message: "Description is required."
                                     }
                                 })}
@@ -301,7 +302,7 @@ export const PaymentLineItem = ({
                     <br/>
                     <Row>
                         <Col/>
-                        <Form.Label className="required" as={Col} xs={1}>Amnt</Form.Label>
+                        <Form.Label className={isAdminCreated ? "" : "required"} as={Col} xs={1}>Amnt</Form.Label>
                         <Form.Group as={Col} xs={3} controlId={`amount_${itemId}`}>
                             <Form.Control
                                 className={errors && errors[`amount_${itemId}`] && classNames("border-danger")}
@@ -311,7 +312,7 @@ export const PaymentLineItem = ({
                                         message: "Must be a valid amount between 1.00 and 99999.99"
                                     },
                                     required: {
-                                        value: true,
+                                        value: !isAdminCreated,
                                         message: "Amount is required."
                                     },
                                     onChange: (event) => {
@@ -336,6 +337,7 @@ export const PaymentLineItem = ({
                                 <Form.Group as={Col} xs={2} controlId={`surcharge_${itemId}`}>
                                     <Form.Control
                                         readOnly
+                                        disabled={isAdminCreated}
                                         {...register(`surcharge_${itemId}`)} type="text"
                                         value={surcharge}/>
                                 </Form.Group>
@@ -347,6 +349,7 @@ export const PaymentLineItem = ({
                         <Form.Group as={Col} xs={3} controlId={`total_${itemId}`}>
                             <Form.Control
                                 readOnly
+                                disabled={isAdminCreated}
                                 {...register(`total_${itemId}`)} type="text"
                                 value={total}/>
                         </Form.Group>

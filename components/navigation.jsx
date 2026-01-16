@@ -91,20 +91,39 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
 
     useEffect(() => {
         if (!isClient) return;
-        if (isDesktop && isOpen) {
-            document.body.style.paddingLeft = `${sidebarWidth-80}px`;
+        if (isDesktop) {
+            if (isOpen) {
+                document.body.style.marginLeft = `${sidebarWidth}px`;
+            } else {
+                document.body.style.marginLeft = "56px";
+            }
+            document.body.style.marginRight = "80px";
+            document.body.style.paddingLeft = "0";
+            document.body.style.paddingRight = "0";
+            document.body.style.paddingTop = "0";
         } else {
-            document.body.style.paddingLeft = "";
+            // Mobile: same 56px gray strip as desktop collapsed mode
+            document.body.style.marginLeft = "56px";
+            document.body.style.marginRight = "0";
+            document.body.style.paddingLeft = "0";
+            document.body.style.paddingRight = "0";
+            document.body.style.paddingTop = "0";
         }
         return () => {
+            document.body.style.marginLeft = "";
+            document.body.style.marginRight = "";
             document.body.style.paddingLeft = "";
+            document.body.style.paddingRight = "";
+            document.body.style.paddingTop = "";
         };
-    }, [isDesktop, isOpen, isClient, sidebarWidth]);
+    }, [isDesktop, isOpen, isClient]);
 
     useEffect(() => {
         if (!isClient) return;
         if (isDesktop) {
             setIsOpen(true);
+        } else {
+            setIsOpen(false);
         }
     }, [isDesktop, isClient]);
 
@@ -134,19 +153,35 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
 
     return (
         <>
+            {/* Background strip - always visible on desktop AND mobile */}
             <div
-                className="d-flex flex-column align-items-start"
-                style={{position: "fixed", top: 12, left: 12, zIndex: 1056, gap: 8}}
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: isDesktop && isOpen ? sidebarWidth : 56,
+                    height: "100vh",
+                    zIndex: 1040,
+                    transition: "width 0.3s ease",
+                    backgroundColor: '#f8f9fa',
+                    borderRight: '1px solid #dee2e6'
+                }}
+            />
+
+            {/* Toggle button - always visible */}
+            <div
+                className="d-flex flex-row align-items-center"
+                style={{position: "fixed", top: 12, left: 12, zIndex: 1056, gap: 12}}
             >
                 <Button
-                    variant="light"
                     onClick={() => setIsOpen(current => !current)}
                     aria-label="Toggle navigation"
-                    className="border-0 rounded-3 d-flex align-items-center justify-content-center"
+                    className="border-0 rounded-3 d-flex align-items-center justify-content-center bg-transparent"
                     style={{width: 32, height: 32, padding: 0}}
                 >
-                    <List className="text-primary" />
+                    <List className="text-primary" style={{fontSize: "1.5rem"}} />
                 </Button>
+                {isDesktop && isOpen && brand}
             </div>
 
             {isDesktop ? (
@@ -155,9 +190,6 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
                         className={classNames("d-flex", "flex-column", "px-3", bg && `bg-${bg}`)}
                         style={{width: sidebarWidth, height: "100vh", position: "fixed", top: 0, left: 0, zIndex: 1054, paddingTop: 80, paddingBottom: 32, overflowY: "auto"}}
                     >
-                        <div className="mb-3">
-                            {brand}
-                        </div>
                         <Nav className="flex-column mt-3" activeKey={page}>
                             {navLinks}
                         </Nav>

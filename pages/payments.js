@@ -51,6 +51,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     const [paymentItems, setPaymentItems] = useState([{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}]);
     const [total, setTotal] = useState("");
     const [adminItemIds, setAdminItemIds] = useState([]); // Track which items came from admin
+    const payButtonRef = React.useRef(null); // Reference to the Pay button
 
     // Feature flag: enable Square for snow site via NEXT_PUBLIC_USE_SQUARE_FOR_SNOW
     const [useSquare, setUseSquare] = useState(false);
@@ -130,7 +131,17 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                 await ensureScript();
                 const payments = window.Square.payments(applicationId, locationId);
                 setSquarePayments(payments);
-                const card = await payments.card();
+                // Card element will include postal code by default
+                const card = await payments.card({
+                    style: {
+                        '.input-container.is-focus': {
+                            borderColor: '#5FAFD2'
+                        },
+                        '.message-text': {
+                            color: '#dc3545'
+                        }
+                    }
+                });
                 await card.attach('#sq-card-container');
                 setSquareCard(card);
             } catch (e) {
@@ -222,12 +233,21 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                     setPaymentError('Payment form is not ready. Please refresh and try again.');
                     return;
                 }
+                // Tokenize the card - Square's card element collects card number, expiration, CVV, and postal code
                 const result = await squareCard.tokenize();
                 if (result?.status !== 'OK') {
-                    setPaymentError('Unable to tokenize card. Please verify your entries and try again.');
+                    const errorMessage = result?.errors?.[0]?.message || 'Unable to tokenize card. Please verify your entries and try again.';
+                    setPaymentError(errorMessage);
+                    console.error('Square tokenization error:', result);
                     return;
                 }
                 body.squareSourceId = result.token;
+
+                // Extract postal code from tokenization result if available
+                if (result?.details?.billing?.postalCode) {
+                    body.zip = result.details.billing.postalCode;
+                }
+
                 delete body.cc_number;
                 delete body.cc_expire;
                 delete body.cc_code;
@@ -258,8 +278,19 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                     break;
                 case 400:
                 default:
-                    const err = JSON.stringify(await resp.json());
-                    setPaymentError(`There was an error processing your payment: ${err.message}`)
+                    let errorMessage = "There was an error processing your payment.";
+                    try {
+                        const errorData = await resp.json();
+                        if (errorData && errorData.message) {
+                            errorMessage = `There was an error processing your payment: ${errorData.message}`;
+                        } else if (errorData && errorData.description) {
+                            errorMessage = `There was an error processing your payment: ${errorData.description}`;
+                        }
+                    } catch (jsonError) {
+                        // If JSON parsing fails, use the default error message
+                        console.error(`${new Date().toISOString()} - Failed to parse error response:`, jsonError);
+                    }
+                    setPaymentError(errorMessage);
                     break;
             }
         } catch (e) {
@@ -373,12 +404,16 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                             <Form.Group as={Col} className="mb-3" controlId="state">
                                                 <Form.Label className="required">State</Form.Label>
                                                 <Form.Select
-                                                    className={errors && errors.state && classNames("border-danger")} {...register("state", {
-                                                    required: {
-                                                        value: true,
-                                                        message: "State is required."
-                                                    }
-                                                })} type="text" placeholder="State" defaultValue="">
+                                                    className={errors && errors.state && classNames("border-danger")}
+                                                    {...register("state", {
+                                                        required: {
+                                                            value: true,
+                                                            message: "State is required."
+                                                        }
+                                                    })}
+                                                    type="text"
+                                                    placeholder="State"
+                                                    defaultValue="">
                                                     <option value="" disabled>Select State</option>
                                                     <option value="AL">Alabama</option>
                                                     <option value="AK">Alaska</option>
@@ -445,19 +480,25 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                                     <Form.Text
                                                         className={classNames("text-danger")}>{errors && errors.state.message}</Form.Text>}
                                             </Form.Group>
-                                            <Form.Group as={Col} className="mb-3" controlId="zip">
-                                                <Form.Label className="required">Zip Code</Form.Label>
-                                                <Form.Control
-                                                    className={errors && errors.zip && classNames("border-danger")} {...register("zip", {
-                                                    required: {
-                                                        value: true,
-                                                        message: "Zip/Postal Code is required."
-                                                    }
-                                                })} type="text" placeholder="Zip Code"/>
-                                                {errors && errors.zip &&
-                                                    <Form.Text
-                                                        className={classNames("text-danger")}>{errors && errors.zip.message}</Form.Text>}
-                                            </Form.Group>
+                                            {!useSquare && (
+                                                <Form.Group as={Col} className="mb-3" controlId="zip">
+                                                    <Form.Label className="required">Zip Code</Form.Label>
+                                                    <Form.Control
+                                                        className={errors && errors.zip && classNames("border-danger")}
+                                                        {...register("zip", {
+                                                            required: {
+                                                                value: true,
+                                                                message: "Zip/Postal Code is required."
+                                                            }
+                                                        })}
+                                                        type="text"
+                                                        placeholder="Zip Code"
+                                                    />
+                                                    {errors && errors.zip &&
+                                                        <Form.Text
+                                                            className={classNames("text-danger")}>{errors && errors.zip.message}</Form.Text>}
+                                                </Form.Group>
+                                            )}
                                         </Row>
                                         <hr/>
                                         {useSquare && (
@@ -467,6 +508,26 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                                     <Col xs={12} className="mb-3">
                                                         <div id="sq-card-container" style={{border: '1px solid #ced4da', borderRadius: 4, padding: 12}} />
                                                         <Form.Text className="text-muted">Your card details are securely handled by Square.</Form.Text>
+                                                        {/* Hidden element to catch tab focus after Square card and redirect to Pay button if admin items exist */}
+                                                        <input
+                                                            type="text"
+                                                            tabIndex={0}
+                                                            onFocus={(e) => {
+                                                                const allAdminCreated = paymentItems.length > 0 && paymentItems.every(item => item.isAdminCreated);
+                                                                if (allAdminCreated && payButtonRef.current) {
+                                                                    e.preventDefault();
+                                                                    payButtonRef.current.focus();
+                                                                }
+                                                            }}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                left: '-9999px',
+                                                                width: '1px',
+                                                                height: '1px',
+                                                                opacity: 0
+                                                            }}
+                                                            aria-hidden="true"
+                                                        />
                                                     </Col>
                                                 </Row>
                                             </>
@@ -594,10 +655,25 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                                 </div>
                                             }
                                         </Row>
+                                        {paymentError &&
+                                            <Alert dismissible={true} variant={"danger"}
+                                                   onClick={() => setPaymentError(null)}>{paymentError} Please verify your
+                                                data and try again or {<Link
+                                                    href="/contact">Contact
+                                                    us</Link>} </Alert>
+                                        }
+                                        {paymentInfo &&
+                                            <Alert dismissible={true} variant={"warning"}
+                                                   onClick={() => setPaymentInfo(null)}>{paymentInfo}</Alert>
+                                        }
                                         <div style={{width: "100%"}}
                                              className={classNames("mb-3", "justify-content-center", "d-inline-flex")}>
-                                            <Button variant="primary" disabled={!isDirty} type="submit"
-                                                    style={{margin: "5px"}}>Pay</Button>
+                                            <Button
+                                                ref={payButtonRef}
+                                                variant="primary"
+                                                disabled={!isDirty}
+                                                type="submit"
+                                                style={{margin: "5px"}}>Pay</Button>
                                         </div>
                                     </Form>
                                 </div>

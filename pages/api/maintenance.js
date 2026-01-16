@@ -45,8 +45,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
             case "POST": {
                 const {tenant_first_name, tenant_last_name, username, email, apartment_number, room, request, user_id} = req.body || {};
                 if (!apartment_number || !room || !request) {
-                    res.body = {error: "validation_error", description: "Missing required fields."};
-                    res.status(400).send();
+                    res.status(400).json({error: "validation_error", description: "Missing required fields."});
                     return;
                 }
 
@@ -105,9 +104,8 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        res.body = {error: e.code, description: e.message};
-        res.status(400).send();
         console.error(`${new Date().toISOString()} -`, e);
+        res.status(400).json({error: e.code, description: e.message});
     }
 }, ironOptions);
 
