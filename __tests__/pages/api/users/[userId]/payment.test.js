@@ -1,18 +1,29 @@
 import handler from '../../../../../pages/api/users/[userId]/payment';
 import {AddUserPayment, MarkPaymentDeleted, MarkPaymentReviewed} from '../../../../../lib/db/users/userPayment';
 import {MarkTenantPaymentItemsPaid} from '../../../../../lib/db/users/tenantPaymentItems';
+import {GetTenant, GetTenantSquareCustomerId, UpdateTenantSquareCustomerId} from '../../../../../lib/db/users/tenant';
 import chargeCreditCard from '../../../../../lib/payment/chargeCreditCard';
 import chargeSquare from '../../../../../lib/payment/chargeSquare';
+import {getOrCreateCustomer} from '../../../../../lib/payment/squareCustomers';
 
 // Mock dependencies
 jest.mock('../../../../../lib/db/users/userPayment');
 jest.mock('../../../../../lib/db/users/tenantPaymentItems');
 jest.mock('../../../../../lib/payment/chargeCreditCard');
 jest.mock('../../../../../lib/payment/chargeSquare');
+jest.mock('../../../../../lib/payment/squareCustomers');
+jest.mock('../../../../../lib/db/users/tenant');
 
-// Mock iron-session
+// Mock pages/user to prevent import errors
+jest.mock('../../../../../pages/user', () => ({
+    default: {},
+    __esModule: true
+}));
+
+// Mock iron-session for both API routes and SSR
 jest.mock('iron-session/next', () => ({
-    withIronSessionApiRoute: (handler) => handler
+    withIronSessionApiRoute: (handler) => handler,
+    withIronSessionSsr: (handler) => handler
 }));
 
 describe('/api/users/[userId]/payment', () => {
@@ -39,6 +50,29 @@ describe('/api/users/[userId]/payment', () => {
         };
 
         jest.clearAllMocks();
+
+        // Setup default mock implementations for tenant functions
+        GetTenant.mockResolvedValue({
+            user_id: 123,
+            first_name: 'Test',
+            last_name: 'User',
+            email: 'test@example.com',
+            cell_phone: '8015551234',
+            street: '123 Test St',
+            city: 'Test City',
+            state: 'UT',
+            zip: '84601'
+        });
+
+        GetTenantSquareCustomerId.mockResolvedValue(null);
+        UpdateTenantSquareCustomerId.mockResolvedValue();
+
+        // Setup default mock for customer creation
+        getOrCreateCustomer.mockResolvedValue({
+            customerId: 'CUSTOMER_TEST_123',
+            isNew: true,
+            customer: { id: 'CUSTOMER_TEST_123', emailAddress: 'test@example.com' }
+        });
     });
 
     describe('POST - Create Payment', () => {

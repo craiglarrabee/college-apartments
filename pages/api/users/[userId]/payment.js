@@ -4,8 +4,10 @@ import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
 import {AddUserPayment, MarkPaymentDeleted, MarkPaymentReviewed} from "../../../../lib/db/users/userPayment";
 import {MarkTenantPaymentItemsPaid} from "../../../../lib/db/users/tenantPaymentItems";
+import {GetTenant, GetTenantSquareCustomerId, UpdateTenantSquareCustomerId} from "../../../../lib/db/users/tenant";
 import chargeCreditCard from "../../../../lib/payment/chargeCreditCard";
 import chargeSquare from "../../../../lib/payment/chargeSquare";
+import {getOrCreateCustomer} from "../../../../lib/payment/squareCustomers";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
             if (!req.session?.user?.isLoggedIn) res.status(403).send();
@@ -18,6 +20,54 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         const useSquareForSnow = process.env.USE_SQUARE_FOR_SNOW === 'true';
                         const isSnowSite = req.query.site === 'snow';
                         if (useSquareForSnow && isSnowSite && data.squareSourceId) {
+                            // Get tenant information
+                            const tenant = await GetTenant(req.query.site, req.query.userId);
+
+                            if (!tenant) {
+                                throw { errormessage: "Tenant not found", statusCode: 404 };
+                            }
+
+                            // Get or create Square customer
+                            let customerId = await GetTenantSquareCustomerId(req.query.userId);
+
+                            if (!customerId) {
+                                // No customer ID stored yet - get or create one
+                                try {
+                                    const customerResult = await getOrCreateCustomer({
+                                        location: data.location,
+                                        email: tenant.email,
+                                        givenName: tenant.first_name,
+                                        familyName: tenant.last_name,
+                                        phoneNumber: tenant.cell_phone,
+                                        referenceId: req.query.userId.toString(),
+                                        address: {
+                                            addressLine1: tenant.street,
+                                            locality: tenant.city,
+                                            administrativeDistrictLevel1: tenant.state,
+                                            postalCode: tenant.zip
+                                        }
+                                    });
+
+                                    customerId = customerResult.customerId;
+
+                                    // Save customer ID to tenant record for future use
+                                    await UpdateTenantSquareCustomerId(req.query.userId, customerId);
+
+                                    if (process.env.NODE_ENV !== 'production') {
+                                        console.log(`${new Date().toISOString()} - ${customerResult.isNew ? 'Created' : 'Found'} Square customer ${customerId} for tenant ${req.query.userId}`);
+                                    }
+                                } catch (customerError) {
+                                    // Log customer creation error but continue with payment (customer ID not critical)
+                                    console.error(`${new Date().toISOString()} - Failed to get/create Square customer:`, customerError);
+                                    // Customer ID will be undefined - payment will proceed without it
+                                }
+                            }
+
+                            // Add customer ID to payment data (if we have one)
+                            if (customerId) {
+                                data.customerId = customerId;
+                            }
+
                             // Never log or persist the raw token
                             payResp = await chargeSquare(data);
                         } else {

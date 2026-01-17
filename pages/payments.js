@@ -343,7 +343,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                         <Alert dismissible={true} variant={"danger"}
                                                onClick={() => setPaymentError(null)}>{paymentError} Please verify your
                                             data and try again or {<Link
-                                                href="/contact">Contact
+                                                href={`/contact?site=${site}`}>Contact
                                                 us</Link>} </Alert>
                                     }
                                     <Form onSubmit={handleSubmit(submitForm)} method="post">
@@ -659,7 +659,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                             <Alert dismissible={true} variant={"danger"}
                                                    onClick={() => setPaymentError(null)}>{paymentError} Please verify your
                                                 data and try again or {<Link
-                                                    href="/contact">Contact
+                                                    href={`/contact?site=${site}`}>Contact
                                                     us</Link>} </Alert>
                                         }
                                         {paymentInfo &&
