@@ -590,7 +590,7 @@ const Tenant = ({
                                                 </Table>
                                             </Tab>
                                         }
-                                        {!isTenant && site === "snow" && false &&
+                                        {!isTenant && site === "snow" &&
                                             <Tab title="Manage Payment Items" eventKey={8} key={8}>
                                                 <ManagePaymentItems userId={userId} site={site} initialItems={paymentItems || []} />
                                             </Tab>
@@ -693,7 +693,7 @@ const Tenant = ({
                                                     </Tab>)}
                                             </Tabs>
                                         </Tab>
-                                        {site === 'snow' && false &&
+                                        {site === 'snow' &&
                                             <Tab title="Files" eventKey={9} key={9}>
                                                 {filesSuccess && (
                                                     <Alert variant="success" dismissible onClose={() => setFilesSuccess(undefined)}>{filesSuccess}</Alert>
