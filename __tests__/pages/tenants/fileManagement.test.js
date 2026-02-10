@@ -24,13 +24,14 @@ describe('Tenant File Management', () => {
     });
 
     describe('File Upload', () => {
-        it('should validate PNG and PDF file types', () => {
-            const allowed = /^(image\/png|application\/pdf)$/;
+        it('should validate all image types and PDF file types', () => {
+            const allowed = /^(image\/.*|application\/pdf)$/;
 
             expect(allowed.test('image/png')).toBe(true);
+            expect(allowed.test('image/jpeg')).toBe(true);
+            expect(allowed.test('image/gif')).toBe(true);
+            expect(allowed.test('image/webp')).toBe(true);
             expect(allowed.test('application/pdf')).toBe(true);
-            expect(allowed.test('image/jpeg')).toBe(false);
-            expect(allowed.test('image/gif')).toBe(false);
             expect(allowed.test('text/plain')).toBe(false);
         });
 
@@ -126,9 +127,9 @@ describe('Tenant File Management', () => {
 
     describe('File Replace', () => {
         it('should validate replacement file type', () => {
-            const allowed = /^(image\/png|application\/pdf)$/;
-            const validFile = { type: 'image/png' };
-            const invalidFile = { type: 'image/jpeg' };
+            const allowed = /^(image\/.*|application\/pdf)$/;
+            const validFile = { type: 'image/jpeg' };
+            const invalidFile = { type: 'text/plain' };
 
             expect(allowed.test(validFile.type)).toBe(true);
             expect(allowed.test(invalidFile.type)).toBe(false);
@@ -168,13 +169,13 @@ describe('Tenant File Management', () => {
         it('should generate error messages for rejected files', () => {
             const rejected = [
                 'file1.pdf: name must be <= 150 characters',
-                'file2.jpg: only PNGs and PDFs are allowed',
+                'file2.txt: only images and PDFs are allowed',
                 'file3.pdf: exceeds 25 MB'
             ];
 
             const errorMessage = rejected.join('\n');
             expect(errorMessage).toContain('file1.pdf');
-            expect(errorMessage).toContain('file2.jpg');
+            expect(errorMessage).toContain('file2.txt');
             expect(errorMessage).toContain('file3.pdf');
         });
 

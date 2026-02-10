@@ -108,7 +108,7 @@ const Tenant = ({
         setFilesSuccess(undefined);
         if (!fileList || fileList.length === 0) return;
         // client-side checks for filename length and type
-        const allowed = /^(image\/png|application\/pdf)$/;
+        const allowed = /^(image\/.*|application\/pdf)$/;
         const maxMb = parseInt(process.env.FILE_UPLOAD_MAX_MB || '25', 10);
         const maxBytes = maxMb * 1024 * 1024;
         const rejected = [];
@@ -119,7 +119,7 @@ const Tenant = ({
                 continue;
             }
             if (!allowed.test(f.type)) {
-                rejected.push(`${f.name}: only PNGs and PDFs are allowed`);
+                rejected.push(`${f.name}: only images and PDFs are allowed`);
                 continue;
             }
             if (f.size > maxBytes) {
@@ -256,11 +256,11 @@ const Tenant = ({
         if (!newFile) return;
         setFilesError(undefined);
         setFilesSuccess(undefined);
-        const allowed = /^(image\/png|application\/pdf)$/;
+        const allowed = /^(image\/.*|application\/pdf)$/;
         const maxMb = parseInt(process.env.FILE_UPLOAD_MAX_MB || '25', 10);
         const maxBytes = maxMb * 1024 * 1024;
         if (newFile.size > maxBytes) { setFilesError(`File too large. Max ${maxMb} MB`); return; }
-        if (!allowed.test(newFile.type)) { setFilesError('Only PNG images and PDFs are allowed'); return; }
+        if (!allowed.test(newFile.type)) { setFilesError('Only images and PDFs are allowed'); return; }
         const form = new FormData();
         form.append('file', newFile);
         try {
@@ -712,7 +712,7 @@ const Tenant = ({
                                                 <input
                                                     type="file"
                                                     id="fileUploadInput"
-                                                    accept="image/png,application/pdf"
+                                                    accept="image/*,application/pdf"
                                                     multiple
                                                     onChange={(e)=> { handleUpload(e.target.files); e.target.value = ''; }}
                                                     style={{display: 'none'}}
@@ -757,7 +757,7 @@ const Tenant = ({
                                                                 <Button size="sm" variant="secondary" className="me-2" onClick={() => handleRename(f)}>Rename</Button>
                                                                 <label className="btn btn-sm btn-outline-primary me-2 mb-0">
                                                                     Replace
-                                                                    <input type="file" accept="image/png,application/pdf" style={{display:'none'}} onChange={(e)=> { const file = e.target.files?.[0]; e.target.value = ''; handleReplace(f, file); }} />
+                                                                    <input type="file" accept="image/*,application/pdf" style={{display:'none'}} onChange={(e)=> { const file = e.target.files?.[0]; e.target.value = ''; handleReplace(f, file); }} />
                                                                 </label>
                                                                 <Button size="sm" variant="danger" onClick={() => handleDeleteFile(f)}>Delete</Button>
                                                             </td>

@@ -12,24 +12,7 @@ const nextConfig = {
     // Enable source maps for debugging
     productionBrowserSourceMaps: false,
 };
-const redirects = [
-    {
-        source: '/:path*',
-        has: [
-            {
-                type: 'query',
-                key: 'site',
-                value: 'snow',
-            },
-        ],
-        destination: 'https://parkplaceephraim.prospectportal.com/',
-        permanent: true, // Set to true for a 308 redirect, false for a 307 redirect
-    },
-];
 
 module.exports = {
     ...nextConfig,
-  // async redirects() {
-  //   return redirects;
-  // },
 };
