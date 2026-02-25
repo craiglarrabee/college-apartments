@@ -92,6 +92,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     from,
                     // to: "h2oskier1968@gmail.com",
                     to: "shaneen@utahcollegeapartments.com",
+                    cc: "parkplace@utahcollegeapartments.com",
                     subject: `Maintenance Request - ${fullName || uname} - ${apartment_number} - ${room}`,
                     html
                 });
