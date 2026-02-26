@@ -23,6 +23,16 @@ const snowTransporter = nodemailer.createTransport({
     }
 });
 
+const snowMaintTransporter = nodemailer.createTransport({
+    host: "uca.snowcollegeapartments.com",
+    port: 465,
+    secure: true,
+    auth: {
+        user: process.env.SNOW_MAINT_EMAIL_USER,
+        pass: process.env.SNOW_MAINT_EMAIL_PASS
+    }
+});
+
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session?.user?.isLoggedIn) {
         res.status(403).send();
@@ -50,8 +60,8 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 }
 
                 const site = req.query.site || process.env.SITE || "suu";
-                const transporter = site === "suu" ? suuTransporter : snowTransporter;
-                const from = site === "suu" ? process.env.SUU_EMAIL_USER : process.env.SNOW_EMAIL_USER;
+                const transporter = site === "suu" ? suuTransporter : snowMaintTransporter;
+                const from = site === "suu" ? process.env.SUU_EMAIL_USER : process.env.SNOW_MAINT_EMAIL_USER;
 
                 const firstName = tenant_first_name || req.session.user?.first_name || "";
                 const lastName = tenant_last_name || req.session.user?.last_name || "";
