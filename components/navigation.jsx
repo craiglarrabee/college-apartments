@@ -51,16 +51,17 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
             const expanded = expandedParents.has(item.page);
             return (
                 <div key={item.position} className="mb-2">
-                    <button
-                        type="button"
-                        onClick={() => toggleParent(item.page)}
-                        className="d-flex align-items-center w-100 border-0 bg-transparent px-0 py-2 fw-bold text-start nav-link text-primary"
-                        aria-expanded={expanded}
-                        aria-controls={`submenu-${item.page}`}
-                    >
-                        <span className="me-2" aria-hidden="true" style={{fontSize: "1.3rem", lineHeight: 1}}>{expanded ? "▾" : "▸"}</span>
-                        <span className="mb-0 fw-bolder" style={{fontSize: "1.4rem"}}>{item.label}</span>
-                    </button>
+                        <button
+                            type="button"
+                            onClick={() => toggleParent(item.page)}
+                            className="d-flex align-items-center w-100 border-0 bg-transparent px-0 py-2 fw-bold text-start nav-link text-primary"
+                            aria-expanded={expanded}
+                            aria-controls={`submenu-${item.page}`}
+                            style={{ touchAction: "manipulation" }}
+                        >
+                            <span className="me-2" aria-hidden="true" style={{fontSize: "1.3rem", lineHeight: 1}}>{expanded ? "▾" : "▸"}</span>
+                            <span className="mb-0 fw-bolder" style={{fontSize: "1.4rem"}}>{item.label}</span>
+                        </button>
                     {expanded ? (
                         <div id={`submenu-${item.page}`} className="ms-4 mt-1">
                             {children}
@@ -77,6 +78,7 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
                     onClick={handleClick}
                     target={item.target}
                     active={page === item.page}
+                    style={{ touchAction: "manipulation" }}
                 >
                     {item.label}
                 </Nav.Link>
@@ -188,7 +190,7 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
                 isOpen ? (
                     <aside
                         className={classNames("d-flex", "flex-column", "px-3", bg && `bg-${bg}`)}
-                        style={{width: sidebarWidth, height: "100vh", position: "fixed", top: 0, left: 0, zIndex: 1054, paddingTop: 80, paddingBottom: 32, overflowY: "auto"}}
+                        style={{width: sidebarWidth, height: "100vh", position: "fixed", top: 0, left: 0, zIndex: 1054, paddingTop: 80, paddingBottom: 32, overflowY: "auto", WebkitOverflowScrolling: "touch"}}
                     >
                         <Nav className="flex-column mt-3" activeKey={page}>
                             {navLinks}
@@ -200,16 +202,28 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
                     show={isOpen}
                     onHide={() => setIsOpen(false)}
                     placement="start"
-                    scroll
-                    backdrop
+                    scroll={true}
+                    backdrop={true}
                     className={classNames("border-0", bg && `bg-${bg}`, variant && `text-${variant === "light" ? "dark" : "light"}`)}
-                    style={{height: "100vh", maxWidth: sidebarWidth, zIndex: 1055}}
+                    style={{height: "100dvh", maxWidth: sidebarWidth, zIndex: 1055}}
                 >
-                    <Offcanvas.Body className="px-3" style={{paddingTop: 80, paddingBottom: 32, overflowY: "auto", WebkitOverflowScrolling: "touch"}}>
+                    <Offcanvas.Body
+                        className="px-3"
+                        style={{
+                            paddingTop: 80,
+                            paddingBottom: 80,
+                            overflowY: "scroll",
+                            WebkitOverflowScrolling: "touch",
+                            height: "auto",
+                            maxHeight: "100%",
+                            display: "block",
+                            position: "relative"
+                        }}
+                    >
                         <div className="mb-3">
                             {brand}
                         </div>
-                        <Nav className="flex-column mt-3" activeKey={page}>
+                        <Nav className="flex-column mt-3" activeKey={page} style={{paddingBottom: "150px", minHeight: "calc(100dvh + 1px)"}}>
                             {navLinks}
                         </Nav>
                     </Offcanvas.Body>
