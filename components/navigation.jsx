@@ -203,9 +203,9 @@ const Navigation = ({bg, variant, brandUrl, links, page, site, isBot}) => {
                     scroll
                     backdrop
                     className={classNames("border-0", bg && `bg-${bg}`, variant && `text-${variant === "light" ? "dark" : "light"}`)}
-                    style={{minHeight: "100vh", maxWidth: sidebarWidth, zIndex: 1055}}
+                    style={{height: "100vh", maxWidth: sidebarWidth, zIndex: 1055}}
                 >
-                    <Offcanvas.Body className="px-3" style={{paddingTop: 80, paddingBottom: 32}}>
+                    <Offcanvas.Body className="px-3" style={{paddingTop: 80, paddingBottom: 32, overflowY: "auto", WebkitOverflowScrolling: "touch"}}>
                         <div className="mb-3">
                             {brand}
                         </div>
