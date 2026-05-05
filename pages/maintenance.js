@@ -10,6 +10,7 @@ import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {GetTenant} from "../lib/db/users/tenant";
 import {GetMostRecentTenantApartment} from "../lib/db/users/userLease";
+import {ExecuteQuery} from "../lib/db/pool";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {isBot} from "../lib/bots";
@@ -20,10 +21,11 @@ const bg = process.env.BG;
 const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
-const Maintenance = ({site, isABot, links, user, tenant, apartment_number}) => {
+const Maintenance = ({site, isABot, links, user, tenant, apartment_number, semesters}) => {
     const [room, setRoom] = useState("");
     const [request, setRequest] = useState("");
     const [apartment, setApartment] = useState(apartment_number || "");
+    const [semester, setSemester] = useState(semesters?.[0]?.semester || "");
     const [error, setError] = useState(null);
     const [info, setInfo] = useState(null);
 
@@ -38,6 +40,7 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number}) => {
         e?.preventDefault();
         setError(null);
         setInfo(null);
+        const selectedSemester = data?.semester || semester;
         try {
             const resp = await fetch(`/api/maintenance?site=${site}` , {
                 method: "POST",
@@ -49,15 +52,22 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number}) => {
                     email: tenant?.email,
                     apartment_number: apartment_number || data?.apartment_number?.trim() || "",
                     room: data?.room?.trim(),
-                    request: data?.request?.trim()
+                    request: data?.request?.trim(),
+                    semester: selectedSemester
                 })
             });
             if (resp.status === 204 || resp.status === 200) {
                 setInfo("Maintenance request sent.");
                 setRoom("");
                 setRequest("");
+                setSemester(semesters?.[0]?.semester || "");
                 if (!apartment_number) { setApartment(""); }
-                try { resetField("room"); resetField("request"); if (!apartment_number) resetField("apartment_number"); } catch {}
+                try { 
+                    resetField("room"); 
+                    resetField("request"); 
+                    resetField("semester");
+                    if (!apartment_number) resetField("apartment_number"); 
+                } catch {}
             } else {
                 let errText = "There was an error sending your request.";
                 try {
@@ -118,6 +128,28 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number}) => {
                                                 </Form.Text>
                                             )}
                                         </>
+                                    )}
+                                </Form.Group>
+                            </Row>
+                            <Row>
+                                <Form.Group as={Col} className="mb-3" controlId="semester">
+                                    <Form.Label className="required">Semester</Form.Label>
+                                    <Form.Control
+                                        as="select"
+                                        {...register("semester", {
+                                            required: {value: true, message: "Semester is required."}
+                                        })}
+                                        value={semester}
+                                        onChange={(e) => setSemester(e.target.value)}
+                                    >
+                                        {semesters?.map((s, idx) => (
+                                            <option key={idx} value={s.semester}>{s.semester}</option>
+                                        ))}
+                                    </Form.Control>
+                                    {errors && errors.semester && (
+                                        <Form.Text className={classNames("text-danger")}>
+                                            {errors.semester.message}
+                                        </Form.Text>
                                     )}
                                 </Form.Group>
                             </Row>
@@ -186,13 +218,15 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
 
-    const [nav, tenantFull, mostRecent] = await Promise.all([
+    const [nav, tenantFull, mostRecent, tenantSemesters] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(site, user.id),
-        GetMostRecentTenantApartment(site, user.id)
+        GetMostRecentTenantApartment(site, user.id),
+        ExecuteQuery("SELECT DISTINCT semester FROM user_lease_tenant WHERE user_id = ? AND semester IS NOT NULL ORDER BY SUBSTR(semester, LOCATE(' ', semester) + 1) DESC, CASE WHEN semester LIKE 'Fall%' THEN 3 WHEN semester LIKE 'Spring%' THEN 1 ELSE 2 END DESC", [user.id])
     ]);
 
     const apartment_number = mostRecent?.apartment_number || "";
+    const semesters = tenantSemesters[0] || [];
 
     // Build a minimal tenant object from most recent lease info, fallback to full tenant if needed
     const tenant = {
@@ -209,7 +243,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             isABot: isBot(context),
             user: {...user},
             tenant,
-            apartment_number
+            apartment_number,
+            semesters
         }
     };
 }, ironOptions);

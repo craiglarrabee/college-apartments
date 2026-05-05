@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS maintenance_request (
     apartment_number VARCHAR(50) NOT NULL,
     room VARCHAR(100) NOT NULL,
     request VARCHAR(1000) NOT NULL,
+    semester VARCHAR(50) NULL,
     created_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     closed_datetime DATETIME NULL,
     closed_comments VARCHAR(1000) NULL,

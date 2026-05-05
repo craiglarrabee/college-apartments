@@ -6,22 +6,49 @@ import Title from "../components/title";
 import Footer from "../components/footer";
 import React, {useState} from "react";
 import classNames from "classnames";
-import {Alert, Button, Form, Table, Tabs, Tab} from "react-bootstrap";
+import {Alert, Button, Form, Table, Tabs, Tab, Dropdown} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
-import {GetClosedMaintenanceRequests, GetOpenMaintenanceRequests} from "../lib/db/users/maintenance";
+import {GetClosedMaintenanceRequests, GetOpenMaintenanceRequests, GetAllMaintenanceSemesters} from "../lib/db/users/maintenance";
+import {GetActiveSemesters} from "../lib/db/users/userLease";
+import {useRouter} from "next/router";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
 const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
-const MaintenanceManage = ({site, isABot, links, user, openRequests, closedRequests}) => {
+const MaintenanceManage = ({site, isABot, links, user, openRequests, closedRequests, activeSemesters, selectedSemester}) => {
+    const router = useRouter();
     const [error, setError] = useState(null);
     const [openRows, setOpenRows] = useState(openRequests || []);
     const [closedRows, setClosedRows] = useState(closedRequests || []);
     const [commentsMap, setCommentsMap] = useState({});
+    const [copiedId, setCopiedId] = useState(null);
+
+    // Update local state when props change (due to router navigation)
+    React.useEffect(() => {
+        setOpenRows(openRequests || []);
+        setClosedRows(closedRequests || []);
+    }, [openRequests, closedRequests]);
+
+    const handleSemesterSelect = (semester) => {
+        const query = {...router.query};
+        if (semester) {
+            query.semester = semester;
+        } else {
+            delete query.semester;
+        }
+        router.push({pathname: router.pathname, query});
+    };
+
+    const handleCopy = (text, id) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 2000);
+        });
+    };
 
     const closeRequest = async (id) => {
         setError(null);
@@ -51,12 +78,27 @@ const MaintenanceManage = ({site, isABot, links, user, openRequests, closedReque
                     {error && <Alert dismissible onClose={() => setError(null)} variant="danger">{error}</Alert>}
                     <div className={classNames("main-content")}
                          style={{marginTop: "10px"}}>
+                        <div className="mb-3 d-flex align-items-center" style={{gap: "10px"}}>
+                            <Form.Label className="mb-0"><strong>Semester</strong></Form.Label>
+                            <Dropdown onSelect={handleSemesterSelect}>
+                                <Dropdown.Toggle variant="outline-secondary" id="dropdown-semester">
+                                    {selectedSemester || "All Semesters"}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item eventKey="">All Semesters</Dropdown.Item>
+                                    {activeSemesters?.map((s, idx) => (
+                                        <Dropdown.Item key={idx} eventKey={s.semester}>{s.semester}</Dropdown.Item>
+                                    ))}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>
                         <Tabs defaultActiveKey="open" id="maintenance-manage-tabs" className="mb-3">
                             <Tab eventKey="open" title={`Open Requests (${openRows.length})`}>
                                 <Table>
                                     <thead>
                                     <tr>
                                         <th>Created Date</th>
+                                        <th>Semester</th>
                                         <th>Tenant</th>
                                         <th>Email</th>
                                         <th>Apartment</th>
@@ -70,11 +112,23 @@ const MaintenanceManage = ({site, isABot, links, user, openRequests, closedReque
                                     {openRows.map(row => (
                                         <tr key={row.id}>
                                             <td>{row.created_datetime}</td>
+                                            <td>{row.semester}</td>
                                             <td><a href={`/tenants/${row.user_id}?site=${site}`}>{row.tenant_name}</a></td>
                                             <td>{row.email}</td>
                                             <td>{row.apartment_number}</td>
                                             <td>{row.room}</td>
-                                            <td style={{whiteSpace: 'pre-wrap'}}>{row.request}</td>
+                                            <td style={{whiteSpace: 'pre-wrap'}}>
+                                                {row.request}
+                                                <div className="mt-1">
+                                                    <Button
+                                                        variant="outline-secondary"
+                                                        size="sm"
+                                                        onClick={() => handleCopy(row.request, row.id)}
+                                                    >
+                                                        {copiedId === row.id ? "Copied!" : "Copy"}
+                                                    </Button>
+                                                </div>
+                                            </td>
                                             <td>
                                                 <Form.Control
                                                     as="textarea"
@@ -106,6 +160,7 @@ const MaintenanceManage = ({site, isABot, links, user, openRequests, closedReque
                                         <th>Email</th>
                                         <th>Apartment</th>
                                         <th>Room</th>
+                                        <th>Semester</th>
                                         <th>Request</th>
                                         <th>Created Date</th>
                                         <th>Closed Date</th>
@@ -118,7 +173,19 @@ const MaintenanceManage = ({site, isABot, links, user, openRequests, closedReque
                                             <td>{row.email}</td>
                                             <td>{row.apartment_number}</td>
                                             <td>{row.room}</td>
-                                            <td style={{whiteSpace: 'pre-wrap'}}>{row.request}</td>
+                                            <td>{row.semester}</td>
+                                            <td style={{whiteSpace: 'pre-wrap'}}>
+                                                {row.request}
+                                                <div className="mt-1">
+                                                    <Button
+                                                        variant="outline-secondary"
+                                                        size="sm"
+                                                        onClick={() => handleCopy(row.request, row.id)}
+                                                    >
+                                                        {copiedId === row.id ? "Copied!" : "Copy"}
+                                                    </Button>
+                                                </div>
+                                            </td>
                                             <td>{row.created_datetime}</td>
                                             <td>{row.closed_datetime}</td>
                                         </tr>
@@ -143,6 +210,7 @@ const MaintenanceManage = ({site, isABot, links, user, openRequests, closedReque
 export const getServerSideProps = withIronSessionSsr(async function (context) {
     await context.req.session.save();
     const site = context.query.site || SITE;
+    const semester = context.query.semester || null;
     const user = context.req.session.user;
     if (!user?.isLoggedIn || !user?.admin?.includes(site) || !user?.manageApartment) {
         context.res.writeHead(302, {Location: `/index?site=${site}`});
@@ -150,10 +218,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
 
+    const allSemesters = await GetAllMaintenanceSemesters(site);
+    const selectedSemester = context.query.semester || allSemesters[0]?.semester || "";
+
     const [nav, open, closed] = await Promise.all([
         GetNavLinks(user, site),
-        GetOpenMaintenanceRequests(site),
-        GetClosedMaintenanceRequests(site)
+        GetOpenMaintenanceRequests(site, selectedSemester),
+        GetClosedMaintenanceRequests(site, selectedSemester)
     ]);
 
     return {
@@ -164,7 +235,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             user: {...user},
             openRequests: open,
             closedRequests: closed,
-            
+            activeSemesters: allSemesters,
+            selectedSemester: selectedSemester
         }
     };
 }, ironOptions);

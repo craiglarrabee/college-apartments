@@ -44,16 +44,17 @@ const handler = withIronSessionApiRoute(async (req, res) => {
             case "GET": {
                 const user = req.session?.user;
                 const site = req.query.site || process.env.SITE || "suu";
+                const semester = req.query.semester;
                 if (!user?.isLoggedIn || !user?.admin?.includes(site) || !user?.manageApartment) {
                     res.status(403).send();
                     return;
                 }
-                const rows = await GetOpenMaintenanceRequests(site);
+                const rows = await GetOpenMaintenanceRequests(site, semester);
                 res.status(200).json(rows);
                 return;
             }
             case "POST": {
-                const {tenant_first_name, tenant_last_name, username, email, apartment_number, room, request, user_id} = req.body || {};
+                const {tenant_first_name, tenant_last_name, username, email, apartment_number, room, request, user_id, semester} = req.body || {};
                 if (!apartment_number || !room || !request) {
                     res.status(400).json({error: "validation_error", description: "Missing required fields."});
                     return;
@@ -79,7 +80,8 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         email: emailAddr,
                         apartment_number,
                         room,
-                        request
+                        request,
+                        semester
                     });
                 } catch (dbErr) {
                     // Continue to attempt email but still report error if both fail
