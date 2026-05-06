@@ -6,7 +6,7 @@ import Footer from "../components/footer";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import classNames from "classnames";
-import {Alert, Button, Col, Form, Row} from "react-bootstrap";
+import {Alert, Button, Col, Form, Row, Dropdown} from "react-bootstrap";
 import {GetNavLinks} from "../lib/db/content/navLinks";
 import {GetTenant} from "../lib/db/users/tenant";
 import {GetMostRecentTenantApartment} from "../lib/db/users/userLease";
@@ -14,6 +14,7 @@ import {ExecuteQuery} from "../lib/db/pool";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../lib/session/options";
 import {isBot} from "../lib/bots";
+import {getEstimatedSemesters} from "../lib/util";
 import Link from "next/link";
 
 const SITE = process.env.SITE;
@@ -21,11 +22,12 @@ const bg = process.env.BG;
 const variant = process.env.VARIANT;
 const brandUrl = process.env.BRAND_URL;
 
-const Maintenance = ({site, isABot, links, user, tenant, apartment_number, semesters}) => {
+const Maintenance = ({site, isABot, links, user, tenant, apartment_number}) => {
     const [room, setRoom] = useState("");
     const [request, setRequest] = useState("");
     const [apartment, setApartment] = useState(apartment_number || "");
-    const [semester, setSemester] = useState(semesters?.[0]?.semester || "");
+    const estimatedSemesters = getEstimatedSemesters();
+    const [semester, setSemester] = useState(estimatedSemesters[0]);
     const [error, setError] = useState(null);
     const [info, setInfo] = useState(null);
 
@@ -33,8 +35,14 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number, semes
         register,
         formState: {errors, isDirty, isValid},
         handleSubmit,
-        resetField
+        resetField,
+        setValue
     } = useForm({mode: "all"});
+
+    // Set initial value for semester in react-hook-form
+    React.useEffect(() => {
+        setValue("semester", semester, { shouldValidate: true });
+    }, [semester, setValue]);
 
     const onSubmit = async (data, e) => {
         e?.preventDefault();
@@ -60,7 +68,8 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number, semes
                 setInfo("Maintenance request sent.");
                 setRoom("");
                 setRequest("");
-                setSemester(semesters?.[0]?.semester || "");
+                const estimatedSemesters = getEstimatedSemesters();
+                setSemester(estimatedSemesters[0]);
                 if (!apartment_number) { setApartment(""); }
                 try { 
                     resetField("room"); 
@@ -134,18 +143,22 @@ const Maintenance = ({site, isABot, links, user, tenant, apartment_number, semes
                             <Row>
                                 <Form.Group as={Col} className="mb-3" controlId="semester">
                                     <Form.Label className="required">Semester</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        {...register("semester", {
-                                            required: {value: true, message: "Semester is required."}
-                                        })}
-                                        value={semester}
-                                        onChange={(e) => setSemester(e.target.value)}
-                                    >
-                                        {semesters?.map((s, idx) => (
-                                            <option key={idx} value={s.semester}>{s.semester}</option>
-                                        ))}
-                                    </Form.Control>
+                                    <Dropdown onSelect={(val) => {
+                                        setSemester(val);
+                                        setValue("semester", val, { shouldValidate: true, shouldDirty: true });
+                                    }}>
+                                        <Dropdown.Toggle variant="outline-secondary" id="dropdown-semester" className="w-100 d-flex justify-content-between align-items-center">
+                                            {semester}
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu className="w-100">
+                                            {estimatedSemesters?.map((s, idx) => (
+                                                <Dropdown.Item key={idx} eventKey={s}>{s}</Dropdown.Item>
+                                            ))}
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                    <input type="hidden" {...register("semester", {
+                                        required: {value: true, message: "Semester is required."}
+                                    })} value={semester} />
                                     {errors && errors.semester && (
                                         <Form.Text className={classNames("text-danger")}>
                                             {errors.semester.message}
@@ -218,15 +231,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         return {};
     }
 
-    const [nav, tenantFull, mostRecent, tenantSemesters] = await Promise.all([
+    const [nav, tenantFull, mostRecent] = await Promise.all([
         GetNavLinks(user, site),
         GetTenant(site, user.id),
-        GetMostRecentTenantApartment(site, user.id),
-        ExecuteQuery("SELECT DISTINCT semester FROM user_lease_tenant WHERE user_id = ? AND semester IS NOT NULL ORDER BY SUBSTR(semester, LOCATE(' ', semester) + 1) DESC, CASE WHEN semester LIKE 'Fall%' THEN 3 WHEN semester LIKE 'Spring%' THEN 1 ELSE 2 END DESC", [user.id])
+        GetMostRecentTenantApartment(site, user.id)
     ]);
 
     const apartment_number = mostRecent?.apartment_number || "";
-    const semesters = tenantSemesters[0] || [];
 
     // Build a minimal tenant object from most recent lease info, fallback to full tenant if needed
     const tenant = {
@@ -243,8 +254,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             isABot: isBot(context),
             user: {...user},
             tenant,
-            apartment_number,
-            semesters
+            apartment_number
         }
     };
 }, ironOptions);

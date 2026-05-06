@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
 import {AddMaintenanceRequest, GetOpenMaintenanceRequests} from "../../lib/db/users/maintenance";
+import {getEstimatedSemesters} from "../../lib/util";
 
 const suuTransporter = nodemailer.createTransport({
     host: "uca.snowcollegeapartments.com",
@@ -69,6 +70,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 const uname = username || req.session.user?.username || "";
                 const emailAddr = email || req.session.user?.email || "";
                 const fullName = `${firstName} ${lastName}`.trim();
+                const selectedSemester = semester || getEstimatedSemesters()[0];
 
                 // Persist to DB first
                 try {
@@ -81,7 +83,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                         apartment_number,
                         room,
                         request,
-                        semester
+                        semester: selectedSemester
                     });
                 } catch (dbErr) {
                     // Continue to attempt email but still report error if both fail
