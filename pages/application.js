@@ -13,6 +13,7 @@ import {ironOptions} from "../lib/session/options";
 import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 import {GetTenant} from "../lib/db/users/tenant";
 import NewApplicationForm from "../components/newApplicationForm";
+import {IsDepositPaid, IsReturningStudent} from "../lib/db/users/application";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -57,7 +58,13 @@ const Application = ({
                                             esa_packet={esa_packet}
                                             guaranty={guaranty}
                                             rules={rules}
-                                            previous_rental={previous_rental} />
+                                            previous_rental={previous_rental}
+                                            isReturningStudent={restOfProps.isReturningStudent}
+                                            isDepositPaid={restOfProps.isDepositPaid}
+                                            depositAmount={restOfProps.depositAmount}
+                                            privacyContent={restOfProps.privacyContent}
+                                            refundContent={restOfProps.refundContent}
+                                            useSquareEnabled={restOfProps.useSquareEnabled} />
                     </div>
                     <Footer bg={bg}/>
                 </main>
@@ -80,11 +87,15 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const content = {};
     const editing = !!user && !!user.editSite;
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
-    const [contentRows, nav, currentRooms, tenant] = await Promise.all([
+    const [contentRows, nav, currentRooms, tenant, isReturningStudent, isDepositPaid, privacyContent, refundContent] = await Promise.all([
         GetDynamicContent(site, page),
         GetNavLinks(user, site),
         GetUserAvailableLeaseRooms(site, editing ? "" : user.id),
-        GetTenant(site, user.id)
+        GetTenant(site, user.id),
+        IsReturningStudent(user.id),
+        IsDepositPaid(user.id, site),
+        GetDynamicContent(site, "privacy%"),
+        GetDynamicContent(site, "refund")
     ]);
 
     if (!currentRooms || currentRooms.length === 0) {
@@ -95,10 +106,17 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     }
     contentRows.forEach(row => content[row.name] = row.content);
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
+    const depositAmount = currentRooms[0]?.deposit_amount !== undefined ? Number(currentRooms[0].deposit_amount) : undefined;
     currentLeases = currentLeases.map(lease => {
         let rooms = currentRooms.filter(room => room.lease_id === lease);
         return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};
     });
+
+    let privacy = Object.fromEntries(privacyContent.map(it => {
+        return [it.page.replace("privacy-", ""), it.content];
+    }));
+
+    let refund = refundContent?.find(content => content.name === "top")?.content;
 
     return {
         props: {
@@ -112,7 +130,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             user: {...user},
             currentLeases: currentLeases,
             company: company,
-            tenant: {...tenant}
+            tenant: {...tenant},
+            isReturningStudent,
+            isDepositPaid,
+            depositAmount: depositAmount,
+            privacyContent: privacy || [],
+            refundContent: refund || "",
+            useSquareEnabled: process.env.USE_SQUARE_FOR_SNOW === 'true'
         }
     };
 }, ironOptions);

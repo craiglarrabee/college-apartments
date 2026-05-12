@@ -51,6 +51,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     const [paymentItems, setPaymentItems] = useState([{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}]);
     const [total, setTotal] = useState("");
     const [adminItemIds, setAdminItemIds] = useState([]); // Track which items came from admin
+    const [isLoading, setIsLoading] = useState(false);
     const payButtonRef = React.useRef(null); // Reference to the Pay button
 
     // Feature flag: enable Square for snow site via NEXT_PUBLIC_USE_SQUARE_FOR_SNOW
@@ -224,6 +225,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     }, [payment]);
 
     const makePayment = async () => {
+        setIsLoading(true);
         try {
             let body = { ...payment };
 
@@ -231,6 +233,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
             if (useSquare) {
                 if (!squareCard) {
                     setPaymentError('Payment form is not ready. Please refresh and try again.');
+                    setIsLoading(false);
                     return;
                 }
                 // Tokenize the card - Square's card element collects card number, expiration, CVV, and postal code
@@ -239,6 +242,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                     const errorMessage = result?.errors?.[0]?.message || 'Unable to tokenize card. Please verify your entries and try again.';
                     setPaymentError(errorMessage);
                     console.error('Square tokenization error:', result);
+                    setIsLoading(false);
                     return;
                 }
                 body.squareSourceId = result.token;
@@ -291,11 +295,13 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                         console.error(`${new Date().toISOString()} - Failed to parse error response:`, jsonError);
                     }
                     setPaymentError(errorMessage);
+                    setIsLoading(false);
                     break;
             }
         } catch (e) {
             setPaymentError("There was an error processing your payment.");
             console.error(`${new Date().toISOString()} -` , e);
+            setIsLoading(false);
         }
     };
 
@@ -671,7 +677,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                             <Button
                                                 ref={payButtonRef}
                                                 variant="primary"
-                                                disabled={!isDirty}
+                                                disabled={!isDirty || isLoading}
                                                 type="submit"
                                                 style={{margin: "5px"}}>Pay</Button>
                                         </div>

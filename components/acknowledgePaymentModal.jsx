@@ -37,7 +37,7 @@ const AcknowledgePaymentModal = ({acknowledge, show, close, content, site, ...re
                     ))
                     }
                     <tr>
-                        <td>Amount:</td>
+                        <td>Total amount:</td>
                         <td>{currency.format(content.total)}</td>
                     </tr>
                 </Table>
