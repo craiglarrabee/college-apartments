@@ -33,7 +33,7 @@ const NewApplicationForm = ({
                          }) => {
 
     const router = useRouter();
-    const {register, formState: {isValid, isDirty, errors}, handleSubmit, resetField, watch} = useForm(tenant);
+    const {register, formState: {isValid, isDirty, errors}, handleSubmit, resetField, watch, setValue} = useForm(tenant);
     const [applicationError, setApplicationError] = useState();
 
     const [dynamicDepositAmount, setDynamicDepositAmount] = useState(depositAmount);
@@ -44,6 +44,7 @@ const NewApplicationForm = ({
         // Calculate total deposit amount across all selected rooms/leases
         let totalDeposit = 0;
         let selectionsFound = 0;
+        let locations = new Set();
         
         for (const key in watchRoomType) {
             if (key.startsWith("lease_") && key.endsWith("_room_type_id") && watchRoomType[key]) {
@@ -54,6 +55,14 @@ const NewApplicationForm = ({
                     if (room && room.deposit_amount !== undefined && room.deposit_amount !== null) {
                         totalDeposit += Number(room.deposit_amount);
                         selectionsFound++;
+                        if (room.location) {
+                            // Map literal database values to internal codes if necessary
+                            let locCode = room.location;
+                            if (room.location === "Stadium Way") locCode = "sw";
+                            else if (room.location === "College Way") locCode = "cw";
+                            else if (room.location === "Park Place") locCode = "pp";
+                            locations.add(locCode);
+                        }
                     }
                 }
             }
@@ -61,12 +70,16 @@ const NewApplicationForm = ({
         
         if (selectionsFound > 0) {
             setDynamicDepositAmount(totalDeposit);
+            // If we found locations in the rooms, set the first one found as the aptLocation
+            if (locations.size > 0) {
+                setAptLocation(Array.from(locations)[0]);
+            }
         } else {
             setDynamicDepositAmount(depositAmount);
         }
     }, [watchRoomType, currentLeases, depositAmount]);
 
-    const depositRequired = site === "snow" && !isReturningStudent && !isDepositPaid;
+    const depositRequired = !isReturningStudent && !isDepositPaid;
 
     const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
 
@@ -76,7 +89,12 @@ const NewApplicationForm = ({
     const [showPrivacy, setShowPrivacy] = useState(false);
     const [showRefund, setShowRefund] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
-    const [aptLocation] = useState(site === "snow" ? "pp" : "");
+    const [aptLocation, setAptLocation] = useState(site === "snow" ? "pp" : "sw");
+
+    useEffect(() => {
+        setValue("location", aptLocation);
+    }, [aptLocation, setValue, site]);
+
     const [payment, setPayment] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -166,7 +184,7 @@ const NewApplicationForm = ({
         setIsProcessing(true);
         if (depositRequired) {
             const amount = Number(dynamicDepositAmount);
-            const surcharge = Math.round(amount * 2.75) / 100;
+            const surcharge = site === "snow" ? Math.round(amount * 2.75) / 100 : 0;
             const total = amount + surcharge;
 
             const paymentData = {
@@ -185,7 +203,7 @@ const NewApplicationForm = ({
                     const room = lease.rooms.find(r => r.room_type_id.toString() === rtId);
                     if (!room) return null;
                     const itemAmount = Number(room.deposit_amount || 0);
-                    const itemSurcharge = Math.round(itemAmount * 2.75) / 100;
+                    const itemSurcharge = site === "snow" ? Math.round(itemAmount * 2.75) / 100 : 0;
                     const itemTotal = itemAmount + itemSurcharge;
                     return {
                         id: lease.leaseId,
@@ -321,9 +339,10 @@ const NewApplicationForm = ({
                 <Form.Group controlId="email">
                     <Form.Control {...register("email")} type="hidden" value={tenant.email}/>
                 </Form.Group>
-                {site === "suu" ?
+                {site === "suu" && (
                     <WorkFormGroups canChangeApplication={true} register={register}
-                                    errors={errors}/> : null}
+                                    errors={errors}/>
+                )}
                 <div className="h4">Room Type:</div>
                 <br/>
                 {currentLeases.map(lease => <CurrentLeases key={lease.leaseId} canChangeApplication={true} {...lease} register={register}/>)}
@@ -364,7 +383,29 @@ const NewApplicationForm = ({
                 {depositRequired && (
                     <div className="mt-4 p-3 border rounded">
                         <h4>Deposit Payment</h4>
-                        <p>A deposit of {currency.format(dynamicDepositAmount)} is required. A 2.75% processing fee ({currency.format(dynamicDepositAmount * 0.0275)}) will be added for card payments, for a total of {currency.format(dynamicDepositAmount * 1.0275)}.</p>
+                        {site === "suu" && (
+                            <Row>
+                                <Form.Group as={Col} xs={12} md={6} className="mb-3" controlId="location">
+                                    <Form.Label className="required">Payment Location</Form.Label>
+                                    <Form.Select
+                                        className={errors && errors.location && classNames("border-danger")}
+                                        {...register("location", {
+                                            required: "Please select the location you are making a payment for."
+                                        })}
+                                        onChange={(event) => setAptLocation(event.currentTarget.value)}
+                                        value={aptLocation}
+                                        disabled={true}
+                                    >
+                                        <option value="" disabled={true}>Select Location</option>
+                                        <option value="cw">College Way</option>
+                                        <option value="sw">Stadium Way</option>
+                                    </Form.Select>
+                                    <Form.Text className="text-muted">Location is determined by your room selection.</Form.Text>
+                                    {errors && errors.location && <Form.Text className="text-danger">{errors.location.message}</Form.Text>}
+                                </Form.Group>
+                            </Row>
+                        )}
+                        <p>A deposit of {currency.format(dynamicDepositAmount)} is required.{site === "snow" && ` A 2.75% processing fee (${currency.format(dynamicDepositAmount * 0.0275)}) will be added for card payments, for a total of ${currency.format(dynamicDepositAmount * 1.0275)}.`}</p>
                         
                         {useSquare ? (
                             <>
