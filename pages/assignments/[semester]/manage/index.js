@@ -416,8 +416,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
     //filter tenants without deposit for snow
     //snow uses this page, suu uses /assignments/{semester}/manage/location
-    tenants = tenants.filter(tenant => tenant.deposit_date !== null)
-    tenants = [...tenants, ...previousTenants];
+    tenants = (tenants || []).filter(tenant => tenant.deposit_date !== null)
+    tenants = [...tenants, ...(previousTenants || [])];
     let leaseIds = [...new Set(tenants.map(t => t.lease_id))];
     return {
         props: {

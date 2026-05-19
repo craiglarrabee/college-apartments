@@ -2,17 +2,18 @@ import {Col, Form, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 
-const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit, ...restOfProps}) => {
+const LeaseRoom = ({lease_id, room_type_id, room_rent, room_full, room_desc, site, canEdit, ...restOfProps}) => {
     const [timer, setTimer] = useState(null);
     const [rent, setRent] = useState(room_rent);
+    const [full, setFull] = useState(room_full);
     const [desc, setDesc] = useState(room_desc);
 
-    const updateRent = async (value) => {
+    const updateLeaseRoom = async (rentValue, fullValue) => {
         try {
             const options = {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({room_rent: value}),
+                body: JSON.stringify({room_rent: rentValue, room_full: fullValue}),
             };
 
             const resp = await fetch(`/api/leases/${lease_id}/rooms/${room_type_id}?site=${site}`, options);
@@ -51,9 +52,14 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
         setRent(e.target.value);
         clearTimeout(timer);
         const newTimer = setTimeout(async () => {
-            await updateRent(e.target.value);
+            await updateLeaseRoom(e.target.value, full);
         }, 1500);
         setTimer(newTimer);
+    }
+
+    const fullChanged = async e => {
+        setFull(e.target.checked);
+        await updateLeaseRoom(rent, e.target.checked);
     }
 
     const descChanged = e => {
@@ -86,6 +92,11 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
                         <Form.Control type="text" style={{paddingRight: "0px", paddingLeft: "0px"}} defaultValue={desc}
                                       onChange={descChanged}/>
                     </Form.Group>
+                    <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "0px"}}
+                                controlId={`roomFull${room_type_id}`}>
+                        <Form.Label hidden={true}>Room Full</Form.Label>
+                        <Form.Check label="Full" checked={full} onChange={fullChanged}/>
+                    </Form.Group>
                 </Row>
             </>
         );
@@ -95,6 +106,7 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_desc, site, canEdit,
                 <div className={classNames("flex-row", "d-inline-flex")}>
                     <div style={{fontWeight: "bold"}}> #{room_type_id}:</div>
                     <div style={{fontWeight: "bold"}}>${room_rent}.00</div>
+                    {room_full ? <div style={{fontWeight: "bold", color: "indianred"}}>&nbsp;FULL&nbsp;</div> : null}
                     <div>{room_desc}</div>
                 </div>
             </>
