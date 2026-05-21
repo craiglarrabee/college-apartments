@@ -87,16 +87,23 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const content = {};
     const editing = !!user && !!user.editSite;
     const company = site === "suu" ? "Stadium Way/College Way Apartments" : "Park Place Apartments";
-    const [contentRows, nav, currentRooms, tenant, isReturningStudent, isDepositPaid, privacyContent, refundContent] = await Promise.all([
+
+    const currentRooms = await GetUserAvailableLeaseRooms(site, editing ? "" : user.id);
+    const targetLeaseId = currentRooms && currentRooms.length > 0 ? currentRooms[0].lease_id : null;
+
+    const [contentRows, nav, tenant, isReturningStudent, isDepositPaid, privacyContent, refundContent] = await Promise.all([
         GetDynamicContent(site, page),
         GetNavLinks(user, site),
-        GetUserAvailableLeaseRooms(site, editing ? "" : user.id),
         GetTenant(site, user.id),
-        IsReturningStudent(user.id),
+        IsReturningStudent(user.id, site, targetLeaseId),
         IsDepositPaid(user.id, site),
         GetDynamicContent(site, "privacy%"),
         GetDynamicContent(site, "refund")
     ]);
+
+    if (site === 'suu' && !isReturningStudent) {
+        console.log(`[DEBUG] User ${user.id} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}. Semester1: ${currentRooms[0]?.semester1}, Semester2: ${currentRooms[0]?.semester2}`);
+    }
 
     if (!currentRooms || currentRooms.length === 0) {
         console.error(`${new Date().toISOString()} -` +"redirecting to deposit due to no current rooms");

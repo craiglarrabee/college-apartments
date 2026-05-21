@@ -13,7 +13,7 @@ import {GetTenant, GetUserRoomates} from "../../lib/db/users/tenant";
 import {GetUserMaintenanceRequests} from "../../lib/db/users/maintenance";
 import {TenantForm} from "../../components/tenantForm";
 import ApplicationForm from "../../components/applicationForm";
-import {GetTenantApplications} from "../../lib/db/users/application";
+import {IsDepositPaid, IsReturningStudent, GetTenantApplications} from "../../lib/db/users/application";
 import {GetLeaseRoomsMap, GetUserAvailableLeaseRooms} from "../../lib/db/users/roomType";
 import {GetTenantUserLeases} from "../../lib/db/users/userLease";
 import LeaseForm from "../../components/leaseForm";
@@ -40,8 +40,7 @@ const Tenant = ({
                     isTenant, site, isABot, navPage, links, user, tenant, currentLeasesMap,
                     applications, userId, leases, leaseContentMap, deletedPayments,
                     emails, applicationContent, payments, paymentItems, roommates, maintenanceRequests, tab, currentLeases, page,
-                    rules, previous_rental, esa_packet, disclaimer, guaranty
-                    , ...restOfProps
+                    ...restOfProps
                 }) => {
     const roommateSemesters = roommates.map(it => it.semester).reduce(function (acc, curr) {
         if (!acc.includes(curr))
@@ -471,12 +470,18 @@ const Tenant = ({
                                                                 userId={userId}
                                                                 user={user}
                                                                 canEdit={false}
-                                                                disclaimer={disclaimer}
+                                                                disclaimer={applicationContent.disclaimer}
                                                                 currentLeases={currentLeases}
-                                                                esa_packet={esa_packet}
-                                                                guaranty={guaranty}
-                                                                rules={rules}
-                                                                previous_rental={previous_rental}/>
+                                                                esa_packet={applicationContent.esa_packet}
+                                                                guaranty={applicationContent.guaranty}
+                                                                rules={applicationContent.rules}
+                                                                previous_rental={applicationContent.previous_rental}
+                                                                isReturningStudent={restOfProps.isReturningStudent}
+                                                                isDepositPaid={restOfProps.isDepositPaid}
+                                                                depositAmount={restOfProps.depositAmount}
+                                                                privacyContent={restOfProps.privacyContent}
+                                                                refundContent={restOfProps.refundContent}
+                                                                useSquareEnabled={restOfProps.useSquareEnabled} />
                                         </Tab>
                                     }
                                 </Tabs>
@@ -870,7 +875,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         roommates,
         currentRooms,
         maintenanceRequests,
-        paymentItems] = await Promise.all(
+        paymentItems,
+        isReturningStudent,
+        isDepositPaid,
+        privacyContent,
+        refundContent] = await Promise.all(
         [
             GetNavLinks(user, site),
             GetTenant(site, userId),
@@ -884,7 +893,17 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             GetUserAvailableLeaseRooms(site, userId),
             GetUserMaintenanceRequests(site, userId),
             !isTenant && site === "snow" ? GetAllTenantPaymentItems(site, userId) : [],
+            IsReturningStudent(userId, site, (await GetUserAvailableLeaseRooms(site, userId))[0]?.lease_id),
+            IsDepositPaid(userId, site),
+            GetDynamicContent(site, "privacy%"),
+            GetDynamicContent(site, "refund")
         ]);
+    
+    if (site === 'suu' && !isReturningStudent) {
+        const targetLeaseId = currentRooms && currentRooms.length > 0 ? currentRooms[0].lease_id : null;
+        console.log(`[DEBUG] User ${userId} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}. Semester1: ${currentRooms[0]?.semester1}, Semester2: ${currentRooms[0]?.semester2}`);
+    }
+
     applicationContentRows.forEach(row => applicationContent[row.name] = row.content);
     const currentLeasesMap = await Promise.all(applications.map(async application => {
         return {leaseId: application.lease_id, currentLeases: await GetLeaseRoomsMap(application.lease_id)}
@@ -901,10 +920,17 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         application.do_not_share_info = !application.share_info;
     });
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
+    const depositAmount = currentRooms[0]?.deposit_amount !== undefined ? Number(currentRooms[0].deposit_amount) : undefined;
     currentLeases = currentLeases.map(lease => {
         let rooms = currentRooms.filter(room => room.lease_id === lease);
         return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};
     });
+
+    let privacy = Object.fromEntries(privacyContent.map(it => {
+        return [it.page.replace("privacy-", ""), it.content];
+    }));
+
+    let refund = refundContent?.find(content => content.name === "top")?.content;
 
     return {
         props: {
@@ -929,7 +955,13 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             deletedPayments: deletedPayments,
             roommates: roommates,
             maintenanceRequests: maintenanceRequests,
-            tab: context.query.tab || null
+            tab: context.query.tab || null,
+            isReturningStudent,
+            isDepositPaid,
+            depositAmount: depositAmount,
+            privacyContent: privacy || [],
+            refundContent: refund || "",
+            useSquareEnabled: process.env.USE_SQUARE_FOR_SNOW === 'true'
         }
     };
 }, ironOptions);
