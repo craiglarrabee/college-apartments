@@ -226,7 +226,7 @@ const PaymentItemModal = ({show, handleClose, handleSave, item}) => {
 
     // Check if the item description is one of the predefined options
     const predefinedOptions = [
-        "Deposit", "Fall Rent", "Spring Rent", "Summer Rent",
+        "Deposit", "Deposit Re-Up", "Fall Rent", "Spring Rent", "Summer Rent",
         "Parking Sticker", "Early Days", "Monthly Rent",
         "Payment Plan Fee", "Utility Overage", "Late Fee"
     ];
@@ -293,6 +293,7 @@ const PaymentItemModal = ({show, handleClose, handleSave, item}) => {
                                 >
                                     <option value="" disabled>Select Payment Reason</option>
                                     <option value="Deposit">Deposit</option>
+                                    {site === "snow" && <option value="Deposit Re-Up">Deposit Re-Up</option>}
                                     <option value="Fall Rent">Fall Rent</option>
                                     <option value="Spring Rent">Spring Rent</option>
                                     <option value="Summer Rent">Summer Rent</option>

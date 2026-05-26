@@ -279,6 +279,7 @@ export const PaymentLineItem = ({
                                     disabled={isAdminCreated}>
                                     <option value="" disabled>Select Payment Reason</option>
                                     <option value="Deposit">Deposit</option>
+                                    {site === "snow" && <option value="Deposit Re-Up">Deposit Re-Up</option>}
                                     <option value="Fall Rent">Fall Rent</option>
                                     <option value="Spring Rent">Spring Rent</option>
                                     <option value="Summer Rent">Summer Rent</option>
