@@ -19,7 +19,7 @@ app.prepare().then(() => {
         const rawUA = req.headers && req.headers["user-agent"] ? req.headers["user-agent"] : "";
         const userAgent = String(rawUA).toLowerCase();
         const isBot = userAgent && (userAgent.includes("bot") || userAgent.includes("crawl") || userAgent.includes("spider"));
-        const isRobots = req.path && req.path.toLowerCase() === "/robots.txt";
+        const isRobots = (req.path || "").toLowerCase() === "/robots.txt";
         const isOkBot = userAgent && okBots.find(bot => userAgent.includes(bot));
         if (isBot && !isRobots && !isOkBot) {
             if (dev) console.log(`Blocked request as bot`, { path: req.path, userAgent: userAgent });

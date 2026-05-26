@@ -189,6 +189,7 @@ const ManagePaymentItems = ({userId, site, initialItems = []}) => {
                 handleClose={handleClose}
                 handleSave={handleSave}
                 item={editingItem}
+                site={site}
             />
 
             <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
@@ -218,7 +219,7 @@ const ManagePaymentItems = ({userId, site, initialItems = []}) => {
     );
 };
 
-const PaymentItemModal = ({show, handleClose, handleSave, item}) => {
+const PaymentItemModal = ({show, handleClose, handleSave, item, site}) => {
     const [description, setDescription] = useState(item?.description || "");
     const [amount, setAmount] = useState(item?.amount || "");
     const [dueDate, setDueDate] = useState(item?.due_date ? formatDateForInput(item.due_date) : "");
