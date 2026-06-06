@@ -465,11 +465,40 @@ const NewApplicationForm = ({
                         )}
                         <Row>
                             <div className="align-content-center">
-                                <Form.Text>With your payment, you agree to our 
-                                    <Button variant="link" size="sm" className="p-1" onClick={() => setShowPrivacy(true)}>privacy policy</Button>
-                                    and our 
-                                    <Button variant="link" size="sm" className="p-1" onClick={() => setShowRefund(true)}>refund policy</Button>
-                                </Form.Text>
+                                {site === "suu" ? (
+                                    <>
+                                        <div className="d-flex align-items-center mb-3">
+                                            <span className="required me-1"></span>
+                                            <Form.Check
+                                                type="checkbox"
+                                                id="agreeToPolicies"
+                                                label={
+                                                    <span>
+                                                        I have read and agree to the{" "}
+                                                        <Button variant="link" size="sm" className="p-0 vertical-align-baseline" onClick={() => setShowPrivacy(true)}>privacy policy</Button>
+                                                        {" "}and the{" "}
+                                                        <Button variant="link" size="sm" className="p-0 vertical-align-baseline" onClick={() => setShowRefund(true)}>refund policy</Button>.
+                                                    </span>
+                                                }
+                                                {...register("agreeToPolicies", {
+                                                    required: "You must agree to the privacy and refund policies to continue."
+                                                })}
+                                                isInvalid={!!errors.agreeToPolicies}
+                                            />
+                                        </div>
+                                        {errors.agreeToPolicies && (
+                                            <div className="text-danger small mt-n2 mb-3 px-2">
+                                                {errors.agreeToPolicies.message}
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <Form.Text>With your payment, you agree to our 
+                                        <Button variant="link" size="sm" className="p-1" onClick={() => setShowPrivacy(true)}>privacy policy</Button>
+                                        and our 
+                                        <Button variant="link" size="sm" className="p-1" onClick={() => setShowRefund(true)}>refund policy</Button>
+                                    </Form.Text>
+                                )}
                             </div>
                         </Row>
                     </div>
