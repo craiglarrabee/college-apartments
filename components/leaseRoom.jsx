@@ -2,7 +2,7 @@ import {Col, Form, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import classNames from "classnames";
 
-const LeaseRoom = ({lease_id, room_type_id, room_rent, room_full, room_desc, site, canEdit, ...restOfProps}) => {
+const LeaseRoom = ({lease_id, room_type_id, room_rent, room_full, room_desc, room_type, location, site, canEdit, ...restOfProps}) => {
     const [timer, setTimer] = useState(null);
     const [rent, setRent] = useState(room_rent);
     const [full, setFull] = useState(room_full);
@@ -86,13 +86,29 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_full, room_desc, sit
                         <Form.Control style={{fontWeight: "bold", paddingRight: "0px", paddingLeft: "0px"}} type="1"
                                       defaultValue={rent} onChange={rentChanged}/>
                     </Form.Group>
-                    <Form.Group as={Col} xs={9} style={{paddingRight: "0px", paddingLeft: "0px"}}
+                    <Form.Group as={Col} xs={site === "suu" ? 7 : 9} style={{paddingRight: "0px", paddingLeft: "0px"}}
                                 controlId={`roomDesc${room_type_id}`}>
                         <Form.Label hidden={true}>Room Description</Form.Label>
                         <Form.Control type="text" style={{paddingRight: "0px", paddingLeft: "0px"}} defaultValue={desc}
                                       onChange={descChanged}/>
                     </Form.Group>
-                    <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "0px"}}
+                    {site === "suu" && (
+                        <>
+                            <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "5px"}}
+                                        controlId={`roomTypeLabel${room_type_id}`}>
+                                <Form.Label hidden={true}>Type</Form.Label>
+                                <Form.Control style={{paddingRight: "0px", paddingLeft: "0px"}} plaintext
+                                              readOnly type="text" defaultValue={room_type}/>
+                            </Form.Group>
+                            <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "0px"}}
+                                        controlId={`roomLocation${room_type_id}`}>
+                                <Form.Label hidden={true}>Location</Form.Label>
+                                <Form.Control style={{paddingRight: "0px", paddingLeft: "0px"}} plaintext
+                                              readOnly type="text" defaultValue={location}/>
+                            </Form.Group>
+                        </>
+                    )}
+                    <Form.Group as={Col} xs={1} style={{paddingRight: "0px", paddingLeft: "10px", paddingTop: "8px"}}
                                 controlId={`roomFull${room_type_id}`}>
                         <Form.Label hidden={true}>Room Full</Form.Label>
                         <Form.Check label="Full" checked={full} onChange={fullChanged}/>
@@ -108,6 +124,12 @@ const LeaseRoom = ({lease_id, room_type_id, room_rent, room_full, room_desc, sit
                     <div style={{fontWeight: "bold"}}>${room_rent}.00</div>
                     {room_full ? <div style={{fontWeight: "bold", color: "indianred"}}>&nbsp;FULL&nbsp;</div> : null}
                     <div>{room_desc}</div>
+                    {site === "suu" && (
+                        <div style={{marginLeft: "10px", color: "gray"}}>
+                            {room_type && <span>{room_type} </span>}
+                            {location && <span>({location})</span>}
+                        </div>
+                    )}
                 </div>
             </>
         );
