@@ -83,9 +83,16 @@ describe("Content", () => {
         expect(carousel).toBeNull();
     });
 
-    it("renders editable page content buttons when canEdit", async () => {
+    it("renders editable page content and image action buttons when canEdit", async () => {
         render(<Content site={site} page={page} top={top} bottom={bottom} canEdit={true} images={["image1.png"]} restOfProps={{"image1.png": "Caption"}}/>);
+        // PageContent buttons
         const editButtons = screen.getAllByRole("edit");
         expect(editButtons.length).toBeGreaterThan(0);
+        
+        // Image action buttons
+        // Add Image button is now outside carousel
+        expect(screen.getByRole("add-image")).toBeInTheDocument();
+        // Delete Image button is on the slide
+        expect(screen.getAllByRole("delete-image").length).toBeGreaterThan(0);
     });
 });

@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import classNames from "classnames";
 import PageContent from "./pageContent";
 import {Alert, Button, Carousel, Form, Modal, Spinner, Image} from "react-bootstrap";
-import {Trash} from "react-bootstrap-icons";
+import {Trash, PlusLg} from "react-bootstrap-icons";
 import {useForm} from "react-hook-form";
 import FileResizer from "react-image-file-resizer";
 import {useRouter} from "next/router";
@@ -60,24 +60,38 @@ const Content = ({site, page, top, bottom, images, canEdit, restOfProps}) => {
                 page={page}
                 name="top"
                 canEdit={canEdit}/>
+            {canEdit && (
+                <div className="d-flex justify-content-start mb-2">
+                    <Button role="add-image" variant="success" size="sm" onClick={handleAddImage} className="d-flex align-items-center gap-1">
+                        <PlusLg /> Add Image
+                    </Button>
+                </div>
+            )}
             {pageImages && pageImages.length ?
                 <Carousel role="carousel" variant="dark" wrap={true} interval={5000} pause={canEdit ? "hover" : false}>
                     {pageImages.map((image, i) => {
-                            let buttons = canEdit ?
-                                <div>
-                                    <Button role="edit" variant="primary-outline" size="lg"
-                                            style={{fontSize: "xx-large"}} onClick={handleAddImage}>
-                                        +
-                                    </Button>
-                                    <Button role="edit" variant="primary-outline" size="lg"
-                                            onClick={() => handleDeleteImage(site, page, image.name)}>
-                                        <Trash/>
+                            let deleteButton = canEdit ?
+                                <div style={{
+                                    position: "absolute",
+                                    top: "10px",
+                                    left: "10px",
+                                    zIndex: 10
+                                }} onClick={(e) => e.stopPropagation()}>
+                                    <Button role="delete-image" variant="danger" size="sm"
+                                            className="d-flex align-items-center justify-content-center"
+                                            style={{borderRadius: "50%", width: "32px", height: "32px", padding: "0", opacity: "0.8"}}
+                                            onClick={() => {
+                                                if (confirm("Are you sure you want to delete this image?")) {
+                                                    handleDeleteImage(site, page, image.name);
+                                                }
+                                            }}>
+                                        <Trash size={18}/>
                                     </Button>
                                 </div> : null;
 
                             return (
                                 <Carousel.Item role="carousel-item" key={i}>
-                                    {buttons}
+                                    {deleteButton}
                                     {
                                         // all images on this site are converted to jpg
                                         // everything else in thes folders are videos
