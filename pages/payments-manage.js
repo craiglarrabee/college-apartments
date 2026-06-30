@@ -75,9 +75,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, ...restOfProps
                             reason_deleted: deleteData.description,
                             date_deleted: new Date().toLocaleDateString()
                         };
-                        ;
                         setvalidPayments(validPayments.filter(payment => payment.id !== deleteData.paymentId));
-                        setvalidDeletedPayments([...validDeletedPayments, payment]);
                         break;
                     case 400:
                     default:

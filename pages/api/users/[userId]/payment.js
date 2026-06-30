@@ -2,9 +2,10 @@
 
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../lib/session/options";
-import {AddUserPayment, MarkPaymentDeleted, MarkPaymentReviewed} from "../../../../lib/db/users/userPayment";
+import {AddUserPayment, GetPayment, MarkPaymentDeleted, MarkPaymentReviewed} from "../../../../lib/db/users/userPayment";
 import {MarkTenantPaymentItemsPaid} from "../../../../lib/db/users/tenantPaymentItems";
 import {GetTenant, GetTenantSquareCustomerId, UpdateTenantSquareCustomerId} from "../../../../lib/db/users/tenant";
+import {ClearDeposit, ClearRecentDeposit} from "../../../../lib/db/users/application";
 import chargeCreditCard from "../../../../lib/payment/chargeCreditCard";
 import chargeSquare from "../../../../lib/payment/chargeSquare";
 import {getOrCreateCustomer} from "../../../../lib/payment/squareCustomers";
@@ -147,7 +148,15 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     return;
                 case "DELETE":
                     try {
+                        const payment = await GetPayment(req.body.id);
                         await MarkPaymentDeleted(req.body.id, req.body.reason);
+                        if (payment && payment.description === 'Security Deposit') {
+                            if (payment.lease_id) {
+                                await ClearDeposit(payment.site, payment.user_id, payment.lease_id);
+                            } else {
+                                await ClearRecentDeposit(payment.site, payment.user_id);
+                            }
+                        }
                         res.status(204).send();
                     } catch (e) {
                         const errorResponse = {error: e.code, description: e.message};

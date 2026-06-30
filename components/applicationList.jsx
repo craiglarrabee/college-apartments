@@ -38,6 +38,34 @@ export const UnprocessedApplicationList = ({
         </>
     );
 };
+export const ProcessedRow = ({row, site, leaseId, handleDeposit, handleProcess, handleDelete, page}) => {
+    const [amount, setAmount] = useState(row.deposit_amount);
+
+    return (
+        <tr key={row.user_id}>
+            <td><a
+                href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a>
+            </td>
+            <td>{row.submit_date}</td>
+            <td style={{display: 'flex', alignItems: 'center'}}>
+                <Form.Control
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    style={{width: '100px', marginRight: '5px'}}
+                />
+                <Button onClick={(e) => handleDeposit(row.user_id, site, leaseId, amount)}>Deposit</Button>
+            </td>
+            <td><Button
+                onClick={(e) => handleProcess(row.user_id, site, leaseId, false)}>Unprocess</Button>
+            </td>
+            <td><Button
+                onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button>
+            </td>
+        </tr>
+    );
+};
+
 export const ProcessedApplicationList = ({
                                              data,
                                              page,
@@ -56,6 +84,7 @@ export const ProcessedApplicationList = ({
                 <tr>
                     <th>Tenant</th>
                     <th>Application Date</th>
+                    <th>Deposit Amount</th>
                     <th></th>
                     <th></th>
                 </tr>
@@ -63,19 +92,9 @@ export const ProcessedApplicationList = ({
                 <tbody>
                 {
                     data.map(row => (
-                        <tr key={row.user_id}>
-                            <td><a
-                                href={`/${page}/${row.user_id}?site=${site}&roomTypeId=${row.room_type_id}&t=${new Date().getTime()}`}>{row.name}</a>
-                            </td>
-                            <td>{row.submit_date}</td>
-                            <td><Button onClick={(e) => handleDeposit(row.user_id, site, leaseId)}>Deposit</Button></td>
-                            <td><Button
-                                onClick={(e) => handleProcess(row.user_id, site, leaseId, false)}>Unprocess</Button>
-                            </td>
-                            <td><Button
-                                onClick={(e) => handleDelete(row.user_id, site, leaseId, row.room_type_id)}>Delete</Button>
-                            </td>
-                        </tr>
+                        <ProcessedRow key={row.user_id} row={row} site={site} leaseId={leaseId}
+                                      handleDeposit={handleDeposit} handleProcess={handleProcess}
+                                      handleDelete={handleDelete} page={page}/>
                     ))
                 }
                 </tbody>

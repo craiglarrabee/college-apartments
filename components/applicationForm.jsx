@@ -30,6 +30,9 @@ const ApplicationForm = ({
                              body,
                              ...restOfProps
                          }) => {
+    if (!application) {
+        return <Alert variant="warning">No application found.</Alert>;
+    }
     application[`lease_${leaseId}_room_type_id`] = application.lease_room_type_id;
     const {
         register,
@@ -40,6 +43,7 @@ const ApplicationForm = ({
     const [success, setSuccess] = useState();
     const [processed, setProcessed] = useState(application.processed);
     const [depositReceived, setDepositReceived] = useState(!!application.deposit_date);
+    const [depositAmount, setDepositAmount] = useState(application.deposit_amount);
     const [sendEmail, setSendEmail] = useState(true);
     const canChangeApplication = !isTenant || !application.processed;
     const showButtons = canChangeApplication && !printing;
@@ -52,6 +56,7 @@ const ApplicationForm = ({
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({amount: depositAmount})
             }
 
             let resp = await fetch(`/api/users/${userId}/leases/${leaseId}?site=${site}`, options);
@@ -284,7 +289,15 @@ const ApplicationForm = ({
                             <>
                             {depositReceived ?
                                 <Button variant="primary" onClick={deleteDeposit} style={{margin: "5px"}}>{"Remove Deposit"}</Button> :
-                                <Button variant="primary" onClick={receiveDeposit} style={{margin: "5px"}}>{"Receive Deposit"}</Button> }
+                                <div style={{display: 'inline-flex', alignItems: 'center'}}>
+                                    <Form.Control
+                                        type="number"
+                                        value={depositAmount}
+                                        onChange={(e) => setDepositAmount(e.target.value)}
+                                        style={{width: '100px', margin: '5px'}}
+                                    />
+                                    <Button variant="primary" onClick={receiveDeposit} style={{margin: "5px"}}>{"Receive Deposit"}</Button>
+                                </div> }
                                 <Button variant="primary" onClick={handleDelete} style={{margin: "5px"}}>{"Delete"}</Button>
                             </>
                         }

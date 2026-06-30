@@ -260,7 +260,7 @@ const Applications = ({
     };
 
 
-    const receiveDeposit = async (userId, site, leaseId) => {
+    const receiveDeposit = async (userId, site, leaseId, amount) => {
         try {
 
             const thisApp = allApplications.find(app => app.user_id == userId);
@@ -269,6 +269,7 @@ const Applications = ({
             const options = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({amount})
             }
 
             let resp = await fetch(`/api/users/${userId}/leases/${leaseId}?site=${site}`, options);
