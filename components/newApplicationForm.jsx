@@ -33,7 +33,15 @@ const NewApplicationForm = ({
                          }) => {
 
     const router = useRouter();
-    const {register, formState: {isValid, isDirty, errors}, handleSubmit, resetField, watch, setValue} = useForm(tenant);
+    const {register, formState: {isValid, isDirty, errors}, handleSubmit, resetField, watch, setValue, trigger} = useForm({
+        mode: "all",
+        defaultValues: tenant,
+        shouldUnregister: true
+    });
+
+    useEffect(() => {
+        trigger();
+    }, [trigger]);
     const [applicationError, setApplicationError] = useState();
 
     const [dynamicDepositAmount, setDynamicDepositAmount] = useState(depositAmount);
@@ -84,6 +92,13 @@ const NewApplicationForm = ({
     const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
 
     const [cardNumber, setCardNumber] = useState("");
+    const [isSquareValid, setIsSquareValid] = useState(false);
+    const [squareToken, setSquareToken] = useState(null);
+    const [squareZip, setSquareZip] = useState(null);
+
+    useEffect(() => {
+        console.log(`[DEBUG] Application Form State: isValid=${isValid}, isSquareValid=${isSquareValid}, errors=`, errors);
+    }, [isValid, errors, isSquareValid]);
     const [expDate, setExpDate] = useState("");
     const [code, setCode] = useState("");
     const [showPrivacy, setShowPrivacy] = useState(false);
@@ -92,13 +107,13 @@ const NewApplicationForm = ({
     const [aptLocation, setAptLocation] = useState(site === "snow" ? "pp" : "sw");
 
     useEffect(() => {
-        setValue("location", aptLocation);
+        setValue("location", aptLocation, { shouldValidate: true });
     }, [aptLocation, setValue, site]);
 
     const [payment, setPayment] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const [useSquare, setUseSquare] = useState(false);
+    const [useSquare, setUseSquare] = useState(!!useSquareEnabled && site === 'snow');
     const [squarePayments, setSquarePayments] = useState(null);
     const [squareCard, setSquareCard] = useState(null);
     const payButtonRef = useRef(null);
@@ -109,11 +124,17 @@ const NewApplicationForm = ({
     }, [site, useSquareEnabled]);
 
     useEffect(() => {
-        if (!useSquare || !depositRequired) return;
+        if (!useSquare || !depositRequired) {
+            setIsSquareValid(false);
+            return;
+        }
 
         const applicationId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
         const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID || (process.env.NODE_ENV !== 'production' ? process.env.TEST_SQUARE_LOCATION_ID : undefined);
         if (!applicationId || !locationId) return;
+
+        let active = true;
+        let cardInstance = null;
 
         const ensureScript = () => new Promise((resolve, reject) => {
             if (window.Square) return resolve();
@@ -129,7 +150,9 @@ const NewApplicationForm = ({
         (async () => {
             try {
                 await ensureScript();
+                if (!active) return;
                 const payments = window.Square.payments(applicationId, locationId);
+                if (!active) return;
                 setSquarePayments(payments);
                 const card = await payments.card({
                     style: {
@@ -141,13 +164,36 @@ const NewApplicationForm = ({
                         }
                     }
                 });
+                if (!active) {
+                    await card.destroy();
+                    return;
+                }
                 await card.attach('#sq-card-container');
+                
+                card.addEventListener('change', (event) => {
+                    const valid = !!event.detail.currentState.isCompletelyValid;
+                    setIsSquareValid(valid);
+                    setSquareToken(null);
+                    console.log(`[DEBUG] Square card change event: valid=${valid}`);
+                    if (valid) {
+                        trigger(); // Force re-validation of the whole form
+                    }
+                });
+                cardInstance = card;
                 setSquareCard(card);
             } catch (e) {
                 console.error(`${new Date().toISOString()} - Failed to init Square`, e);
                 setApplicationError('Failed to initialize card input. Please refresh and try again.');
             }
         })();
+
+        return () => {
+            active = false;
+            if (cardInstance) {
+                cardInstance.destroy();
+                setSquareCard(null);
+            }
+        };
     }, [useSquare, depositRequired]);
 
     const formatCardNumber = (event) => {
@@ -178,10 +224,47 @@ const NewApplicationForm = ({
         setCode(event.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, ""));
     };
 
+    const checkSquareValues = async () => {
+        if (!useSquare || !depositRequired) return true;
+        if (!squareCard) {
+            setApplicationError('Payment form is not ready. Please refresh and try again.');
+            return false;
+        }
+
+        try {
+            const result = await squareCard.tokenize();
+            if (result?.status === 'OK') {
+                setSquareToken(result.token);
+                if (result?.details?.billing?.postalCode) {
+                    setSquareZip(result.details.billing.postalCode);
+                }
+                return true;
+            } else {
+                const errorMessage = result?.errors?.[0]?.message || 'Please fill in all card details correctly.';
+                setApplicationError(errorMessage);
+                return false;
+            }
+        } catch (e) {
+            console.error('Error during Square check:', e);
+            setApplicationError('An error occurred while verifying card details.');
+            return false;
+        }
+    };
+
     const onSubmit = async (data, event) => {
         event.preventDefault();
 
         setIsProcessing(true);
+        setApplicationError(null);
+
+        if (useSquare && depositRequired) {
+            const squareOk = await checkSquareValues();
+            if (!squareOk) {
+                setIsProcessing(false);
+                return;
+            }
+        }
+
         if (depositRequired) {
             const amount = Number(dynamicDepositAmount);
             const surcharge = site === "snow" ? Math.round(amount * 2.75) / 100 : 0;
@@ -207,6 +290,7 @@ const NewApplicationForm = ({
                     const itemTotal = itemAmount + itemSurcharge;
                     return {
                         id: lease.leaseId,
+                        leaseId: lease.leaseId,
                         description: `Deposit for ${lease.leaseDescription}`,
                         amount: itemAmount.toString(),
                         surcharge: itemSurcharge.toString(),
@@ -265,21 +349,14 @@ const NewApplicationForm = ({
             let body = { ...payment };
 
             if (useSquare) {
-                if (!squareCard) {
-                    setApplicationError('Payment form is not ready. Please refresh and try again.');
+                if (!squareToken) {
+                    setApplicationError('Payment information has changed or is not ready. Please try again.');
                     setIsProcessing(false);
                     return;
                 }
-                const result = await squareCard.tokenize();
-                if (result?.status !== 'OK') {
-                    const errorMessage = result?.errors?.[0]?.message || 'Unable to tokenize card. Please verify your entries and try again.';
-                    setApplicationError(errorMessage);
-                    setIsProcessing(false);
-                    return;
-                }
-                body.squareSourceId = result.token;
-                if (result?.details?.billing?.postalCode) {
-                    body.zip = result.details.billing.postalCode;
+                body.squareSourceId = squareToken;
+                if (squareZip) {
+                    body.zip = squareZip;
                 }
                 delete body.cc_number;
                 delete body.cc_expire;
@@ -295,7 +372,7 @@ const NewApplicationForm = ({
             const resp = await fetch(`/api/users/${userId}/payment?site=${site}`, options)
             if (resp.status === 200 || resp.status === 204) {
                 // Payment successful, now submit the application
-                await submitApplication(payment);
+                await submitApplication({...payment, depositPaid: true});
             } else {
                 let errorMessage = "There was an error processing your payment.";
                 try {
@@ -382,7 +459,7 @@ const NewApplicationForm = ({
 
                 {depositRequired && (
                     <div className="mt-4 p-3 border rounded">
-                        <h4>Deposit Payment</h4>
+                        <h4 className="required">Deposit Payment</h4>
                         {site === "suu" && (
                             <Row>
                                 <Form.Group as={Col} xs={12} md={6} className="mb-3" controlId="location">
@@ -409,7 +486,7 @@ const NewApplicationForm = ({
                         
                         {useSquare ? (
                             <>
-                                <Form.Text>Card Information</Form.Text>
+                                <Form.Label className="required">Card Information</Form.Label>
                                 <Row>
                                     <Col xs={12} className="mb-3">
                                         <div id="sq-card-container" style={{border: '1px solid #ced4da', borderRadius: 4, padding: 12}} />
@@ -419,7 +496,7 @@ const NewApplicationForm = ({
                             </>
                         ) : (
                             <>
-                                <Form.Text>Credit Card Information</Form.Text>
+                                <Form.Label className="required">Credit Card Information</Form.Label>
                                 <Row>
                                     <Form.Group as={Col} xs={12} md={6} className="mb-3" controlId="cc_number">
                                         <Form.Label className="required">Card Number</Form.Label>
@@ -510,7 +587,7 @@ const NewApplicationForm = ({
                 }
                 <div style={{width: "100%"}}
                      className={classNames("mb-3", "justify-content-center", "d-inline-flex", "mt-4")}>
-                    <Button variant="primary" type="submit" disabled={canEdit || isProcessing}>
+                    <Button variant="primary" type="submit" disabled={canEdit || isProcessing || !isValid}>
                         {isProcessing ? "Processing..." : (depositRequired ? "Pay Deposit and Submit Application" : "Submit")}
                     </Button>
                 </div>

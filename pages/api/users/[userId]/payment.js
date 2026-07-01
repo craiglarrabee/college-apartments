@@ -121,6 +121,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                             AddUserPayment(req.query.site, req.query.userId,
                                 {
                                     ...data,
+                                    leaseId: item.leaseId || null,
                                     amount: item.amount,
                                     surcharge: item.surcharge,
                                     total: item.unitPrice,

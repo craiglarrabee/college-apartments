@@ -899,10 +899,12 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             GetDynamicContent(site, "refund")
         ]);
     
-    if (site === 'suu' && !isReturningStudent) {
+    if (!isReturningStudent) {
         const targetLeaseId = currentRooms && currentRooms.length > 0 ? currentRooms[0].lease_id : null;
-        console.log(`[DEBUG] User ${userId} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}. Semester1: ${currentRooms[0]?.semester1}, Semester2: ${currentRooms[0]?.semester2}`);
+        console.log(`[DEBUG] User ${userId} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}.`);
     }
+
+    console.log(`[DEBUG] Tenant profile check for user ${userId} (${tenant?.username}) site ${site}: isReturningStudent=${isReturningStudent}, isDepositPaid=${isDepositPaid}`);
 
     applicationContentRows.forEach(row => applicationContent[row.name] = row.content);
     const currentLeasesMap = await Promise.all(applications.map(async application => {

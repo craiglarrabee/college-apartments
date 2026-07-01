@@ -8,6 +8,7 @@ const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD',
 export const PaymentLineItems = ({
                                      resetField,
                                      register,
+                                     setValue,
                                      errors,
                                      site,
                                      paymentItems,
@@ -112,6 +113,7 @@ export const PaymentLineItems = ({
                             <PaymentLineItem
                                 resetField={resetField}
                                 register={register}
+                                setValue={setValue}
                                 errors={errors}
                                 site={site}
                                 id={i}
@@ -157,6 +159,7 @@ export const PaymentLineItems = ({
 };
 export const PaymentLineItem = ({
                                     register,
+                                    setValue,
                                     errors,
                                     resetField,
                                     site,
@@ -197,7 +200,10 @@ export const PaymentLineItem = ({
         setTotal(tot ? currency.format(tot) : "");
         setDescription(desc);
         if (amt === "") resetField(`amount_${itemId}`);
+        else if (setValue) setValue(`amount_${itemId}`, amt, { shouldValidate: true });
+        
         if (desc === "") resetField(`description_${itemId}`);
+        else if (setValue) setValue(`description_${itemId}`, desc, { shouldValidate: true });
     }, [id, desc, amt, chg]);
 
     const handleChangeAmount = (event, formatAmount = false) => {

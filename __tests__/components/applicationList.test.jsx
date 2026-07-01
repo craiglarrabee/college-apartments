@@ -122,7 +122,7 @@ describe("ProcessedApplicationList component", () => {
                                                              page={page} leaseId={leaseId}/>);
         await user.click(getByText("Deposit"));
         await waitFor(() => {
-            expect(depFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId)
+            expect(depFn).toHaveBeenCalledWith(users[0].user_id, site, leaseId, undefined)
         });
     });
 

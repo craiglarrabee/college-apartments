@@ -31,14 +31,31 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     const {
         register,
         resetField,
+        setValue,
+        trigger,
         formState: {isValid, isDirty, errors},
         handleSubmit
-    } = useForm({mode: "all"});
+    } = useForm({
+        mode: "all",
+        defaultValues: tenant,
+        shouldUnregister: true
+    });
+
+    useEffect(() => {
+        trigger();
+    }, [trigger]);
 
     const [paymentError, setPaymentError] = useState();
     const [paymentInfo, setPaymentInfo] = useState();
     const [validPayments, setvalidPayments] = useState(payments);
     const [cardNumber, setCardNumber] = useState("");
+    const [isSquareValid, setIsSquareValid] = useState(false);
+    const [squareToken, setSquareToken] = useState(null);
+    const [squareZip, setSquareZip] = useState(null);
+
+    useEffect(() => {
+        console.log(`[DEBUG] Payments Form State: isValid=${isValid}, isSquareValid=${isSquareValid}, errors=`, errors);
+    }, [isValid, errors, isSquareValid]);
     const [expDate, setExpDate] = useState("");
     const [code, setCode] = useState("");
     const [showPrivacy, setShowPrivacy] = useState(false);
@@ -48,14 +65,18 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     const [aptLocation, setAptLocation] = useState(site === "snow" ? "pp" : "");
     const [selectedPrivacyContent, setSelectedPrivacyContent] = useState(privacyContent[aptLocation]);
     const [payment, setPayment] = useState("");
+
+    useEffect(() => {
+        setValue("location", aptLocation, { shouldValidate: true });
+    }, [aptLocation, setValue, site]);
+
     const [paymentItems, setPaymentItems] = useState([{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}]);
     const [total, setTotal] = useState("");
     const [adminItemIds, setAdminItemIds] = useState([]); // Track which items came from admin
     const [isLoading, setIsLoading] = useState(false);
     const payButtonRef = React.useRef(null); // Reference to the Pay button
 
-    // Feature flag: enable Square for snow site via NEXT_PUBLIC_USE_SQUARE_FOR_SNOW
-    const [useSquare, setUseSquare] = useState(false);
+    const [useSquare, setUseSquare] = useState(!!restOfProps.useSquareEnabled && site === 'snow');
     const [squarePayments, setSquarePayments] = useState(null);
     const [squareCard, setSquareCard] = useState(null);
     // UI banner to indicate which payment mode is active
@@ -110,11 +131,17 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     }, [site, restOfProps.useSquareEnabled]);
 
     useEffect(() => {
-        if (!useSquare) return;
+        if (!useSquare) {
+            setIsSquareValid(false);
+            return;
+        }
         // Load Square Web Payments SDK and initialize card element
         const applicationId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
         const locationId = process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID || (process.env.NODE_ENV !== 'production' ? process.env.TEST_SQUARE_LOCATION_ID : undefined);
         if (!applicationId || !locationId) return;
+
+        let active = true;
+        let cardInstance = null;
 
         const ensureScript = () => new Promise((resolve, reject) => {
             if (window.Square) return resolve();
@@ -130,7 +157,9 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
         (async () => {
             try {
                 await ensureScript();
+                if (!active) return;
                 const payments = window.Square.payments(applicationId, locationId);
+                if (!active) return;
                 setSquarePayments(payments);
                 // Card element will include postal code by default
                 const card = await payments.card({
@@ -143,13 +172,36 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                         }
                     }
                 });
+                if (!active) {
+                    await card.destroy();
+                    return;
+                }
                 await card.attach('#sq-card-container');
+
+                card.addEventListener('change', (event) => {
+                    const valid = !!event.detail.currentState.isCompletelyValid;
+                    setIsSquareValid(valid);
+                    setSquareToken(null);
+                    console.log(`[DEBUG] Square card change event: valid=${valid}`);
+                    if (valid) {
+                        trigger(); // Force re-validation of the whole form
+                    }
+                });
+                cardInstance = card;
                 setSquareCard(card);
             } catch (e) {
                 console.error(`${new Date().toISOString()} - Failed to init Square`, e);
                 setPaymentError('Failed to initialize card input. Please refresh and try again.');
             }
         })();
+
+        return () => {
+            active = false;
+            if (cardInstance) {
+                cardInstance.destroy();
+                setSquareCard(null);
+            }
+        };
     }, [useSquare]);
 
     const formatCardNumber = (event) => {
@@ -201,8 +253,47 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
         setSelectedPrivacyContent(privacyContent[event.currentTarget.value]);
     };
 
+    const checkSquareValues = async () => {
+        if (!useSquare) return true;
+        if (!squareCard) {
+            setPaymentError('Payment form is not ready. Please refresh and try again.');
+            return false;
+        }
+
+        try {
+            const result = await squareCard.tokenize();
+            if (result?.status === 'OK') {
+                setSquareToken(result.token);
+                if (result?.details?.billing?.postalCode) {
+                    setSquareZip(result.details.billing.postalCode);
+                }
+                return true;
+            } else {
+                const errorMessage = result?.errors?.[0]?.message || 'Please fill in all card details correctly.';
+                setPaymentError(errorMessage);
+                return false;
+            }
+        } catch (e) {
+            console.error('Error during Square check:', e);
+            setPaymentError('An error occurred while verifying card details.');
+            return false;
+        }
+    };
+
     const submitForm = async (data, event) => {
         event.preventDefault();
+        setPaymentError(null);
+
+        if (useSquare) {
+            setIsLoading(true);
+            const squareOk = await checkSquareValues();
+            if (!squareOk) {
+                setIsLoading(false);
+                return;
+            }
+            setIsLoading(false);
+        }
+
         data.total = total.replaceAll(",", "").replace("$", "");
         data.email = tenant.email;
         data.tenantFirstName = tenant.first_name;
@@ -229,27 +320,17 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
         try {
             let body = { ...payment };
 
-            // If using Square, tokenize to get squareSourceId and strip raw CC fields
+            // If using Square, use cached squareSourceId and strip raw CC fields
             if (useSquare) {
-                if (!squareCard) {
-                    setPaymentError('Payment form is not ready. Please refresh and try again.');
+                if (!squareToken) {
+                    setPaymentError('Payment information has changed or is not ready. Please try again.');
                     setIsLoading(false);
                     return;
                 }
-                // Tokenize the card - Square's card element collects card number, expiration, CVV, and postal code
-                const result = await squareCard.tokenize();
-                if (result?.status !== 'OK') {
-                    const errorMessage = result?.errors?.[0]?.message || 'Unable to tokenize card. Please verify your entries and try again.';
-                    setPaymentError(errorMessage);
-                    console.error('Square tokenization error:', result);
-                    setIsLoading(false);
-                    return;
-                }
-                body.squareSourceId = result.token;
+                body.squareSourceId = squareToken;
 
-                // Extract postal code from tokenization result if available
-                if (result?.details?.billing?.postalCode) {
-                    body.zip = result.details.billing.postalCode;
+                if (squareZip) {
+                    body.zip = squareZip;
                 }
 
                 delete body.cc_number;
@@ -509,7 +590,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                         <hr/>
                                         {useSquare && (
                                             <>
-                                                <Form.Text>Card Information</Form.Text>
+                                                <Form.Label className="required">Card Information</Form.Label>
                                                 <Row>
                                                     <Col xs={12} className="mb-3">
                                                         <div id="sq-card-container" style={{border: '1px solid #ced4da', borderRadius: 4, padding: 12}} />
@@ -540,7 +621,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                         )}
                                         {!useSquare && (
                                             <>
-                                                <Form.Text>Credit Card Information</Form.Text>
+                                                <Form.Label className="required">Credit Card Information</Form.Label>
                                                 <Row>
                                             <Form.Group as={Col} xs={5} className="mb-3" controlId="cc_number">
                                                 <Form.Label className="required">Card Number</Form.Label>
@@ -601,6 +682,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                             <PaymentLineItems
                                                 site={site}
                                                 register={register}
+                                                setValue={setValue}
                                                 errors={errors}
                                                 resetField={resetField}
                                                 paymentItems={paymentItems}
@@ -706,7 +788,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                                             <Button
                                                 ref={payButtonRef}
                                                 variant="primary"
-                                                disabled={!isDirty || isLoading}
+                                                disabled={!isValid || isLoading}
                                                 type="submit"
                                                 style={{margin: "5px"}}>Pay</Button>
                                         </div>

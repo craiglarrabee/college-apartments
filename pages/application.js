@@ -101,9 +101,11 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         GetDynamicContent(site, "refund")
     ]);
 
-    if (site === 'suu' && !isReturningStudent) {
-        console.log(`[DEBUG] User ${user.id} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}. Semester1: ${currentRooms[0]?.semester1}, Semester2: ${currentRooms[0]?.semester2}`);
+    if (!isReturningStudent) {
+        console.log(`[DEBUG] User ${user.id} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}.`);
     }
+
+    console.log(`[DEBUG] Application page check for user ${user.id} (${tenant?.username}) site ${site}: isReturningStudent=${isReturningStudent}, isDepositPaid=${isDepositPaid}, targetLeaseId=${targetLeaseId}`);
 
     if (!currentRooms || currentRooms.length === 0) {
         console.error(`${new Date().toISOString()} -` +"redirecting to deposit due to no current rooms");

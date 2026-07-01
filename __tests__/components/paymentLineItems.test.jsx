@@ -10,12 +10,14 @@ describe("PaymentLineItems", () => {
         ref: jest.fn(),
     }));
     const mockResetField = jest.fn();
+    const mockSetValue = jest.fn();
     const mockSetParentPaymentItems = jest.fn();
     const mockSetParentTotal = jest.fn();
 
     const defaultProps = {
         resetField: mockResetField,
         register: mockRegister,
+        setValue: mockSetValue,
         errors: {},
         site: "snow",
         paymentItems: [{id: 0, description: "", amount: "", surcharge: "", unitPrice: ""}],
@@ -85,9 +87,11 @@ describe("PaymentLineItem", () => {
     const mockRemoveLineItem = jest.fn();
     const mockGetSurcharge = jest.fn(() => 2.75);
     const mockResetField = jest.fn();
+    const mockSetValue = jest.fn();
 
     const defaultProps = {
         register: mockRegister,
+        setValue: mockSetValue,
         errors: {},
         resetField: mockResetField,
         site: "snow",
