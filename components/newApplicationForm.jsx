@@ -25,6 +25,7 @@ const NewApplicationForm = ({
                                 tenant,
                                 isReturningStudent,
                                 isDepositPaid,
+                                isOptional,
                                 depositAmount,
                                 privacyContent,
                                 refundContent,
@@ -257,7 +258,16 @@ const NewApplicationForm = ({
         setIsProcessing(true);
         setApplicationError(null);
 
-        if (useSquare && depositRequired) {
+        let shouldPay = depositRequired;
+        if (isOptional && depositRequired) {
+            if (useSquare) {
+                shouldPay = isSquareValid;
+            } else {
+                shouldPay = !!(data.cc_number || data.cc_expire || data.cc_code);
+            }
+        }
+
+        if (useSquare && shouldPay) {
             const squareOk = await checkSquareValues();
             if (!squareOk) {
                 setIsProcessing(false);
@@ -265,7 +275,7 @@ const NewApplicationForm = ({
             }
         }
 
-        if (depositRequired) {
+        if (shouldPay) {
             const amount = Number(dynamicDepositAmount);
             const surcharge = site === "snow" ? Math.round(amount * 2.75) / 100 : 0;
             const total = amount + surcharge;
@@ -482,11 +492,11 @@ const NewApplicationForm = ({
                                 </Form.Group>
                             </Row>
                         )}
-                        <p>A deposit of {currency.format(dynamicDepositAmount)} is required.{site === "snow" && ` A 2.75% processing fee (${currency.format(dynamicDepositAmount * 0.0275)}) will be added for card payments, for a total of ${currency.format(dynamicDepositAmount * 1.0275)}.`}</p>
+                        <p>{isOptional ? `A deposit of ${currency.format(dynamicDepositAmount)} is optional.` : `A deposit of ${currency.format(dynamicDepositAmount)} is required.`}{site === "snow" && ` A 2.75% processing fee (${currency.format(dynamicDepositAmount * 0.0275)}) will be added for card payments, for a total of ${currency.format(dynamicDepositAmount * 1.0275)}.`}</p>
                         
                         {useSquare ? (
                             <>
-                                <Form.Label className="required">Card Information</Form.Label>
+                                <Form.Label className={isOptional ? "" : "required"}>Card Information</Form.Label>
                                 <Row>
                                     <Col xs={12} className="mb-3">
                                         <div id="sq-card-container" style={{border: '1px solid #ced4da', borderRadius: 4, padding: 12}} />
@@ -496,13 +506,13 @@ const NewApplicationForm = ({
                             </>
                         ) : (
                             <>
-                                <Form.Label className="required">Credit Card Information</Form.Label>
+                                <Form.Label className={isOptional ? "" : "required"}>Credit Card Information</Form.Label>
                                 <Row>
                                     <Form.Group as={Col} xs={12} md={6} className="mb-3" controlId="cc_number">
-                                        <Form.Label className="required">Card Number</Form.Label>
+                                        <Form.Label className={isOptional ? "" : "required"}>Card Number</Form.Label>
                                         <Form.Control maxLength={19} autoComplete="cc-number"
                                                       className={errors && errors.cc_number && classNames("border-danger")} {...register("cc_number", {
-                                                required: depositRequired ? "Card Number is required" : false,
+                                                required: (depositRequired && !isOptional) ? "Card Number is required" : false,
                                                 pattern: {
                                                     value: /\d{4} \d{4} \d{4} \d{3,4}/,
                                                     message: "Valid Card Number is required"
@@ -512,10 +522,10 @@ const NewApplicationForm = ({
                                         {errors && errors.cc_number && <Form.Text className="text-danger">{errors.cc_number.message}</Form.Text>}
                                     </Form.Group>
                                     <Form.Group as={Col} xs={6} md={3} className="mb-3" controlId="cc_expire">
-                                        <Form.Label className="required">Expires</Form.Label>
+                                        <Form.Label className={isOptional ? "" : "required"}>Expires</Form.Label>
                                         <Form.Control maxLength={7} autoComplete="cc-exp"
                                                       className={errors && errors.cc_expire && classNames("border-danger")} {...register("cc_expire", {
-                                            required: depositRequired ? "MM/YYYY is required" : false,
+                                            required: (depositRequired && !isOptional) ? "MM/YYYY is required" : false,
                                             pattern: {
                                                 value: /\d{2}\/\d{4}/,
                                                 message: "MM/YYYY is required"
@@ -525,10 +535,10 @@ const NewApplicationForm = ({
                                         {errors && errors.cc_expire && <Form.Text className="text-danger">{errors.cc_expire.message}</Form.Text>}
                                     </Form.Group>
                                     <Form.Group as={Col} xs={6} md={3} className="mb-3" controlId="cc_code">
-                                        <Form.Label className="required">CCV</Form.Label>
+                                        <Form.Label className={isOptional ? "" : "required"}>CCV</Form.Label>
                                         <Form.Control maxLength={4}
                                                       className={errors && errors.cc_code && classNames("border-danger")} {...register("cc_code", {
-                                            required: depositRequired ? "CVV is required" : false,
+                                            required: (depositRequired && !isOptional) ? "CVV is required" : false,
                                             pattern: {
                                                 value: /\d{3,4}/,
                                                 message: "Valid CVV is required"
@@ -558,7 +568,7 @@ const NewApplicationForm = ({
                                                     </span>
                                                 }
                                                 {...register("agreeToPolicies", {
-                                                    required: "You must agree to the privacy and refund policies to continue."
+                                                    required: (depositRequired && !isOptional) ? "You must agree to the privacy and refund policies to continue." : false
                                                 })}
                                                 isInvalid={!!errors.agreeToPolicies}
                                             />
@@ -588,7 +598,7 @@ const NewApplicationForm = ({
                 <div style={{width: "100%"}}
                      className={classNames("mb-3", "justify-content-center", "d-inline-flex", "mt-4")}>
                     <Button variant="primary" type="submit" disabled={canEdit || isProcessing || !isValid}>
-                        {isProcessing ? "Processing..." : (depositRequired ? "Pay Deposit and Submit Application" : "Submit")}
+                        {isProcessing ? "Processing..." : (depositRequired ? (isOptional ? "Submit Application" : "Pay Deposit and Submit Application") : "Submit")}
                     </Button>
                 </div>
             </Form>
