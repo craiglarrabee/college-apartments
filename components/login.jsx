@@ -3,6 +3,7 @@ import React, {useState} from "react";
 import classNames from "classnames";
 import {useForm} from "react-hook-form";
 import {useRouter} from "next/router";
+import {debugLog} from "../lib/util";
 
 const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
     const [loginError, setLoginError] = useState(false);
@@ -43,10 +44,10 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
 
     // Effect to log when loginError changes
     React.useEffect(() => {
-        console.log('loginError changed to:', loginError);
+        debugLog('loginError changed to:', loginError);
     }, [loginError]);
 
-    console.log('Login render - loginError:', loginError, 'show:', show);
+    debugLog('Login render - loginError:', loginError, 'show:', show);
 
     return (
         <Modal show={show}

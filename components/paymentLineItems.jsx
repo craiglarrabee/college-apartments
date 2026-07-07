@@ -2,6 +2,7 @@ import {Button, Col, Form, Row, Table} from "react-bootstrap";
 import classNames from "classnames";
 import React, {useEffect, useState} from "react";
 import {Plus, Trash} from "react-bootstrap-icons";
+import {debugLog} from "../lib/util";
 
 const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
 
@@ -22,11 +23,11 @@ export const PaymentLineItems = ({
 
     // Update lineItems when paymentItems prop changes (e.g., from admin-created items)
     useEffect(() => {
-        console.log('PaymentLineItems received paymentItems:', paymentItems);
+        debugLog('PaymentLineItems received paymentItems:', paymentItems);
         if (paymentItems && paymentItems.length > 0) {
             // Check if paymentItems actually has content (not just empty template)
             const hasContent = paymentItems.some(item => item.description || item.amount);
-            console.log('hasContent:', hasContent);
+            debugLog('hasContent:', hasContent);
             if (hasContent) {
                 setLineItems(paymentItems);
                 // Recalculate total when items are updated
@@ -35,7 +36,7 @@ export const PaymentLineItems = ({
                 if (setParentTotal) {
                     setParentTotal(sum);
                 }
-                console.log('Updated lineItems:', paymentItems);
+                debugLog('Updated lineItems:', paymentItems);
             }
         }
     }, [paymentItems, setParentTotal]);
@@ -58,7 +59,7 @@ export const PaymentLineItems = ({
 
         // Prevent updating admin-created items
         if (item?.isAdminCreated) {
-            console.log('Cannot update admin-created item');
+            debugLog('Cannot update admin-created item');
             return;
         }
 
@@ -77,7 +78,7 @@ export const PaymentLineItems = ({
         // Prevent removing admin-created items
         const itemToRemove = lineItems.find(item => item.id === id);
         if (itemToRemove?.isAdminCreated) {
-            console.log('Cannot remove admin-created item');
+            debugLog('Cannot remove admin-created item');
             return;
         }
 

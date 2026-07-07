@@ -9,6 +9,7 @@ import ApplicationFormGroups from "./ApplicationFormGroups";
 import PageContent from "./pageContent";
 import GenericModal from "./genericModal";
 import AcknowledgePaymentModal from "./acknowledgePaymentModal";
+import {debugLog} from "../lib/util";
 
 const NewApplicationForm = ({
                                 site,
@@ -98,7 +99,7 @@ const NewApplicationForm = ({
     const [squareZip, setSquareZip] = useState(null);
 
     useEffect(() => {
-        console.log(`[DEBUG] Application Form State: isValid=${isValid}, isSquareValid=${isSquareValid}, errors=`, errors);
+        debugLog(`[DEBUG] Application Form State: isValid=${isValid}, isSquareValid=${isSquareValid}, errors=`, errors);
     }, [isValid, errors, isSquareValid]);
     const [expDate, setExpDate] = useState("");
     const [code, setCode] = useState("");
@@ -171,11 +172,17 @@ const NewApplicationForm = ({
                 }
                 await card.attach('#sq-card-container');
                 
+                // Set initial validity state
+                if (card.getState) {
+                    const initialState = card.getState();
+                    setIsSquareValid(initialState?.isCompletelyValid || false);
+                }
+
                 card.addEventListener('change', (event) => {
                     const valid = !!event.detail.currentState.isCompletelyValid;
                     setIsSquareValid(valid);
                     setSquareToken(null);
-                    console.log(`[DEBUG] Square card change event: valid=${valid}`);
+                    debugLog(`[DEBUG] Square card change event: valid=${valid}`);
                     if (valid) {
                         trigger(); // Force re-validation of the whole form
                     }

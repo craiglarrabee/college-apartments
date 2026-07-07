@@ -4,7 +4,6 @@ import {GetUserAdminSites, GetUserAndVerifyPassword} from "../../lib/db/users/us
 import {GetTenantProcessedApplicationSites} from "../../lib/db/users/application";
 
 const login = withIronSessionApiRoute(async (req, res) => {
-    console.log("**********************************************************************",req);
     if (req.headers["user-agent"].toLowerCase().includes("bot") && req.headers["user-agent"] !== "Cubot") {
         res.status(403).send({});
         return;

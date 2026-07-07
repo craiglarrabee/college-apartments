@@ -9,6 +9,7 @@ import {Alert, Button, Modal, Form, Tab, Table, Tabs, ProgressBar} from "react-b
 import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
+import {debugLog} from "../../lib/util";
 import {GetTenant, GetUserRoomates} from "../../lib/db/users/tenant";
 import {GetUserMaintenanceRequests} from "../../lib/db/users/maintenance";
 import {TenantForm} from "../../components/tenantForm";
@@ -74,7 +75,7 @@ const Tenant = ({
             const resp = await fetch(`/api/tenants/${userId}/files?site=${site}`);
             if (resp.ok) {
                 const data = await resp.json();
-                console.log('Fetched files:', data);
+                debugLog('Fetched files:', data);
                 setFilesList(data.files || []);
             } else {
                 console.error('Failed to load files, status:', resp.status);
@@ -902,10 +903,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     
     if (!isReturningStudent) {
         const targetLeaseId = currentRooms && currentRooms.length > 0 ? currentRooms[0].lease_id : null;
-        console.log(`[DEBUG] User ${userId} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}.`);
+        debugLog(`[DEBUG] User ${userId} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}.`);
     }
 
-    console.log(`[DEBUG] Tenant profile check for user ${userId} (${tenant?.username}) site ${site}: isReturningStudent=${isReturningStudent}, isDepositPaid=${isDepositPaid}`);
+    debugLog(`[DEBUG] Tenant profile check for user ${userId} (${tenant?.username}) site ${site}: isReturningStudent=${isReturningStudent}, isDepositPaid=${isDepositPaid}`);
 
     applicationContentRows.forEach(row => applicationContent[row.name] = row.content);
     const currentLeasesMap = await Promise.all(applications.map(async application => {
@@ -923,7 +924,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
         application.do_not_share_info = !application.share_info;
     });
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
-    const depositAmount = currentRooms[0]?.deposit_amount !== undefined ? Number(currentRooms[0].deposit_amount) : undefined;
+    const depositAmount = currentRooms[0]?.deposit_amount !== undefined ? Number(currentRooms[0].deposit_amount) : null;
     currentLeases = currentLeases.map(lease => {
         let rooms = currentRooms.filter(room => room.lease_id === lease);
         return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};

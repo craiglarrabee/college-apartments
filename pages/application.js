@@ -14,6 +14,7 @@ import {GetUserAvailableLeaseRooms} from "../lib/db/users/roomType";
 import {GetTenant} from "../lib/db/users/tenant";
 import NewApplicationForm from "../components/newApplicationForm";
 import {IsDepositPaid, IsReturningStudent} from "../lib/db/users/application";
+import {debugLog} from "../lib/util";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG;
@@ -102,10 +103,10 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     ]);
 
     if (!isReturningStudent) {
-        console.log(`[DEBUG] User ${user.id} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}.`);
+        debugLog(`[DEBUG] User ${user.id} (${tenant?.username}) is NOT considered returning student for site ${site}, targetLeaseId ${targetLeaseId}.`);
     }
 
-    console.log(`[DEBUG] Application page check for user ${user.id} (${tenant?.username}) site ${site}: isReturningStudent=${isReturningStudent}, isDepositPaid=${isDepositPaid}, targetLeaseId=${targetLeaseId}`);
+    debugLog(`[DEBUG] Application page check for user ${user.id} (${tenant?.username}) site ${site}: isReturningStudent=${isReturningStudent}, isDepositPaid=${isDepositPaid}, targetLeaseId=${targetLeaseId}`);
 
     if (!currentRooms || currentRooms.length === 0) {
         console.error(`${new Date().toISOString()} -` +"redirecting to deposit due to no current rooms");
@@ -115,7 +116,7 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     }
     contentRows.forEach(row => content[row.name] = row.content);
     let currentLeases = [...new Set(currentRooms.map(room => room.lease_id))];
-    const depositAmount = currentRooms[0]?.deposit_amount !== undefined ? Number(currentRooms[0].deposit_amount) : undefined;
+    const depositAmount = currentRooms[0]?.deposit_amount !== undefined ? Number(currentRooms[0].deposit_amount) : null;
     currentLeases = currentLeases.map(lease => {
         let rooms = currentRooms.filter(room => room.lease_id === lease);
         return {leaseId: lease, leaseDescription: rooms[0].description, rooms: rooms};

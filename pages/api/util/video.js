@@ -34,23 +34,32 @@ const video = withIronSessionApiRoute(async (req, res) => {
 
 const uploadVideo = async (req) => {
     const busboy = new Busboy({headers: req.headers});
-    console.log(`${new Date().toISOString()} -` +JSON.stringify(req.headers, null, 2));
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
-        console.log(`${new Date().toISOString()} -` +
-            'File [' + fieldname + ']: filename: ' + filename + ', encoding: ' , encoding + ', mimetype: ' + mimetype,
-        );
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(`${new Date().toISOString()} -` +
+                'File [' + fieldname + ']: filename: ' + filename + ', encoding: ' , encoding + ', mimetype: ' + mimetype,
+            );
+        }
         file.on('data', function (data) {
-            console.log(`${new Date().toISOString()} -` +'File [' + fieldname + '] got ' + data.length + ' bytes');
+            if (process.env.NODE_ENV !== 'production') {
+                console.log(`${new Date().toISOString()} -` +'File [' + fieldname + '] got ' + data.length + ' bytes');
+            }
         });
         file.on('end', function () {
-            console.log(`${new Date().toISOString()} -` +'File [' + fieldname + '] Finished');
+            if (process.env.NODE_ENV !== 'production') {
+                console.log(`${new Date().toISOString()} -` +'File [' + fieldname + '] Finished');
+            }
         });
     });
     busboy.on('field', function (fieldname, val) {
-        console.log(`${new Date().toISOString()} -` +'Field [' + fieldname + ']: value: ' + inspect(val));
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(`${new Date().toISOString()} -` +'Field [' + fieldname + ']: value: ' + inspect(val));
+        }
     });
     busboy.on('finish', function () {
-        console.log(`${new Date().toISOString()} -` +'Done parsing form!');
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(`${new Date().toISOString()} -` +'Done parsing form!');
+        }
 
         resolve(1);
     });

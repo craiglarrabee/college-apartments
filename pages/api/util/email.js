@@ -34,7 +34,7 @@ export const email = withIronSessionApiRoute(async (req, res) => {
                 let transporter = req.body.from.startsWith("suu") ? suuTransporter : snowTransporter;
                 let info = await transporter.sendMail({
                     from: req.body.from,
-                    to: req.body.address,
+                    to: `${req.body.address};collegewayapts@gmail.com;stadiumwayapts@gmail.com`,
                     bcc: "suu_snow@yahoo.com",
                     subject: req.body.subject,
                     html: req.body.body

@@ -20,6 +20,7 @@ import {ironOptions} from "../lib/session/options";
 import AcknowledgePaymentModal from "../components/acknowledgePaymentModal";
 import {PaymentLineItems} from "../components/paymentLineItems";
 import {GetTenantPaymentItems} from "../lib/db/users/tenantPaymentItems";
+import {debugLog} from "../lib/util";
 
 const SITE = process.env.SITE;
 const bg = process.env.BG || 'light';
@@ -54,7 +55,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
     const [squareZip, setSquareZip] = useState(null);
 
     useEffect(() => {
-        console.log(`[DEBUG] Payments Form State: isValid=${isValid}, isSquareValid=${isSquareValid}, errors=`, errors);
+        debugLog(`[DEBUG] Payments Form State: isValid=${isValid}, isSquareValid=${isSquareValid}, errors=`, errors);
     }, [isValid, errors, isSquareValid]);
     const [expDate, setExpDate] = useState("");
     const [code, setCode] = useState("");
@@ -84,7 +85,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
 
     // Auto-populate payment items from admin-created entries
     useEffect(() => {
-        console.log('tenantPaymentItems received:', tenantPaymentItems);
+        debugLog('tenantPaymentItems received:', tenantPaymentItems);
         if (tenantPaymentItems && tenantPaymentItems.length > 0) {
             const getSurcharge = (amt) => {
                 if (site === "snow") {
@@ -109,7 +110,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                 };
             });
 
-            console.log('Setting payment items:', items);
+            debugLog('Setting payment items:', items);
             setPaymentItems(items);
             setAdminItemIds(items.map(i => i.adminItemId));
 
@@ -178,11 +179,17 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                 }
                 await card.attach('#sq-card-container');
 
+                // Set initial validity state
+                if (card.getState) {
+                    const initialState = card.getState();
+                    setIsSquareValid(initialState?.isCompletelyValid || false);
+                }
+
                 card.addEventListener('change', (event) => {
                     const valid = !!event.detail.currentState.isCompletelyValid;
                     setIsSquareValid(valid);
                     setSquareToken(null);
-                    console.log(`[DEBUG] Square card change event: valid=${valid}`);
+                    debugLog(`[DEBUG] Square card change event: valid=${valid}`);
                     if (valid) {
                         trigger(); // Force re-validation of the whole form
                     }
