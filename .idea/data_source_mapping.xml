@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_1.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_16.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_18.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_19.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_20.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_21.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_22.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_23.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_24.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/2cb2f027-9801-4b92-963a-4a9ed552f326/console_25.sql" value="2cb2f027-9801-4b92-963a-4a9ed552f326" />
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/94fcfe10-8a1e-4e09-8936-d5edeb3b16f5/console_43.sql" value="94fcfe10-8a1e-4e09-8936-d5edeb3b16f5" />
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/94fcfe10-8a1e-4e09-8936-d5edeb3b16f5/console_44.sql" value="94fcfe10-8a1e-4e09-8936-d5edeb3b16f5" />

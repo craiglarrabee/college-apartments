@@ -3,6 +3,7 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../lib/session/options";
 import {AddApplication, ReceiveDeposit} from "../../../../../lib/db/users/application";
+import {AddUserLease} from "../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session.user?.isLoggedIn) res.status(403).send();
@@ -14,6 +15,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     await AddApplication(data.site, req.query.userId, data.lease_id, data);
                     if (req.body.depositPaid) {
                         await ReceiveDeposit(data.site, req.query.userId, data.lease_id);
+                        await AddUserLease(req.query.userId, data.lease_id, {});
                     }
                 }
                 res.status(204).send();
