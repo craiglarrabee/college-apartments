@@ -3,8 +3,6 @@
 import {withIronSessionApiRoute} from "iron-session/next";
 import {ironOptions} from "../../../../../../lib/session/options";
 import {DeleteDeposit, ReceiveDeposit} from "../../../../../../lib/db/users/application";
-import {GetLease} from "../../../../../../lib/db/users/lease";
-import {ExecuteQuery} from "../../../../../../lib/db/pool";
 import {
     AddUserPayment,
     GetUnreviewedSecurityDepositPayment,
@@ -14,12 +12,6 @@ import {
 const handler = withIronSessionApiRoute(async (req, res) => {
     if (!req.session?.user?.manageApartment) res.status(403).send();
     try {
-        // Lazy migration: ensure lease_id column exists
-        try {
-            await ExecuteQuery("ALTER TABLE user_payment ADD COLUMN lease_id INT NULL AFTER user_id");
-        } catch (e) {
-            // ignore if already exists or other error (we'll see error later if it fails)
-        }
 
         switch (req.method) {
             case "POST":
