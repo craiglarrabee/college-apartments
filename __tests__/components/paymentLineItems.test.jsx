@@ -74,6 +74,35 @@ describe("PaymentLineItems", () => {
         expect(descriptionField).not.toBeDisabled();
         expect(amountField).not.toBeDisabled();
     });
+
+    it("only includes selected items in total calculation on initial render", () => {
+        const adminItems = [
+            {
+                id: 0,
+                description: "Item 1",
+                amount: "100.00",
+                surcharge: "0.00",
+                unitPrice: "100.00",
+                isAdminCreated: true,
+                isSelected: true
+            },
+            {
+                id: 1,
+                description: "Item 2",
+                amount: "50.00",
+                surcharge: "0.00",
+                unitPrice: "50.00",
+                isAdminCreated: true,
+                isSelected: false
+            }
+        ];
+
+        const {container} = render(<PaymentLineItems {...defaultProps} paymentItems={adminItems} />);
+
+        // Total should be $100.00, not $150.00
+        const totalField = container.querySelector('#orderTotal');
+        expect(totalField.value).toBe("$100.00");
+    });
 });
 
 describe("PaymentLineItem", () => {
@@ -167,6 +196,16 @@ describe("PaymentLineItem", () => {
 
         const trashButton = container.querySelector('button[title="Remove item"]');
         expect(trashButton).toBeInTheDocument();
+    });
+
+    it("renders selection checkbox with correct initial state", () => {
+        const {container: container1} = render(<PaymentLineItem {...defaultProps} isSelected={true} />);
+        const checkbox1 = container1.querySelector('input[type="checkbox"]');
+        expect(checkbox1.checked).toBe(true);
+
+        const {container: container2} = render(<PaymentLineItem {...defaultProps} isSelected={false} />);
+        const checkbox2 = container2.querySelector('input[type="checkbox"]');
+        expect(checkbox2.checked).toBe(false);
     });
 });
 

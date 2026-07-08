@@ -106,7 +106,8 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
                     surcharge: surcharge.toString(),
                     unitPrice: unitPrice.toString(),
                     adminItemId: item.id, // Store the DB ID for later
-                    isAdminCreated: true // Mark as admin-created
+                    isAdminCreated: true, // Mark as admin-created
+                    isSelected: index === 0
                 };
             });
 
@@ -115,7 +116,7 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
             setAdminItemIds(items.map(i => i.adminItemId));
 
             // Calculate total
-            const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.unitPrice), 0);
+            const totalAmount = items.reduce((sum, item) => sum + (item.isSelected ? parseFloat(item.unitPrice) : 0), 0);
             const currency = Intl.NumberFormat("en-US", {style: 'currency', currency: 'USD', minimumFractionDigits: 2});
             setTotal(currency.format(totalAmount));
 
@@ -305,11 +306,11 @@ const Payments = ({site, isABot,  navPage, links, user, payments, tenant, privac
         data.email = tenant.email;
         data.tenantFirstName = tenant.first_name;
         data.tenantLastName = tenant.last_name;
-        data.items = paymentItems;
+        data.items = paymentItems.filter(item => item.isSelected);
 
-        // Include admin item IDs if any items came from admin
+        // Include admin item IDs if any items came from admin and are selected
         data.adminItemIds = paymentItems
-            .filter(item => item.adminItemId)
+            .filter(item => item.adminItemId && item.isSelected)
             .map(item => item.adminItemId);
 
         // now store form data for use after confirmation

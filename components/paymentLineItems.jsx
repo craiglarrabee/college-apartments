@@ -31,10 +31,13 @@ export const PaymentLineItems = ({
             if (hasContent) {
                 setLineItems(paymentItems);
                 // Recalculate total when items are updated
-                const sum = currency.format(paymentItems.reduce((partialSum, item) => partialSum + (parseFloat(item.unitPrice) || 0), 0));
+                const sum = currency.format(paymentItems.reduce((partialSum, item) => partialSum + (item.isSelected ? (parseFloat(item.unitPrice) || 0) : 0), 0));
                 setTotal(sum);
                 if (setParentTotal) {
                     setParentTotal(sum);
+                }
+                if (setValue) {
+                    setValue("orderTotal", sum, { shouldValidate: true });
                 }
                 debugLog('Updated lineItems:', paymentItems);
             }
@@ -48,7 +51,8 @@ export const PaymentLineItems = ({
             amount: "",
             surcharge: "",
             unitPrice: "",
-            isAdminCreated: false
+            isAdminCreated: false,
+            isSelected: true
         }];
         setLineItems(newItems);
         setParentPaymentItems(newItems);
@@ -69,9 +73,29 @@ export const PaymentLineItems = ({
         item.unitPrice = subtotal;
         setLineItems([...lineItems]);
         setParentPaymentItems([...lineItems]);
-        const sum = currency.format(await lineItems.reduce((partialSum, item) => partialSum + (1 * item.unitPrice), 0));
+        const sum = currency.format(lineItems.reduce((partialSum, item) => {
+            return partialSum + (item.isSelected ? (parseFloat(item.unitPrice) || 0) : 0);
+        }, 0));
         setTotal(sum);
         setParentTotal(sum);
+        if (setValue) {
+            setValue("orderTotal", sum, { shouldValidate: true });
+        }
+    };
+
+    const toggleSelection = (id) => {
+        const newItems = [...lineItems];
+        newItems[id].isSelected = !newItems[id].isSelected;
+        setLineItems(newItems);
+        setParentPaymentItems(newItems);
+        const sum = currency.format(newItems.reduce((partialSum, item) => {
+            return partialSum + (item.isSelected ? (parseFloat(item.unitPrice) || 0) : 0);
+        }, 0));
+        setTotal(sum);
+        setParentTotal(sum);
+        if (setValue) {
+            setValue("orderTotal", sum, { shouldValidate: true });
+        }
     };
 
     const removeLineItem = (id) => {
@@ -83,19 +107,23 @@ export const PaymentLineItems = ({
         }
 
         let newItems;
-        let sum;
 
         if (lineItems.length === 1) {
-            newItems = [{id: 0, description: "", amount: "", surcharge: "", unitPrice: "", isAdminCreated: false}];
+            newItems = [{id: 0, description: "", amount: "", surcharge: "", unitPrice: "", isAdminCreated: false, isSelected: true}];
         } else {
             newItems = [...lineItems.filter(item => item.id !== id)];
         }
         newItems.map((item, i) => item.id = i);
         setLineItems(newItems);
         setParentPaymentItems(newItems);
-        sum = currency.format(newItems.reduce((partialSum, item) => partialSum + (1 * item.unitPrice), 0));
+        const sum = currency.format(newItems.reduce((partialSum, item) => {
+            return partialSum + (item.isSelected ? (parseFloat(item.unitPrice) || 0) : 0);
+        }, 0));
         setTotal(sum);
         setParentTotal(sum);
+        if (setValue) {
+            setValue("orderTotal", sum, { shouldValidate: true });
+        }
     };
 
     const getSurcharge = (amt) => {
@@ -120,12 +148,14 @@ export const PaymentLineItems = ({
                                 id={i}
                                 updateLineItem={updateLineItem}
                                 removeLineItem={removeLineItem}
+                                toggleSelection={toggleSelection}
                                 getSurcharge={getSurcharge}
                                 amt={item.amount}
                                 desc={item.description}
                                 chg={item.surcharge}
                                 tot={item.unitPrice}
                                 isAdminCreated={item.isAdminCreated || false}
+                                isSelected={item.isSelected}
                                 key={i}
                             />
                         )
@@ -144,10 +174,20 @@ export const PaymentLineItems = ({
                             <Form.Group as={Col} xs={3} controlId={"orderTotal"}>
                                 <Form.Control
                                     readOnly
+                                    className={errors && errors.orderTotal && classNames("border-danger")}
                                     disabled={lineItems.length > 0 && lineItems.every(item => item.isAdminCreated)}
-                                    {...register("orderTotal")}
+                                    {...register("orderTotal", {
+                                        validate: (value) => {
+                                            const numericValue = parseFloat(value.replace(/[^0-9.-]+/g,""));
+                                            return numericValue > 0 || "Please select at least one item to pay.";
+                                        }
+                                    })}
                                     type="text"
                                     value={total}/>
+                                {errors && errors.orderTotal &&
+                                    <Form.Text
+                                        className={classNames("text-danger")}>{errors.orderTotal.message}</Form.Text>
+                                }
                             </Form.Group>
                         </Row>
                     </td>
@@ -167,12 +207,14 @@ export const PaymentLineItem = ({
                                     id,
                                     updateLineItem,
                                     removeLineItem,
+                                    toggleSelection,
                                     getSurcharge,
                                     desc,
                                     amt,
                                     tot,
                                     chg,
-                                    isAdminCreated = false
+                                    isAdminCreated = false,
+                                    isSelected = true
                                 }) => {
 
 
@@ -240,9 +282,17 @@ export const PaymentLineItem = ({
 
     return (
         <>
-            <tr className="align-middle">
+            <tr className={classNames("align-middle", !isSelected && "text-muted")}>
                 <td>
-                    <Row>
+                    <Row className="align-items-center">
+                        <Col xs={1}>
+                            <Form.Check
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleSelection(itemId)}
+                                title="Select to pay"
+                            />
+                        </Col>
                         <Col>
                             {isAdminCreated ||
                             <Button
