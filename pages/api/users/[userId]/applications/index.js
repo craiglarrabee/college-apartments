@@ -15,6 +15,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     await AddApplication(data.site, req.query.userId, data.lease_id, data);
                     if (req.body.depositPaid) {
                         await ReceiveDeposit(data.site, req.query.userId, data.lease_id);
+                        await AddUserLease(req.query.userId, data.lease_id, {});
                     }
                 }
                 res.status(204).send();
