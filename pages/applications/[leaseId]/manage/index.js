@@ -215,7 +215,7 @@ const Applications = ({
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.welcome_date));
                     if (processed) await sendResponseEmail(thisApp.email)
                     break;
                 case 400:
@@ -295,7 +295,7 @@ const Applications = ({
                     setUnprocessedApplications(newApplications.filter(app => app.processed === 0));
                     setProcessedApplications(newApplications.filter(app => app.processed === 1 && !app.deposit_date));
                     setDepositReceivedApplications(newApplications.filter(app => app.deposit_date && !app.apartment_number));
-                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.lease_date));
+                    setAssignedApplications(newApplications.filter(app => app.apartment_number && !app.welcome_date));
                     await sendDepositEmail(thisApp.email, emailBodyString);
                     break;
                 case 400:
