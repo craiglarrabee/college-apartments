@@ -14,7 +14,7 @@ const LeaseForm = ({
                    }) => {
     const {register, formState: {errors, isValid, isDirty}, handleSubmit} = useForm({defaultValues: lease});
     const today = new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
-    const submitted = lease.lease_date !== null;
+    const submitted = !!lease.signed_date;
     const printRef = useRef(null);
 
     const onSubmit = async (data, event) => {
@@ -24,7 +24,7 @@ const LeaseForm = ({
             const options = {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data),
+                body: JSON.stringify({...data, signed_date: new Date().toISOString()}),
             }
 
             const resp = await fetch(`/api/users/${userId}/leases/${leaseId}?site=${site}`, options)
@@ -166,7 +166,7 @@ const LeaseForm = ({
                     <Form.Group controlId="lease_date">
                         <Form.Control name="lease_date" type="hidden" value={submitted ? lease.lease_date : today}/>
                     </Form.Group>
-                    <div>This Contract is entered into on <strong>{lease.signed_date}</strong>, {site === "suu" ? "between Stadium Way/College Way" : "between Park Place Apartments, L.L.C."}Apartments, LLC, L.L.C.
+                    <div>This Contract is entered into on <strong>{submitted ? lease.signed_date : today}</strong>, {site === "suu" ? "between Stadium Way/College Way" : "between Park Place Apartments, L.L.C."}Apartments, LLC, L.L.C.
                         (hereinafter &quot;Landlord&quot;),
                         and <strong>{lease.name ? lease.name : "____________________________"}</strong> (hereinafter &quot;Resident&quot;).
                     </div>

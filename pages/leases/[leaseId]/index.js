@@ -44,7 +44,7 @@ const Lease = ({
             const options = {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data),
+                body: JSON.stringify({...data, signed_date: new Date().toISOString()}),
             }
 
             const resp = await fetch(`/api/users/${user.id}/leases/${lease.lease_id}?site=${site}`, options)
@@ -87,11 +87,11 @@ const Lease = ({
                                     name="lease_header"
                                     canEdit={canEdit}/>
 
-                                <Form.Group controlId="signed_date">
-                                    <Form.Control {...register("signed_date")} type="hidden" value={lease.signed_date}/>
+                                <Form.Group controlId="lease_date">
+                                    <Form.Control name="lease_date" type="hidden" value={signed ? lease.lease_date : today}/>
                                 </Form.Group>
                                 <div>This Contract is entered into
-                                    on <strong>{lease.signed_date}</strong>, {site === "suu" ? "between Stadium Way/College Way" : "between Park Place Apartments, L.L.C."}
+                                    on <strong>{signed ? lease.signed_date : today}</strong>, {site === "suu" ? "between Stadium Way/College Way" : "between Park Place Apartments, L.L.C."}
                                     Apartments, LLC, L.L.C.
                                     (hereinafter &quot;Landlord&quot;),
                                     and <strong>{lease.name ? lease.name : "____________________________"}</strong> (hereinafter &quot;Resident&quot;).

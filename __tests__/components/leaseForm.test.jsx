@@ -9,7 +9,7 @@ describe("LeaseForm", () => {
     const mockSite = "mockSite";
     const mockUserId = "mockUserId";
     const mockLeaseId = "mockLeaseId";
-    const mockLease = {lease_date: null};
+    const mockLease = {lease_date: null, signed_date: null};
     const mockCanEdit = true;
     const mockLeaseHeader = "mockLeaseHeader";
     const mockAccommodationsHeader = "mockAccommodationsHeader";
@@ -146,6 +146,7 @@ describe("LeaseForm", () => {
             lease_cell_phone: "555-123-4567",
             lease_parent_name: "John and Jane Smith",
             lease_parent_phone: "555-987-6543",
+            signed_date: expect.any(String),
         }));
     });
 
