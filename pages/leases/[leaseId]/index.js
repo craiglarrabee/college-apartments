@@ -12,6 +12,7 @@ import classNames from "classnames";
 import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import PageContent from "../../../components/pageContent";
 import {useForm} from "react-hook-form";
+import Router from "next/router";
 import LeaseDefinitionGroup from "../../../components/leaseDefinitionGroup";
 import {GetLease} from "../../../lib/db/users/lease";
 import {GetLeaseRooms} from "../../../lib/db/users/roomType";
@@ -31,6 +32,7 @@ const Lease = ({
                    lease_body, lease_acceptance, rules, cleaning, repairs, links, canEdit, user, rooms
                    , ...restOfProps
                }) => {
+    const today = new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
     const {register, formState: {errors, isValid, isDirty}, handleSubmit, reset} = useForm({
         values: lease,
         mode: "onChange"

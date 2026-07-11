@@ -47,7 +47,13 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
         debugLog('loginError changed to:', loginError);
     }, [loginError]);
 
-    debugLog('Login render - loginError:', loginError, 'show:', show);
+    const [isClient, setIsClient] = useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    if (!isClient) return null;
 
     return (
         <Modal show={show}

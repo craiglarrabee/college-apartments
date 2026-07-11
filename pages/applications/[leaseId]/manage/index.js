@@ -17,6 +17,7 @@ import {
     WelcomedApplicationList
 } from "../../../../components/applicationList";
 import {GetApplications} from "../../../../lib/db/users/application";
+import Router from "next/router";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
 import { renderToString } from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";

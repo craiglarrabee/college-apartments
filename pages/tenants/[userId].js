@@ -10,6 +10,7 @@ import {GetNavLinks} from "../../lib/db/content/navLinks";
 import {withIronSessionSsr} from "iron-session/next";
 import {ironOptions} from "../../lib/session/options";
 import {debugLog} from "../../lib/util";
+import Router from "next/router";
 import {GetTenant, GetUserRoomates} from "../../lib/db/users/tenant";
 import {GetUserMaintenanceRequests} from "../../lib/db/users/maintenance";
 import {TenantForm} from "../../components/tenantForm";
@@ -40,7 +41,7 @@ const brandUrl = process.env.BRAND_URL;
 const Tenant = ({
                     isTenant, site, isABot, navPage, links, user, tenant, currentLeasesMap,
                     applications, userId, leases, leaseContentMap, deletedPayments,
-                    emails, applicationContent, payments, paymentItems, roommates, maintenanceRequests, tab, currentLeases, page,
+                    emails, applicationContent, payments, paymentItems, roommates, maintenanceRequests, tab, semester, currentLeases, page,
                     ...restOfProps
                 }) => {
     const roommateSemesters = roommates.map(it => it.semester).reduce(function (acc, curr) {
@@ -48,6 +49,45 @@ const Tenant = ({
             acc.push(curr);
         return acc;
     }, []);
+
+    // Sort roommateSemesters chronologically to help pick the best default
+    const getSemesterScore = (semStr) => {
+        const [season, yearStr] = semStr.split(" ");
+        const year = parseInt(yearStr, 10);
+        const seasons = { "Spring": 1, "Summer": 2, "Fall": 3 };
+        return year * 10 + (seasons[season] || 0);
+    };
+
+    const sortedRoommateSemesters = [...roommateSemesters].sort((a, b) => getSemesterScore(a) - getSemesterScore(b));
+
+    const getDefaultSemester = () => {
+        if (semester) return semester;
+        if (sortedRoommateSemesters.length === 0) return null;
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0-indexed
+        // Define today's semester score
+        let currentSeasonScore = 1; // Spring
+        if (currentMonth >= 5 && currentMonth <= 6) currentSeasonScore = 2; // Summer (June-July)
+        if (currentMonth >= 7) currentSeasonScore = 3; // Fall (August-Dec)
+        const todayScore = currentYear * 10 + currentSeasonScore;
+
+        // Find the first semester that is today or in the future
+        const upcoming = sortedRoommateSemesters.find(s => getSemesterScore(s) >= todayScore);
+        return upcoming || sortedRoommateSemesters[sortedRoommateSemesters.length - 1];
+    };
+
+    const defaultSemester = getDefaultSemester();
+
+    const normalizedTab = tab?.toLowerCase();
+    const [activeTab, setActiveTab] = useState(normalizedTab || "info");
+
+    useEffect(() => {
+        if (normalizedTab && normalizedTab !== activeTab) {
+            setActiveTab(normalizedTab);
+        }
+    }, [normalizedTab]);
 
     const [validPayments, setvalidPayments] = useState(payments);
     const [validDeletedPayments, setvalidDeletedPayments] = useState(deletedPayments);
@@ -306,7 +346,7 @@ const Tenant = ({
         }
     };
 
-    tab = (tab === "Roommates") ? 3 : "info";
+    tab = (tab === "roommates") ? "roommates" : "info";
 
     useEffect(() => {
         async function process() {
@@ -372,24 +412,30 @@ const Tenant = ({
         }
     };
 
+    const refresh = () => {
+        Router.reload();
+    };
+
     return (
         <Layout site={site} user={user} wide={!isTenant}>
             <Navigation site={site} isBot={isABot} bg={bg} variant={variant} brandUrl={brandUrl} links={links}
                         page={navPage}/>
             <div style={{display: "flex", flexDirection: "column"}}>
-                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}/>
+                <Title site={site} bg={bg} variant={variant} brandUrl={brandUrl} initialUser={user}
+                       startWithLogin={!user.isLoggedIn} postLogin={refresh}/>
                 <main>
                     <div className={classNames("main-content")}>
-                        <Tabs defaultActiveKey={tab}>
+                        {user && user.isLoggedIn ?
+                        <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} id="tenant-tabs">
                             {/* Personal Info - Top Level */}
                             <Tab title="Personal Info" eventKey="info" key="info">
                                 <TenantForm tenant={tenant} site={site} userId={userId} isTenant={isTenant}/>
                             </Tab>
 
                             {/* Roommates - Top Level (if available) */}
-                            {roommateSemesters.length > 0 &&
+                            {(roommateSemesters.length > 0 || activeTab === "roommates") &&
                                 <Tab title="Roommates" eventKey="roommates" key="roommates">
-                                    <Tabs>
+                                    <Tabs defaultActiveKey={defaultSemester?.replace(" ", "_")}>
                                         {
                                             roommateSemesters.map(sem =>
                                                 <Tab title={sem} eventKey={sem.replace(" ", "_")}
@@ -836,6 +882,7 @@ const Tenant = ({
                                 </Tab>
                             }
                         </Tabs>
+                        : <></>}
                     </div>
                     <Footer bg={bg}/>
                 </main>
@@ -850,22 +897,65 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
     const {userId} = context.query;
     const site = context.query.site || SITE;
     const user = context.req.session.user;
+
+    const page = "application";
+
+    if (!user?.isLoggedIn) {
+        const [nav] = await Promise.all([
+            GetNavLinks(user, site)
+        ]);
+        return {
+            props: {
+                isTenant: true,
+                site: site,
+                links: nav,
+                isABot: isBot(context),
+                user: {isLoggedIn: false},
+                tenant: {},
+                applications: [],
+                navPage: "",
+                page: page,
+                userId: userId,
+                currentLeasesMap: [],
+                currentLeases: [],
+                leases: [],
+                leaseContentMap: [],
+                emails: [],
+                applicationContent: {},
+                payments: [],
+                paymentItems: [],
+                deletedPayments: [],
+                roommates: [],
+                maintenanceRequests: [],
+                tab: context.query.tab || "info",
+                semester: context.query.semester || null
+            }
+        };
+    }
+
+    if (user.isLoggedIn && user.editSite) {
+        return {
+            redirect: {
+                destination: `/application?site=${site}`,
+                permanent: false
+            }
+        };
+    }
+
     const isTenant = !user?.manageApartment;
     const navPage = context.resolvedUrl.substring(0, context.resolvedUrl.indexOf("?")).replace(/\//, "")
         .replace(`/${userId}`, isTenant ? "/" : "");
     let applicationContent = {};
-    const page = "application";
 
-    if (!user?.isLoggedIn) {
-        context.res.writeHead(302, {Location: `/index?site=${site}`});
-        context.res.end();
-        return {};
+    if (user.id != userId && !user.manageApartment) {
+        return {
+            redirect: {
+                destination: `/tenants/${user.id}?site=${site}`,
+                permanent: false
+            }
+        };
     }
-    if (user.isLoggedIn && user.editSite) {
-        context.res.writeHead(302, {Location: `/application?site=${site}`});
-        context.res.end();
-        return {};
-    }
+
     const [nav,
         tenant,
         applications,
@@ -959,7 +1049,8 @@ export const getServerSideProps = withIronSessionSsr(async function (context) {
             deletedPayments: deletedPayments,
             roommates: roommates,
             maintenanceRequests: maintenanceRequests,
-            tab: context.query.tab || null,
+            tab: context.query.tab || "info",
+            semester: context.query.semester || null,
             isReturningStudent,
             isDepositPaid,
             depositAmount: depositAmount,

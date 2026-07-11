@@ -38,7 +38,7 @@ export const WelcomeEmailBody = function ({
                     href={`https://uca.snowcollegeapartments.com/leases/${leaseId}?site=${site}`}>Lease</a><br/>
                 <br/>
                 Follow this link to view your <a
-                    href={`https://uca.snowcollegeapartments.com/tenants/${userId}?tab=Roommates&site=${site}`}>room
+                    href={`https://uca.snowcollegeapartments.com/tenants/${userId}?tab=roommates&semester=${semester?.replace(" ", "_")}&site=${site}`}>room
                     assignment
                     and roomates</a><br/>
             </div>

@@ -11,6 +11,7 @@ import classNames from "classnames";
 import {Alert, Tab, Tabs} from "react-bootstrap";
 import {SignedLeaseList, WelcomedApplicationList} from "../../../../components/applicationList";
 import {GetUserLeases} from "../../../../lib/db/users/userLease";
+import Router from "next/router";
 import {WelcomeEmailBody} from "../../../../components/welcomeEmailBody";
 import { renderToString } from "react-dom/server";
 import {GetDynamicContent} from "../../../../lib/db/content/dynamicContent";

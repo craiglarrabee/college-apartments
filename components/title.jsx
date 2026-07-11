@@ -4,12 +4,12 @@ import {Person} from "react-bootstrap-icons";
 import Login from "./login";
 import {useState} from "react";
 
-const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogin = () => {}, ...restOfProps}) => {
+const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogin = () => {}, returnUrl, ...restOfProps}) => {
     // Ensure stable defaults for theming props to avoid SSR/CSR hydration mismatches
     const safeBg = bg ?? "light";
     const safeVariant = variant ?? "light";
 
-    const [showLogin, setShowLogin] = useState(startWithLogin);
+    const [showLogin, setShowLogin] = useState(startWithLogin || !!returnUrl);
     const [actionText, setActionText] = useState(initialUser?.isLoggedIn ? "Sign out" : "Sign In");
     const [user, setUser] = useState(initialUser);
     const [editSite, setEditSite] = useState(!!user?.editSite);
@@ -115,7 +115,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
     };
 
     return (
-        <Navbar style={{display: "block", borderTopRightRadius: "50px"}} expand={true} bg={bg} variant={variant}>
+        <Navbar style={{display: "block", borderTopRightRadius: "50px"}} expand={true} bg={safeBg} variant={safeVariant}>
             <div className={classNames("d-inline-flex", "flex-column")} style={{width: "100%"}}>
             <Navbar.Brand><span
                 className={classNames("h3", "sub-brand")}>{site === "snow" ? "Park Place Apartments @ Snow College" : "Stadium Way & College Way @ SUU"}</span></Navbar.Brand>
@@ -148,7 +148,7 @@ const Title = ({bg, variant, initialUser, site, startWithLogin = false, postLogi
                     </Nav>
                 </span>
             </Navbar.Brand>
-            <Login close={handleCloseLogin} setNewUser={setNewUser} show={showLogin} site={site}/>
+            <Login close={handleCloseLogin} setNewUser={setNewUser} show={showLogin} site={site} returnUrl={returnUrl}/>
             </div>
         </Navbar>
     );

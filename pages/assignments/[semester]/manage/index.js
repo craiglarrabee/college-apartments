@@ -13,6 +13,7 @@ import {GetPreviousLeaseTenants, GetUserLeaseTenants} from "../../../../lib/db/u
 import {Apartment, Tenant, TenantCard, UnassignedTenants} from "../../../../components/dragAndDrop";
 import classNames from "classnames";
 import {DndContext, DragOverlay} from "@dnd-kit/core";
+import Router from "next/router";
 import {GetBaseRoomTypes, GetVisibleSemesterLeaseRoomsMap} from "../../../../lib/db/users/roomType";
 import RoomTypes from "../../../../components/roomTypes";
 import {isBot} from "../../../../lib/bots";
