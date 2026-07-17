@@ -525,6 +525,7 @@ const Tenant = ({
                                                                 previous_rental={applicationContent.previous_rental}
                                                                 isReturningStudent={restOfProps.isReturningStudent}
                                                                 isDepositPaid={restOfProps.isDepositPaid}
+                                                                isOptional={!isTenant}
                                                                 depositAmount={restOfProps.depositAmount}
                                                                 privacyContent={restOfProps.privacyContent}
                                                                 refundContent={restOfProps.refundContent}
