@@ -14,8 +14,11 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     const data = {...req.body, lease_id: lease.lease_id, room_type_id: lease.room_type_id}
                     await AddApplication(data.site, req.query.userId, data.lease_id, data);
                     if (req.body.depositPaid) {
+                        console.log(`${new Date().toISOString()} - Processing depositPaid for user: ${req.query.userId}, lease: ${data.lease_id}`);
                         await ReceiveDeposit(data.site, req.query.userId, data.lease_id);
                         await AddUserLease(req.query.userId, data.lease_id, {});
+                    } else {
+                        console.log(`${new Date().toISOString()} - depositPaid is FALSE for user: ${req.query.userId}, lease: ${data.lease_id}. Full body: ${JSON.stringify(req.body)}`);
                     }
                 }
                 res.status(204).send();
