@@ -12,7 +12,11 @@ import {
 import {AddUserLease, DeleteUserLease} from "../../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session?.user?.isLoggedIn) res.status(403).send();
+    if (!req.session?.user?.isLoggedIn) {
+        console.warn(`${new Date().toISOString()} - Unauthorized application modify/add attempt for user: ${req.query.userId}, lease: ${req.query.leaseId}`);
+        res.status(403).send();
+        return;
+    }
     try {
         switch (req.method) {
             case "POST":
@@ -54,9 +58,8 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        res.body = {error: e.code, description: e.message};
-        res.status(400).send();
-        console.error(`${new Date().toISOString()} -` , e);
+        console.error(`${new Date().toISOString()} - Error in /api/users/${req.query.userId}/leases/${req.query.leaseId}/application:`, e);
+        res.status(400).json({error: e.code, description: e.message});
     }
 }, ironOptions);
 

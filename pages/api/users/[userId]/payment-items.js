@@ -28,7 +28,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     const items = await GetAllTenantPaymentItems(site, userId);
                     res.status(200).json(items);
                 } catch (e) {
-                    console.error(`${new Date().toISOString()} -`, e);
+                    console.error(`${new Date().toISOString()} - Error in GET /api/users/${userId}/payment-items:`, e);
                     res.status(500).json({error: e.message});
                 }
                 return;
@@ -53,7 +53,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
 
                     res.status(201).send();
                 } catch (e) {
-                    console.error(`${new Date().toISOString()} -`, e);
+                    console.error(`${new Date().toISOString()} - Error in POST /api/users/${userId}/payment-items:`, e);
                     res.status(500).json({error: e.message});
                 }
                 return;
@@ -76,7 +76,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
 
                     res.status(200).send();
                 } catch (e) {
-                    console.error(`${new Date().toISOString()} -`, e);
+                    console.error(`${new Date().toISOString()} - Error in PUT /api/users/${userId}/payment-items:`, e);
                     res.status(500).json({error: e.message});
                 }
                 return;
@@ -93,7 +93,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                     await DeleteTenantPaymentItem(id, req.session.user.id);
                     res.status(204).send();
                 } catch (e) {
-                    console.error(`${new Date().toISOString()} -`, e);
+                    console.error(`${new Date().toISOString()} - Error in DELETE /api/users/${userId}/payment-items:`, e);
                     res.status(500).json({error: e.message});
                 }
                 return;

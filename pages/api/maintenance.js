@@ -119,7 +119,7 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        console.error(`${new Date().toISOString()} -`, e);
+        console.error(`${new Date().toISOString()} - Error in /api/maintenance:`, e);
         res.status(400).json({error: e.code, description: e.message});
     }
 }, ironOptions);

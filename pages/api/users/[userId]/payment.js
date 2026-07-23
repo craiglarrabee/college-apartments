@@ -11,7 +11,11 @@ import chargeSquare from "../../../../lib/payment/chargeSquare";
 import {getOrCreateCustomer} from "../../../../lib/payment/squareCustomers";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-            if (!req.session?.user?.isLoggedIn) res.status(403).send();
+            if (!req.session?.user?.isLoggedIn) {
+                console.warn(`${new Date().toISOString()} - Unauthorized payment attempt for user: ${req.query.userId}`);
+                res.status(403).send();
+                return;
+            }
             switch (req.method) {
                 case "POST":
                     let payResp;
@@ -75,18 +79,20 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                             payResp = await chargeCreditCard(data);
                         }
                     } catch (e) {
-                        const errorResponse = {error: e.statusCode, message: e.errormessage};
+                        const errorResponse = {error: e.statusCode || 400, message: e.errormessage || e.message};
                         // make sure we remove sensitive data before logging
-                        delete data.cc_number;
-                        delete data.cc_code;
-                        delete data.cc_expire;
-                        delete data.first_name;
-                        delete data.last_name;
-                        delete data.street;
-                        delete data.city;
-                        delete data.state;
-                        delete data.zip;
-                        console.error(`${new Date().toISOString()} -` , e);
+                        if (data) {
+                            delete data.cc_number;
+                            delete data.cc_code;
+                            delete data.cc_expire;
+                            delete data.first_name;
+                            delete data.last_name;
+                            delete data.street;
+                            delete data.city;
+                            delete data.state;
+                            delete data.zip;
+                        }
+                        console.error(`${new Date().toISOString()} - Payment processing error:`, e);
                         res.status(400).json(errorResponse);
                         return;
                     }

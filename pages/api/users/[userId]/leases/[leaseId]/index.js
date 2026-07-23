@@ -5,16 +5,20 @@ import {ironOptions} from "../../../../../../lib/session/options";
 import {AddUserLease, DeleteUserLease, GetUserLease, UpdateUserLease} from "../../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session?.user?.isLoggedIn) res.status(403).send();
+    if (!req.session?.user?.isLoggedIn) {
+        console.warn(`${new Date().toISOString()} - Unauthorized access attempt for user: ${req.query.userId}, lease: ${req.query.leaseId}`);
+        res.status(403).send();
+        return;
+    }
     try {
         switch (req.method) {
             case "GET":
-                res.body = await GetUserLease(req.query.userId, req.query.leaseId);
-                res.status(200).send();
+                const lease = await GetUserLease(req.query.userId, req.query.leaseId);
+                res.status(200).json(lease);
                 return;
             case "DELETE":
-                res.body = await DeleteUserLease(req.query.userId, req.query.leaseId, req.query.roomTypeId);
-                res.status(200).send();
+                await DeleteUserLease(req.query.userId, req.query.leaseId, req.query.roomTypeId);
+                res.status(204).send();
                 return;
             case "POST":
                 await AddUserLease(req.query.userId, req.query.leaseId, req.body);
@@ -29,9 +33,8 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        res.body = {error: e.code, description: e.message};
-        res.status(400).send();
-        console.error(`${new Date().toISOString()} -` , e);
+        console.error(`${new Date().toISOString()} - Error in /api/users/${req.query.userId}/leases/${req.query.leaseId}:`, e);
+        res.status(400).json({error: e.code, description: e.message});
     }
 }, ironOptions);
 

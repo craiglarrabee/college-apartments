@@ -27,6 +27,12 @@ const Login = ({show, close, setNewUser, site, ...restOfProps}) => {
             });
 
             if (!resp.ok) {
+                try {
+                    const errData = await resp.json();
+                    console.error(`${new Date().toISOString()} - Login failed for site ${site}:`, errData);
+                } catch (_) {
+                    console.error(`${new Date().toISOString()} - Login failed for site ${site} with status: ${resp.status}`);
+                }
                 setLoginError(true);
                 return;
             }

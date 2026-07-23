@@ -348,7 +348,16 @@ const NewApplicationForm = ({
                     await router.push(`/deposit?site=${site}`);
                     return; // Don't fall through to finally if we are redirecting
                 default:
+                    console.error(`${new Date().toISOString()} - Unexpected response from /api/users/${userId}/applications: ${resp.status}`);
+                    setApplicationError("There was an error processing your application. Please try again.");
+                    break;
                 case 400:
+                    try {
+                        const errorData = await resp.json();
+                        console.error(`${new Date().toISOString()} - Error 400 from /api/users/${userId}/applications:`, errorData);
+                    } catch (e) {
+                        console.error(`${new Date().toISOString()} - Error 400 from /api/users/${userId}/applications (failed to parse body)`);
+                    }
                     setApplicationError("There was an error processing your application. Please try again.");
                     break;
             }
@@ -394,13 +403,14 @@ const NewApplicationForm = ({
                 let errorMessage = "There was an error processing your payment.";
                 try {
                     const errorData = await resp.json();
+                    console.error(`${new Date().toISOString()} - Payment error from /api/users/${userId}/payment:`, errorData);
                     if (errorData && errorData.message) {
                         errorMessage = `There was an error processing your payment: ${errorData.message}`;
                     } else if (errorData && errorData.description) {
                         errorMessage = `There was an error processing your payment: ${errorData.description}`;
                     }
                 } catch (jsonError) {
-                    console.error(`${new Date().toISOString()} - Failed to parse error response:`, jsonError);
+                    console.error(`${new Date().toISOString()} - Failed to parse error response from /api/users/${userId}/payment:`, jsonError);
                 }
                 setApplicationError(errorMessage);
                 setIsProcessing(false);

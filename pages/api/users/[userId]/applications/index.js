@@ -6,10 +6,17 @@ import {AddApplication, ReceiveDeposit} from "../../../../../lib/db/users/applic
 import {AddUserLease} from "../../../../../lib/db/users/userLease";
 
 const handler = withIronSessionApiRoute(async (req, res) => {
-    if (!req.session.user?.isLoggedIn) res.status(403).send();
+    if (!req.session.user?.isLoggedIn) {
+        console.warn(`${new Date().toISOString()} - Unauthorized application submission attempt for user: ${req.query.userId}`);
+        res.status(403).send();
+        return;
+    }
     try {
         switch (req.method) {
             case "POST":
+                if (!req.body.leases || req.body.leases.length === 0) {
+                    console.error(`${new Date().toISOString()} - No leases provided in application for user: ${req.query.userId}`);
+                }
                 for (const lease of req.body.leases) {
                     const data = {...req.body, lease_id: lease.lease_id, room_type_id: lease.room_type_id}
                     await AddApplication(data.site, req.query.userId, data.lease_id, data);

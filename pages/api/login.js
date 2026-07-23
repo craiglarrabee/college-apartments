@@ -41,8 +41,8 @@ const login = withIronSessionApiRoute(async (req, res) => {
         return res.status(200).json(user);
 
     } catch (e) {
-        console.error('Login error:', e);
-        return res.status(401).send({});
+        console.error(`${new Date().toISOString()} - Login error for user ${req.body?.username}:`, e);
+        return res.status(401).json({error: e.code, message: e.message});
     }
 }, ironOptions);
 

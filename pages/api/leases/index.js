@@ -29,9 +29,8 @@ const handler = withIronSessionApiRoute(async (req, res) => {
                 return;
         }
     } catch (e) {
-        res.body = {error: e.code, description: e.message};
-        res.status(400).send();
-        console.error(`${new Date().toISOString()} -` , e);
+        console.error(`${new Date().toISOString()} - Error in /api/leases:`, e);
+        res.status(400).json({error: e.code, description: e.message});
     }
 }, ironOptions);
 
