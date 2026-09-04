@@ -1,0 +1,48 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/snowcoll/uca"
+PassengerBaseURI "/"
+PassengerNodejs "/home/snowcoll/nodevenv/uca/22/bin/node"
+PassengerAppType node
+PassengerStartupFile app.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
+<IfModule Litespeed>
+SetEnv BG light
+SetEnv BRAND_URL http://www.utahcollegeapartments.com
+SetEnv CW_AUTH_NET_ID 85Fg2P9FaA
+SetEnv CW_AUTH_NET_KEY 6mdG6SsB4S5457fQ
+SetEnv DB snowcoll_apts
+SetEnv DB_HOST localhost
+SetEnv DB_PORT 3306
+SetEnv DB_PWD pinda43
+SetEnv DB_USER snowcoll_snowsuu
+SetEnv NEXT_PUBLIC_SQUARE_APPLICATION_ID sq0idp-HlLVAhOzpKR7ljYcPO4LgA
+SetEnv NEXT_PUBLIC_SQUARE_LOCATION_ID LJQRSEZASX64M
+SetEnv PP_AUTH_NET_ID 58jpdE3Z2zw9
+SetEnv PP_AUTH_NET_KEY 466R24y8ERk6jFX3
+SetEnv PP_SQUARE_LOCATION_ID LKJ4WYT8WNHQZ
+SetEnv SITE suu
+SetEnv SNOW_EMAIL_PASS Cloudredanswer!
+SetEnv SNOW_EMAIL_USER snow@uca.snowcollegeapartments.com
+SetEnv SNOW_MAINT_EMAIL_PASS Cloudredanswer!
+SetEnv SNOW_MAINT_EMAIL_USER maintenance@uca.snowcollegeapartments.com
+SetEnv SUU_EMAIL_PASS Cloudredanswer!
+SetEnv SUU_EMAIL_USER suu@uca.snowcollegeapartments.com
+SetEnv SW_AUTH_NET_ID 62VYGx4Zy3M
+SetEnv SW_AUTH_NET_KEY 4U4tJ7EC9k5gw53v
+SetEnv TEST_AUTH_NET_ID 33rk5hLP3q
+SetEnv TEST_AUTH_NET_KEY 6LJ9Pw9za35Cn6Gk
+SetEnv TEST_SQUARE_ACCESS_TOKEN EAAAl5So0ITUDUm62Obw3GY9bKkPPGnRI7OWaPMGAvDVtEzpmBibU7_1uGVVyJQd
+SetEnv TEST_SQUARE_LOCATION_ID LJQRSEZASX64M
+SetEnv USE_SQUARE_FOR_SNOW true
+SetEnv VARIANT light
+SetEnv PP_SQUARE_ACCESS_TOKEN EAAAl5So0ITUDUm62Obw3GY9bKkPPGnRI7OWaPMGAvDVtEzpmBibU7_1uGVVyJQd
+</IfModule>
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php74” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php74 .php .php7 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit
